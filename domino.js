@@ -18,9 +18,12 @@
         _properties = {};
 
     // Communication management:
-    var _hacks = {},
-        _ascending = {},
+    var _ascending = {},
         _descending = {};
+
+    // Hacks management:
+    var _hackMethods = {},
+        _hackDispatch = {};
 
     // AJAX management:
     var _services = {};
@@ -29,6 +32,34 @@
     var _publicScope = {},
         _privateScope = {};
 
+    /**
+     * References a new property, generated the setter and getter if not
+     * specified, and binds the events.
+     * 
+     * @param   {string}  name    The name  of the property.
+     * @param   {?Object} options An object containing eventually some more
+     *                            precise indications about the property.
+     *
+     * 
+     * Here is the list of options that are interpreted:
+     * 
+     *   {?string}         type     Indicated the type of the property. Use "?"
+     *                              to specify a nullable property, and "|" for
+     *                              multiple valid types.
+     *   {?function(*)}    setter   Overrides the default property setter.
+     *   {?(function: *)}  getter   Overrides the default property getter.
+     *   {?*}              value    The initial value of the property. If not
+     *                              specified, the value will be null if no
+     *                              type is specified, and the default empty
+     *                              value else.
+     *   {?(string|array)} triggers The list of events that can modify the
+     *                              property. Can be an array or the list of
+     *                              events separated by spaces.
+     *   {?(string|array)} dispatch The list of events that must be triggered
+     *                              after modification of the property. Can be
+     *                              an array or the list of events separated by
+     *                              spaces.
+     */
     function _addProperty(name, options) {
       var o = options || {};
 
@@ -106,6 +137,38 @@
           ) :
           (_descending[name] = utils.array(_o['dispatch']));
     }
+
+    function _step(events,options){
+      var dispatch = {};
+
+      events.forEach(function(event) {
+        var data = event.data || {};
+
+        // Check properties to update:
+        (_ascending[event.name] || []).forEach(function(propName){
+          if (data[proName] !== undefined) {
+            _setters[propName](data[proName]);
+            (_descending[propName] || []).forEach(function(descEvent) {
+              dispatch[descEvent] = 1;
+            });
+          }
+        });
+
+        // Check hacks to trigger:
+        (_hackMethods[event.name] || []).forEach(function(hack) {
+          hack(event);
+        });
+
+        (_hackDispatch[event.name] || []).forEach(function(descEvent) {
+          dispatch[descEvent] = 1;
+        });
+      });
+      
+      dispatch = Object.keys(dispatch);
+      // TODO:
+      //  - Dispatch events for the modules
+      //  - Dispatch events for the self-loop
+    }
   };
 
   // Logs:
@@ -122,13 +185,11 @@
   };
 
   window.domino.prototype.die = function(s) {
-    var n = this.fullName ? '[domino.' + this.fullName + ']' : '[domino]';
     throw (new Error(this.fullName() + s));
   };
 
   window.domino.prototype.dump = function(s) {
     if (__settings['verbose']) {
-      var n = this.fullName ? '[domino.' + this.fullName + ']' : '[domino]';
       console.log(this.fullName() + s);
     }
   };
