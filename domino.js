@@ -119,8 +119,8 @@
         !_utils.type.check(o['triggers'], 'array|string') ?
           _self.warn(
             'Property "' + name + '":' +
-            'Events ("triggers") must be specified in an array or ' +
-            'separated by spaces in a string'
+              'Events ("triggers") must be specified in an array or ' +
+              'separated by spaces in a string'
           ) :
           utils.array(_o['triggers']).forEach(function(event) {
             _ascending[event] = _ascending[event] || [];
@@ -132,14 +132,60 @@
         !_utils.type.check(o['dispatch'], 'array|string') ?
           _self.warn(
             'Property "' + name + '":' +
-            'Events ("dispatch") must be specified in an array or ' +
-            'separated by spaces in a string'
+              'Events ("dispatch") must be specified in an array or ' +
+              'separated by spaces in a string'
           ) :
           (_descending[name] = utils.array(_o['dispatch']));
     }
 
-    function _step(events, options) {
-      var dispatch = {};
+    /**
+     * Binds a new hack. Basically, hacks make possible to explicitely
+     * trigger actions and events on specified events.
+     *
+     * @param   {?Object} options An object containing some more precise
+     *                            indications about the hack.
+     *
+     * Here is the list of options that are interpreted:
+     *
+     *   {(array|string)}  triggers The list of events that can trigger the
+     *                              hack. Can be an array or the list of
+     *                              events separated by spaces.
+     *   {?(array|string)} dispatch The list of events that will be triggered
+     *                              after actionning the hack. Can be an array
+     *                              or the list of events separated by spaces.
+     *                              spaces.
+     *   {?function}       method   A method to execute after receiving a
+     *                              trigger and before dispatching the
+     *                              specified events.
+     */
+    function _addHack(options) {
+      var o = options || {};
+
+      // Errors:
+      (o['triggers'] === undefined) &&
+        _self.die(
+          'A hack requires at least one trigger to be added'
+        );
+
+      utils.array(o['triggers']).forEach(function(event) {
+        // Method to execute:
+        if (o['method']) {
+          _hackMethods[event] = _hackMethods[event] || [];
+          _hackMethods[event].push(o['method']);
+        }
+
+        // Events to dispatch:
+        if (o['dispatch']) {
+          _hackDispatch[event] = (_hackDispatch[event] || []).concat(
+            utils.array(o['dispatch'])
+          );
+        }
+      });
+    }
+
+    function _mainLoop(events, options) {
+      var o = options || {},
+          dispatch = {};
 
       events.forEach(function(event) {
         var data = event.data || {};
@@ -147,6 +193,7 @@
         // Check properties to update:
         (_ascending[event.name] || []).forEach(function(propName) {
           if (data[proName] !== undefined) {
+            // TODO: Precise scope
             _setters[propName](data[proName]);
             (_descending[propName] || []).forEach(function(descEvent) {
               dispatch[descEvent] = 1;
@@ -156,6 +203,7 @@
 
         // Check hacks to trigger:
         (_hackMethods[event.name] || []).forEach(function(hack) {
+          // TODO: Precise scope
           hack(event);
         });
 
