@@ -35,14 +35,14 @@
     /**
      * References a new property, generated the setter and getter if not
      * specified, and binds the events.
-     * 
+     *
      * @param   {string}  name    The name  of the property.
      * @param   {?Object} options An object containing eventually some more
      *                            precise indications about the property.
      *
-     * 
+     *
      * Here is the list of options that are interpreted:
-     * 
+     *
      *   {?string}         type     Indicated the type of the property. Use "?"
      *                              to specify a nullable property, and "|" for
      *                              multiple valid types.
@@ -138,14 +138,14 @@
           (_descending[name] = utils.array(_o['dispatch']));
     }
 
-    function _step(events,options){
+    function _step(events, options) {
       var dispatch = {};
 
       events.forEach(function(event) {
         var data = event.data || {};
 
         // Check properties to update:
-        (_ascending[event.name] || []).forEach(function(propName){
+        (_ascending[event.name] || []).forEach(function(propName) {
           if (data[proName] !== undefined) {
             _setters[propName](data[proName]);
             (_descending[propName] || []).forEach(function(descEvent) {
@@ -163,7 +163,7 @@
           dispatch[descEvent] = 1;
         });
       });
-      
+
       dispatch = Object.keys(dispatch);
       // TODO:
       //  - Dispatch events for the modules
@@ -178,19 +178,19 @@
 
   window.domino.prototype.warn = function(s) {
     if (__settings['strict']) {
-      throw (new Error(this.fullName() + s));
+      throw (new Error(this.fullName() + ' ' + s));
     }else if (__settings['verbose']) {
-      console.log(this.fullName() + s);
+      console.log(this.fullName() + ' ' + s);
     }
   };
 
   window.domino.prototype.die = function(s) {
-    throw (new Error(this.fullName() + s));
+    throw (new Error(this.fullName() + ' ' + s));
   };
 
   window.domino.prototype.dump = function(s) {
     if (__settings['verbose']) {
-      console.log(this.fullName() + s);
+      console.log(this.fullName() + ' ' + s);
     }
   };
 
