@@ -4,7 +4,9 @@
     verbose: false
   };
 
-  window.domino = window.domino || function() {
+  window.domino = window.domino || function(name) {
+    this.name = name || 'domino';
+
     // Misc:
     var _self = this,
         _instance = 'domino',
@@ -13,7 +15,7 @@
     // Properties management:
     var _types = {},
         _getters = {},
-        _setters = {};
+        _setters = {},
         _statics = {},
         _properties = {};
 
@@ -60,7 +62,7 @@
      *                              an array or the list of events separated by
      *                              spaces.
      */
-    function _addProperty(name, options) {
+    function addProperty(name, options) {
       var o = options || {};
 
       // Check errors:
@@ -158,7 +160,7 @@
      *                              trigger and before dispatching the
      *                              specified events.
      */
-    function _addHack(options) {
+    function addHack(options) {
       var o = options || {};
 
       // Errors:
@@ -183,6 +185,13 @@
       });
     }
 
+    /**
+     * The main loop, that will update
+     *
+     * @param   {array}   events  [description].
+     * @param   {?object} options [description].
+     * @private
+     */
     function _mainLoop(events, options) {
       var o = options || {},
           dispatch = {};
@@ -220,25 +229,21 @@
   };
 
   // Logs:
-  window.domino.prototype.fullName = function() {
-    return this.name ? '[domino.' + this.name + ']' : '[domino]';
-  };
-
   window.domino.prototype.warn = function(s) {
     if (__settings['strict']) {
-      throw (new Error(this.fullName() + ' ' + s));
+      throw (new Error('[' + this.name + '] ' + s));
     }else if (__settings['verbose']) {
-      console.log(this.fullName() + ' ' + s);
+      console.log('[' + this.name + '] ' + s);
     }
   };
 
   window.domino.prototype.die = function(s) {
-    throw (new Error(this.fullName() + ' ' + s));
+    throw (new Error('[' + this.name + '] ' + s));
   };
 
   window.domino.prototype.dump = function(s) {
     if (__settings['verbose']) {
-      console.log(this.fullName() + ' ' + s);
+      console.log('[' + this.name + '] ' + s);
     }
   };
 
@@ -287,7 +292,7 @@
           }
         },
         getDefault: function(type) {
-
+          // TODO
         },
         isValid: function(type) {
           // TODO
