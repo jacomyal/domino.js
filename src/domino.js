@@ -40,8 +40,9 @@
     var _services = {};
 
     // Scopes:
-    var _publicScope = {},
-        _privateScope = {};
+    var _eventsScope = {
+      get: _getters
+    };
 
     /**
      * References a new property, generated the setter and getter if not
@@ -212,7 +213,7 @@
       // Instanciate the module:
       klass.call(module);
 
-      for (var i in module.triggers||{}) {
+      for (var i in module.triggers || {}) {
         _self.addEventListener();
       }
       klass;
@@ -263,14 +264,13 @@
       // TODO:
       //  - Dispatch events for the modules
       dispatch = Object.keys(dispatch).map(function(event) {
-        // WUT???
-        // TODO:
-        // "Generate" the events
+        _self.dispatchEvent(event, _eventsScope);
+        return _self.getEvent(event, _eventsScope);
       });
 
-
-      _self.dispatchEvent();
-      _mainLoop(dispatch, o);
+      // Reloop:
+      dispatch.length &&
+        _mainLoop(dispatch, o);
     }
   };
 
@@ -383,7 +383,10 @@
   dispatcher.prototype.addEventListener = function(events, handler) {
     if (!arguments.length) {
       return this;
-    }else if (arguments.length === 1 && utils.type.get(arguments[0]) === 'object') {
+    }else if (
+      arguments.length === 1 &&
+      utils.type.get(arguments[0]) === 'object'
+    ) {
       for (var events in arguments[0]) {
         this.addEventListener(events, arguments[0][events]);
       }
@@ -457,24 +460,24 @@
    * @return {EventDispatcher} Returns itself.
    */
   dispatcher.prototype.dispatchEvent = function(events, data) {
-    var eArray = utils.array(events),
+    var event,
+        eArray = utils.array(events),
         self = this;
 
     data = data === undefined ? {} : data;
 
-    eArray.forEach(function(event) {
-      if (self._handlers[event]) {
-        self._handlers[event].forEach(function(e) {
-          e.handler({
-            'type': event,
-            'data': data,
-            'target': self
-          });
+    eArray.forEach(function(eventName) {
+      if (self._handlers[eventName]) {
+        event = self.getEvent(eventName, data);
+
+        self._handlers[eventName].forEach(function(e) {
+          e.handler(event);
         });
 
-        self._handlers[event] = self._handlers[event].filter(function(e) {
-          return !e['one'];
-        });
+        self._handlers[eventName] =
+          self._handlers[eventName].filter(function(e) {
+            return !e['one'];
+          });
       }
     });
 
@@ -487,7 +490,7 @@
    * @param  {?Object} data  The content of the event (optional).
    * @return {Object} Returns itself.
    */
-  dispatcher.prototype.dispatchEvent = function(event, data) {
+  dispatcher.prototype.getEvent = function(event, data) {
     return {
       type: event,
       data: data,
