@@ -4,7 +4,12 @@
     verbose: false
   };
 
-  window.domino = window.domino || function(name) {
+  // Check domino.js existance:
+  if (window.domino) {
+    throw new Error('domino already exists');
+  }
+
+  window.domino = function(name) {
     this.name = name || 'domino';
 
     // Misc:
@@ -39,28 +44,30 @@
      * specified, and binds the events.
      *
      * @param   {string}  name    The name  of the property.
-     * @param   {?Object} options An object containing eventually some more
+     * @param   {(?{
+     *   type:     (?string),
+     *   setter:   (?function),
+     *   getter:   (?function),
+     *   value:    (?*)
+     *   triggers: (?(string|array))
+     *   dispatch: (?(string|array))
+     * })}                options An object containing eventually some more
      *                            precise indications about the property.
-     *
      *
      * Here is the list of options that are interpreted:
      *
-     *   {?string}         type     Indicated the type of the property. Use "?"
-     *                              to specify a nullable property, and "|" for
-     *                              multiple valid types.
-     *   {?function(*)}    setter   Overrides the default property setter.
-     *   {?(function: *)}  getter   Overrides the default property getter.
-     *   {?*}              value    The initial value of the property. If not
-     *                              specified, the value will be null if no
-     *                              type is specified, and the default empty
-     *                              value else.
-     *   {?(string|array)} triggers The list of events that can modify the
-     *                              property. Can be an array or the list of
-     *                              events separated by spaces.
-     *   {?(string|array)} dispatch The list of events that must be triggered
-     *                              after modification of the property. Can be
-     *                              an array or the list of events separated by
-     *                              spaces.
+     *   type     Indicated the type of the property. Use "?" to specify a
+     *            nullable property, and "|" for multiple valid types.
+     *   setter   Overrides the default property setter.
+     *   getter   Overrides the default property getter.
+     *   value    The initial value of the property. If not specified, the
+     *            value will be null if no type is specified, and the default
+     *            empty value else.
+     *   triggers The list of events that can modify the property. Can be an
+     *            array or the list of events separated by spaces.
+     *   dispatch The list of events that must be triggered after modification
+     *            of the property. Can be an array or the list of events
+     *            separated by spaces.
      */
     function addProperty(name, options) {
       var o = options || {};
@@ -124,6 +131,7 @@
               'Events ("triggers") must be specified in an array or ' +
               'separated by spaces in a string'
           ) :
+          // TODO: Remove forEach loop
           utils.array(_o['triggers']).forEach(function(event) {
             _ascending[event] = _ascending[event] || [];
             _ascending[event].push(name);
@@ -169,6 +177,7 @@
           'A hack requires at least one trigger to be added'
         );
 
+      // TODO: Remove forEach loop
       utils.array(o['triggers']).forEach(function(event) {
         // Method to execute:
         if (o['method']) {
@@ -185,6 +194,24 @@
       });
     }
 
+    function addModule(klass, options) {
+      var o = options || {},
+          module = {};
+
+      // Check errors:
+      (klass === undefined) &&
+        _self.die('Module class not specified');
+
+      !_utils.type.check(klass, 'function') &&
+        _self.die('Module class must be a function');
+
+      // Instanciate the module:
+      klass.call(module);
+
+      klass;
+
+    }
+
     /**
      * The main loop, that will update
      *
@@ -196,107 +223,252 @@
       var o = options || {},
           dispatch = {};
 
+      // TODO: Remove forEach loop
       events.forEach(function(event) {
         var data = event.data || {};
 
         // Check properties to update:
-        (_ascending[event.name] || []).forEach(function(propName) {
-          if (data[proName] !== undefined) {
-            // TODO: Precise scope
-            _setters[propName](data[proName]);
-            (_descending[propName] || []).forEach(function(descEvent) {
-              dispatch[descEvent] = 1;
-            });
-          }
-        });
+        (data || o['force']) &&
+          // TODO: Remove forEach loop
+          (_ascending[event.name] || []).forEach(function(propName) {
+            var pushEvents = !!o['force'];
+
+            if (data[proName] !== undefined) {
+              // TODO: Precise scope
+              pushEvents = _setters[propName](data[proName]) || pushEvents;
+            }
+
+            pushEvents &&
+              // TODO: Remove forEach loop
+              (_descending[propName] || []).forEach(function(descEvent) {
+                dispatch[descEvent] = 1;
+              });
+          });
 
         // Check hacks to trigger:
+        // TODO: Remove forEach loop
         (_hackMethods[event.name] || []).forEach(function(hack) {
           // TODO: Precise scope
           hack(event);
         });
 
+        // TODO: Remove forEach loop
         (_hackDispatch[event.name] || []).forEach(function(descEvent) {
           dispatch[descEvent] = 1;
         });
       });
 
-      dispatch = Object.keys(dispatch);
       // TODO:
       //  - Dispatch events for the modules
-      //  - Dispatch events for the self-loop
+      dispatch = Object.keys(dispatch);
+      _mainLoop(dispatch, o);
     }
   };
 
+
+  /**
+   * Utils classes:
+   */
+  var domino = window.domino;
+
   // Logs:
-  window.domino.prototype.warn = function(s) {
+  domino.prototype.warn = function(s) {
     if (__settings['strict']) {
       throw (new Error('[' + this.name + '] ' + s));
-    }else if (__settings['verbose']) {
+    } else if (__settings['verbose']) {
       console.log('[' + this.name + '] ' + s);
     }
   };
 
-  window.domino.prototype.die = function(s) {
+  domino.prototype.die = function(s) {
     throw (new Error('[' + this.name + '] ' + s));
   };
 
-  window.domino.prototype.dump = function(s) {
+  domino.prototype.dump = function(s) {
     if (__settings['verbose']) {
       console.log('[' + this.name + '] ' + s);
     }
   };
 
-  window.domino.utils = window.domino.utils || {
-    array: function(v, sep) {
-      return (
-        window.domino.utils.type.get(v) === 'array' ?
-          v :
-          (v || '').toString().split(sep || ' ')
-      ).filter(function(s) {
-        return !!s;
-      });
-    },
-    unique: function(a) {
-      var u = {},
-          res = [];
+  // Utils:
+  var utils =
+    domino.utils = {
+      array: function(v, sep) {
+        // TODO: Remove filter loop
+        return (
+          domino.utils.type.get(v) === 'string' ?
+            v.split(sep || ' ') :
+            domino.utils.type.get(v) === 'array' ?
+              v :
+              [v]
+        ).filter(function(s) {
+          return !!s;
+        });
+      },
+      unique: function(a) {
+        var u = {},
+            res = [];
 
-      for (var i = 0, l = a.length; i < l; ++i) {
-        if (!u[a[i]]) {
-          res.push(a[i]);
-          u[a[i]] = 1;
+        for (var i = 0, l = a.length; i < l; ++i) {
+          if (!u[a[i]]) {
+            res.push(a[i]);
+            u[a[i]] = 1;
+          }
         }
-      }
-      return res;
-    },
-    type: (function() {
-      // Thanks jQuery:
-      var class2type = (
-        'Boolean Number String Function Array Date RegExp Object'
-      ).split(' ').reduce(function(o, name) {
-        o['[object ' + name + ']'] = name.toLowerCase();
-        return o;
-      },{});
+        return res;
+      },
+      type: (function() {
+        // Thanks jQuery:
+        var class2type = (
+          'Boolean Number String Function Array Date RegExp Object'
+        ).split(' ').reduce(function(o, name) {
+          o['[object ' + name + ']'] = name.toLowerCase();
+          return o;
+        },{});
 
-      return {
-        get: function(obj) {
-          return obj == null ?
-            String(obj) :
-            class2type[Object.prototype.toString.call(obj)] || 'object';
-        },
-        check: function(type, obj) {
-          if (typeof type == 'string') {
+        return {
+          get: function(obj) {
+            return obj == null ?
+              String(obj) :
+              class2type[Object.prototype.toString.call(obj)] || 'object';
+          },
+          check: function(type, obj) {
+            if (typeof type == 'string') {
+              // TODO
+            } else {
+              // TODO
+            }
+          },
+          getDefault: function(type) {
             // TODO
-          }else {
+          },
+          isValid: function(type) {
             // TODO
           }
-        },
-        getDefault: function(type) {
-          // TODO
-        },
-        isValid: function(type) {
-          // TODO
+      })()
+    };
+
+  // Default module template:
+  var module =
+    domino.module = function() {
+      dispatcher.call(this);
+
+      // In this object will be stored the module's triggers:
+      this.triggers = {};
+    };
+
+  // Event dispatcher:
+  var dispatcher =
+    domino.EventDispatcher = function() {
+      this._handlers = {};
+    };
+
+  /**
+   * Will execute the handler everytime that the indicated event (or the
+   * indicated events) will be triggered.
+   * @param  {string} events            The name of the event (or the events
+   *                                    separated by spaces).
+   * @param  {function(Object)} handler The handler to addEventListener.
+   * @return {EventDispatcher} Returns itself.
+   */
+  dispatcher.prototype.addEventListener = function(events, handler) {
+    if (!arguments.length) {
+      return this;
+    }else if (arguments.length == 1 && typeof arguments[0] == 'object') {
+      for (var events in arguments[0]) {
+        this.addEventListener(events, arguments[0][events]);
+      }
+    }else if (arguments.length > 1) {
+      var events = arguments[0],
+          handler = arguments[1],
+          eArray = utils.array(events),
+          self = this;
+
+      eArray.forEach(function(event) {
+        if (!self._handlers[event]) {
+          self._handlers[event] = [];
         }
-    })()
+
+        // Using an object instead of directly the handler will make possible
+        // later to add flags
+        self._handlers[event].push({
+          handler: handler
+        });
+      });
+    }
+
+    return this;
+  };
+
+  /**
+   * Removes the handler from a specified event (or specified events).
+   * @param  {?string} events            The name of the event (or the events
+   *                                     separated by spaces). If undefined,
+   *                                     then all handlers are removed.
+   * @param  {?function(Object)} handler The handler to removeEventListener. If
+   *                                     undefined, each handler bound to the
+   *                                     event or the events will be removed.
+   * @return {EventDispatcher} Returns itself.
+   */
+  dispatcher.prototype.removeEventListener = function(events, handler) {
+    if (!arguments.length) {
+      this._handlers = {};
+      return this;
+    }
+
+    var eArray = utils.array(events),
+        self = this;
+
+    if (handler) {
+      eArray.forEach(function(event) {
+        if (self._handlers[event]) {
+          self._handlers[event] = self._handlers[event].filter(function(e) {
+            return e.handler != handler;
+          });
+        }
+
+        if (self._handlers[event] && self._handlers[event].length == 0) {
+          delete self._handlers[event];
+        }
+      });
+    }else {
+      eArray.forEach(function(event) {
+        delete self._handlers[event];
+      });
+    }
+
+    return self;
+  };
+
+  /**
+   * Executes each handler bound to the event
+   * @param  {string} events The name of the event (or the events
+   *                         separated by spaces).
+   * @param  {?Object} data  The content of the event (optional).
+   * @return {EventDispatcher} Returns itself.
+   */
+  dispatcher.prototype.dispatchEvent = function(events, data) {
+    var eArray = utils.array(events),
+        self = this;
+
+    data = data == undefined ? {} : data;
+
+    eArray.forEach(function(event) {
+      if (self._handlers[event]) {
+        self._handlers[event].forEach(function(e) {
+          e.handler({
+            'type': event,
+            'data': data,
+            'target': self
+          });
+        });
+
+        self._handlers[event] = self._handlers[event].filter(function(e) {
+          return !e['one'];
+        });
+      }
+    });
+
+    return this;
   };
 })(window);
