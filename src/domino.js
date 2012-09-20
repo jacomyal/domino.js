@@ -1,9 +1,4 @@
 (function(window) {
-  var __settings = {
-    strict: false,
-    verbose: false
-  };
-
   // Check domino.js existance:
   if (window.domino) {
     throw new Error('domino already exists');
@@ -136,7 +131,6 @@
               'Events ("triggers") must be specified in an array or ' +
               'separated by spaces in a string'
           ) :
-          // TODO: Remove forEach loop
           utils.array(_o['triggers']).forEach(function(event) {
             _ascending[event] = _ascending[event] || [];
             _ascending[event].push(name);
@@ -182,7 +176,6 @@
           'A hack requires at least one trigger to be added'
         );
 
-      // TODO: Remove forEach loop
       utils.array(o['triggers']).forEach(function(event) {
         // Method to execute:
         if (o['method']) {
@@ -201,7 +194,8 @@
 
     function addModule(klass, options) {
       var o = options || {},
-          module = {};
+          module = {},
+          event;
 
       // Check errors:
       (klass === undefined) &&
@@ -213,9 +207,17 @@
       // Instanciate the module:
       klass.call(module);
 
-      for (var i in module.triggers || {}) {
-        _self.addEventListener();
+      // Ascending communication:
+      for (event in module.triggers || {}) {
+        _self.addEventListener(event, module.triggers[event]);
       }
+
+      // Descending communication:
+      for (event in module.triggers || {}) {
+        _self.addEventListener(event, module.triggers[event]);
+      }
+
+      // TODO
       klass;
 
     }
@@ -281,9 +283,9 @@
 
   // Logs:
   domino.prototype.warn = function(s) {
-    if (__settings['strict']) {
+    if (__settings__['strict']) {
       throw (new Error('[' + this.name + '] ' + s));
-    } else if (__settings['verbose']) {
+    } else if (__settings__['verbose']) {
       console.log('[' + this.name + '] ' + s);
     }
   };
@@ -293,7 +295,7 @@
   };
 
   domino.prototype.dump = function(s) {
-    if (__settings['verbose']) {
+    if (__settings__['verbose']) {
       console.log('[' + this.name + '] ' + s);
     }
   };
@@ -302,7 +304,6 @@
   var utils =
   domino.utils = {
     array: function(v, sep) {
-      // TODO: Remove filter loop
       return (
         domino.utils.type.get(v) === 'string' ?
           v.split(sep || ' ') :
@@ -357,6 +358,31 @@
     })()
   };
 
+  // Global settings:
+  var __settings__ = {
+    strict: false,
+    verbose: false
+  };
+
+  domino.settings = function(a1, a2) {
+    if (typeof a1 === 'string' && a2 === undefined) {
+      return __settings__[a1];
+    } else {
+      var o = (typeof a1 === 'object' && a2 === undefined) ? a1 : {};
+      if (typeof a1 === 'string') {
+        o[a1] = a2;
+      }
+
+      for (var k in o) {
+        if (__settings__[k] !== undefined) {
+          __settings__[k] = o[k];
+        }
+      }
+      
+      return this;
+    }
+  };
+
   // Default module template:
   var module =
   domino.module = function() {
@@ -369,7 +395,7 @@
   // Event dispatcher:
   var dispatcher =
   domino.EventDispatcher = function() {
-    this._handlers = {};
+    this._handlers_ = {};
   };
 
   /**
@@ -397,13 +423,13 @@
           self = this;
 
       eArray.forEach(function(event) {
-        if (!self._handlers[event]) {
-          self._handlers[event] = [];
+        if (!self._handlers_[event]) {
+          self._handlers_[event] = [];
         }
 
         // Using an object instead of directly the handler will make possible
         // later to add flags
-        self._handlers[event].push({
+        self._handlers_[event].push({
           handler: handler
         });
       });
@@ -424,7 +450,7 @@
    */
   dispatcher.prototype.removeEventListener = function(events, handler) {
     if (!arguments.length) {
-      this._handlers = {};
+      this._handlers_ = {};
       return this;
     }
 
@@ -433,19 +459,19 @@
 
     if (handler) {
       eArray.forEach(function(event) {
-        if (self._handlers[event]) {
-          self._handlers[event] = self._handlers[event].filter(function(e) {
+        if (self._handlers_[event]) {
+          self._handlers_[event] = self._handlers_[event].filter(function(e) {
             return e.handler !== handler;
           });
         }
 
-        if (self._handlers[event] && self._handlers[event].length === 0) {
-          delete self._handlers[event];
+        if (self._handlers_[event] && self._handlers_[event].length === 0) {
+          delete self._handlers_[event];
         }
       });
     }else {
       eArray.forEach(function(event) {
-        delete self._handlers[event];
+        delete self._handlers_[event];
       });
     }
 
@@ -467,15 +493,15 @@
     data = data === undefined ? {} : data;
 
     eArray.forEach(function(eventName) {
-      if (self._handlers[eventName]) {
+      if (self._handlers_[eventName]) {
         event = self.getEvent(eventName, data);
 
-        self._handlers[eventName].forEach(function(e) {
+        self._handlers_[eventName].forEach(function(e) {
           e.handler(event);
         });
 
-        self._handlers[eventName] =
-          self._handlers[eventName].filter(function(e) {
+        self._handlers_[eventName] =
+          self._handlers_[eventName].filter(function(e) {
             return !e['one'];
           });
       }
