@@ -133,7 +133,7 @@
             'Property "' + name + '": Wrong type error'
           ) :
           (_properties[name] = v);
-          
+
           return true;
       };
 
@@ -248,15 +248,17 @@
       for (event in triggers.events || {})
         _self.addEventListener(event, triggers.events[event]);
 
-      for (property in triggers.properties || {}){
+      for (property in triggers.properties || {}) {
         (_descending[property] || []).forEach(function(event) {
           _self.addEventListener(event, triggers.properties[property]);
         });
 
-        if (_getters[property]!==undefined) {
+        if (_getters[property] !== undefined) {
           var data = {};
           data[property] = _getters[property]();
-          triggers.properties[property](_self.getEvent('domino.initialUpdate', _eventsScope));
+          triggers.properties[property](
+            _self.getEvent('domino.initialUpdate', _eventsScope)
+          );
         }
       }
 
@@ -518,9 +520,10 @@
      * @param  {?string} events            The name of the event (or the events
      *                                     separated by spaces). If undefined,
      *                                     then all handlers are removed.
-     * @param  {?function(Object)} handler The handler to removeEventListener. If
-     *                                     undefined, each handler bound to the
-     *                                     event or the events will be removed.
+     * @param  {?function(Object)} handler The handler to removeEventListener.
+     *                                     If undefined, each handler bound to
+     *                                     the event or the events will be
+     *                                     removed.
      * @return {EventDispatcher} Returns itself.
      */
     function removeEventListener(events, handler) {
