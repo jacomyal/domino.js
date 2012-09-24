@@ -4,9 +4,8 @@
     throw new Error('domino already exists');
   }
 
-  var domino =
-  window.domino = function(name) {
-    this.name = name || 'domino';
+  window.domino = function() {
+    dispatcher.call(this);
 
     // Misc:
     var _self = this,
@@ -36,8 +35,41 @@
 
     // Scopes:
     var _eventsScope = {
-      get: _getters
-    };
+          get: _getters
+        },
+        _hackScope = {
+          get: _getters,
+          set: _setters,
+          update: update
+        };
+
+    // Initialization:
+    var _o = {};
+    this.name = 'domino';
+
+    if (_utils.type.get(arguments[0]) === 'string')
+      this.name = arguments[0];
+    else if (
+      arguments[0] !== undefined &&
+      _utils.type.get(arguments[0]) === 'object'
+    )
+      _o = arguments[0];
+    else if (
+      arguments[1] !== undefined &&
+      _utils.type.get(arguments[1]) === 'object'
+    )
+      _o = arguments[1];
+
+    this.name = _o['name'] || this.name;
+
+    (_o.properties || []).forEach(function(p) {
+      addProperty(p.name, p);
+    });
+
+    (_o.hacks || []).forEach(function(h) {
+      addHack(h);
+    });
+
 
     /**
      * References a new property, generated the setter and getter if not
@@ -101,6 +133,8 @@
             'Property "' + name + '": Wrong type error'
           ) :
           (_properties[name] = v);
+          
+          return true;
       };
 
       // Getter:
@@ -111,7 +145,7 @@
           ) :
           (_getters[name] = o['getter']);
 
-      _setters[name] = _setters[name] || function() {
+      _getters[name] = _getters[name] || function() {
         return _properties[name];
       };
 
@@ -131,7 +165,7 @@
               'Events ("triggers") must be specified in an array or ' +
               'separated by spaces in a string'
           ) :
-          utils.array(_o['triggers']).forEach(function(event) {
+          utils.array(o['triggers']).forEach(function(event) {
             _ascending[event] = _ascending[event] || [];
             _ascending[event].push(name);
           });
@@ -144,7 +178,7 @@
               'Events ("dispatch") must be specified in an array or ' +
               'separated by spaces in a string'
           ) :
-          (_descending[name] = utils.array(_o['dispatch']));
+          (_descending[name] = utils.array(o['dispatch']));
     }
 
     /**
@@ -192,34 +226,50 @@
       });
     }
 
-    function addModule(klass, options) {
+    function addModule(klass, params, options) {
       var o = options || {},
           module = {},
+          triggers,
+          property,
           event;
 
       // Check errors:
       (klass === undefined) &&
         _self.die('Module class not specified');
 
-      !_utils.type.check(klass, 'function') &&
+      _utils.type.get(klass) !== 'function' &&
         _self.die('First parameter must be a function');
 
       // Instanciate the module:
-      klass.call(module);
+      klass.apply(module, params || []);
+      triggers = module.triggers || {};
 
       // Ascending communication:
-      for (event in module.triggers || {}) {
-        _self.addEventListener(event, module.triggers[event]);
+      for (event in triggers.events || {})
+        _self.addEventListener(event, triggers.events[event]);
+
+      for (property in triggers.properties || {}){
+        (_descending[property] || []).forEach(function(event) {
+          _self.addEventListener(event, triggers.properties[property]);
+        });
+
+        if (_getters[property]!==undefined) {
+          var data = {};
+          data[property] = _getters[property]();
+          triggers.properties[property](_self.getEvent('domino.initialUpdate', _eventsScope));
+        }
       }
 
       // Descending communication:
-      for (event in module.triggers || {}) {
-        _self.addEventListener(event, module.triggers[event]);
-      }
+      for (event in _ascending || {})
+        module.addEventListener(event, _mainLoop);
 
-      // TODO
-      klass;
+      for (event in _hackMethods || {})
+        module.addEventListener(event, _mainLoop);
 
+      // Finalize:
+      _modules.push(module);
+      return module;
     }
 
     /**
@@ -230,20 +280,23 @@
      * @private
      */
     function _mainLoop(events, options) {
+      _self.dump('Main loop', events, options);
+
       var o = options || {},
           dispatch = {};
 
-      events.forEach(function(event) {
-        var data = event.data || {};
+      var eventsArray = _utils.array(events);
 
+      eventsArray.forEach(function(event) {
+        var data = event.data || {};
         // Check properties to update:
         (data || o['force']) &&
-          (_ascending[event.name] || []).forEach(function(propName) {
+          (_ascending[event.type] || []).forEach(function(propName) {
             var pushEvents = !!o['force'];
 
-            if (data[proName] !== undefined) {
+            if (data[propName] !== undefined) {
               // TODO: Precise scope
-              pushEvents = _setters[propName](data[proName]) || pushEvents;
+              pushEvents = _setters[propName](data[propName]) || pushEvents;
             }
 
             pushEvents &&
@@ -253,18 +306,15 @@
           });
 
         // Check hacks to trigger:
-        (_hackMethods[event.name] || []).forEach(function(hack) {
-          // TODO: Precise scope
-          hack(event);
+        (_hackMethods[event.type] || []).forEach(function(hack) {
+          hack.call(_hackScope, event);
         });
 
-        (_hackDispatch[event.name] || []).forEach(function(descEvent) {
+        (_hackDispatch[event.type] || []).forEach(function(descEvent) {
           dispatch[descEvent] = 1;
         });
       });
 
-      // TODO:
-      //  - Dispatch events for the modules
       dispatch = Object.keys(dispatch).map(function(event) {
         _self.dispatchEvent(event, _eventsScope);
         return _self.getEvent(event, _eventsScope);
@@ -274,7 +324,36 @@
       dispatch.length &&
         _mainLoop(dispatch, o);
     }
+
+    function update(options) {
+      _self.dump('Updating', options);
+
+      var o = options || {},
+          dispatch = {},
+          k;
+
+      for (k in o) {
+        _setters[k] &&
+          _setters[k](o[k]);
+
+        (_descending[k] || []).forEach(function(descEvent) {
+          dispatch[descEvent] = 1;
+        });
+      }
+
+      dispatch = Object.keys(dispatch).map(function(event) {
+        _self.dispatchEvent(event, _eventsScope);
+        return _self.getEvent(event, _eventsScope);
+      });
+
+      // Reloop:
+      dispatch.length &&
+        _mainLoop(dispatch, o);
+    }
+
+    this.addModule = addModule;
   };
+  var domino = window.domino;
 
 
   /**
@@ -283,25 +362,28 @@
 
   // Logs:
   domino.prototype.warn = function(s) {
-    if (__settings__['strict']) {
+    if (__settings__['strict'])
       throw (new Error('[' + this.name + '] ' + s));
-    } else if (__settings__['verbose']) {
+    else if (__settings__['verbose'])
       console.log('[' + this.name + '] ' + s);
-    }
   };
 
   domino.prototype.die = function(s) {
     throw (new Error('[' + this.name + '] ' + s));
   };
 
-  domino.prototype.dump = function(s) {
-    if (__settings__['verbose']) {
-      console.log('[' + this.name + '] ' + s);
-    }
+  domino.prototype.dump = function() {
+    if (!__settings__['verbose'])
+      return this;
+
+    var a = ['[' + this.name + ']'];
+    for (var k in arguments)
+      a.push(arguments[k]);
+
+    console.log.apply(console, a);
   };
 
   // Utils:
-  var utils =
   domino.utils = {
     array: function(v, sep) {
       return (
@@ -342,6 +424,7 @@
             class2type[Object.prototype.toString.call(obj)] || 'object';
         },
         check: function(type, obj) {
+          return true;
           if (typeof type == 'string') {
             // TODO
           } else {
@@ -349,14 +432,17 @@
           }
         },
         getDefault: function(type) {
+          return false;
           // TODO
         },
         isValid: function(type) {
+          return true;
           // TODO
         }
       };
     })()
   };
+  var utils = domino.utils;
 
   // Global settings:
   var __settings__ = {
@@ -378,149 +464,157 @@
           __settings__[k] = o[k];
         }
       }
-      
+
       return this;
     }
   };
 
+  // Event dispatcher:
+  domino.EventDispatcher = function() {
+    var _handlers = {};
+
+    /**
+     * Will execute the handler everytime that the indicated event (or the
+     * indicated events) will be triggered.
+     * @param  {string} events            The name of the event (or the events
+     *                                    separated by spaces).
+     * @param  {function(Object)} handler The handler to addEventListener.
+     * @return {EventDispatcher} Returns itself.
+     */
+    function addEventListener(events, handler) {
+      if (!arguments.length) {
+        return this;
+      }else if (
+        arguments.length === 1 &&
+        utils.type.get(arguments[0]) === 'object'
+      ) {
+        for (var events in arguments[0]) {
+          this.addEventListener(events, arguments[0][events]);
+        }
+      }else if (arguments.length > 1) {
+        var events = arguments[0],
+            handler = arguments[1],
+            eArray = utils.array(events),
+            self = this;
+
+        eArray.forEach(function(event) {
+          if (!_handlers[event]) {
+            _handlers[event] = [];
+          }
+
+          // Using an object instead of directly the handler will make possible
+          // later to add flags
+          _handlers[event].push({
+            handler: handler
+          });
+        });
+      }
+
+      return this;
+    };
+
+    /**
+     * Removes the handler from a specified event (or specified events).
+     * @param  {?string} events            The name of the event (or the events
+     *                                     separated by spaces). If undefined,
+     *                                     then all handlers are removed.
+     * @param  {?function(Object)} handler The handler to removeEventListener. If
+     *                                     undefined, each handler bound to the
+     *                                     event or the events will be removed.
+     * @return {EventDispatcher} Returns itself.
+     */
+    function removeEventListener(events, handler) {
+      if (!arguments.length) {
+        this._handlers_ = {};
+        return this;
+      }
+
+      var eArray = utils.array(events),
+          self = this;
+
+      if (handler) {
+        eArray.forEach(function(event) {
+          if (_handlers[event]) {
+            _handlers[event] = _handlers[event].filter(function(e) {
+              return e.handler !== handler;
+            });
+          }
+
+          if (_handlers[event] && _handlers[event].length === 0) {
+            delete _handlers[event];
+          }
+        });
+      }else {
+        eArray.forEach(function(event) {
+          delete _handlers[event];
+        });
+      }
+
+      return self;
+    };
+
+    /**
+     * Executes each handler bound to the event
+     * @param  {string} events The name of the event (or the events
+     *                         separated by spaces).
+     * @param  {?Object} data  The content of the event (optional).
+     * @return {EventDispatcher} Returns itself.
+     */
+    function dispatchEvent(events, data) {
+      var event,
+          eArray = utils.array(events),
+          self = this;
+
+      data = data === undefined ? {} : data;
+
+      eArray.forEach(function(eventName) {
+        if (_handlers[eventName]) {
+          event = self.getEvent(eventName, data);
+
+          _handlers[eventName].forEach(function(e) {
+            e.handler(event);
+          });
+
+          _handlers[eventName] =
+            _handlers[eventName].filter(function(e) {
+              return !e['one'];
+            });
+        }
+      });
+
+      return this;
+    };
+
+    /**
+     * Return an event Object.
+     * @param  {string} events The name of the event.
+     * @param  {?Object} data  The content of the event (optional).
+     * @return {Object} Returns itself.
+     */
+    function getEvent(event, data) {
+      return {
+        type: event,
+        data: data,
+        target: this
+      };
+    };
+
+    this.removeEventListener = removeEventListener;
+    this.addEventListener = addEventListener;
+    this.dispatchEvent = dispatchEvent;
+    this.getEvent = getEvent;
+  };
+  var dispatcher = domino.EventDispatcher;
+
   // Default module template:
-  var module =
   domino.module = function() {
     dispatcher.call(this);
 
     // In this object will be stored the module's triggers:
-    this.triggers = {};
-  };
-
-  // Event dispatcher:
-  var dispatcher =
-  domino.EventDispatcher = function() {
-    this._handlers_ = {};
-  };
-
-  /**
-   * Will execute the handler everytime that the indicated event (or the
-   * indicated events) will be triggered.
-   * @param  {string} events            The name of the event (or the events
-   *                                    separated by spaces).
-   * @param  {function(Object)} handler The handler to addEventListener.
-   * @return {EventDispatcher} Returns itself.
-   */
-  dispatcher.prototype.addEventListener = function(events, handler) {
-    if (!arguments.length) {
-      return this;
-    }else if (
-      arguments.length === 1 &&
-      utils.type.get(arguments[0]) === 'object'
-    ) {
-      for (var events in arguments[0]) {
-        this.addEventListener(events, arguments[0][events]);
-      }
-    }else if (arguments.length > 1) {
-      var events = arguments[0],
-          handler = arguments[1],
-          eArray = utils.array(events),
-          self = this;
-
-      eArray.forEach(function(event) {
-        if (!self._handlers_[event]) {
-          self._handlers_[event] = [];
-        }
-
-        // Using an object instead of directly the handler will make possible
-        // later to add flags
-        self._handlers_[event].push({
-          handler: handler
-        });
-      });
-    }
-
-    return this;
-  };
-
-  /**
-   * Removes the handler from a specified event (or specified events).
-   * @param  {?string} events            The name of the event (or the events
-   *                                     separated by spaces). If undefined,
-   *                                     then all handlers are removed.
-   * @param  {?function(Object)} handler The handler to removeEventListener. If
-   *                                     undefined, each handler bound to the
-   *                                     event or the events will be removed.
-   * @return {EventDispatcher} Returns itself.
-   */
-  dispatcher.prototype.removeEventListener = function(events, handler) {
-    if (!arguments.length) {
-      this._handlers_ = {};
-      return this;
-    }
-
-    var eArray = utils.array(events),
-        self = this;
-
-    if (handler) {
-      eArray.forEach(function(event) {
-        if (self._handlers_[event]) {
-          self._handlers_[event] = self._handlers_[event].filter(function(e) {
-            return e.handler !== handler;
-          });
-        }
-
-        if (self._handlers_[event] && self._handlers_[event].length === 0) {
-          delete self._handlers_[event];
-        }
-      });
-    }else {
-      eArray.forEach(function(event) {
-        delete self._handlers_[event];
-      });
-    }
-
-    return self;
-  };
-
-  /**
-   * Executes each handler bound to the event
-   * @param  {string} events The name of the event (or the events
-   *                         separated by spaces).
-   * @param  {?Object} data  The content of the event (optional).
-   * @return {EventDispatcher} Returns itself.
-   */
-  dispatcher.prototype.dispatchEvent = function(events, data) {
-    var event,
-        eArray = utils.array(events),
-        self = this;
-
-    data = data === undefined ? {} : data;
-
-    eArray.forEach(function(eventName) {
-      if (self._handlers_[eventName]) {
-        event = self.getEvent(eventName, data);
-
-        self._handlers_[eventName].forEach(function(e) {
-          e.handler(event);
-        });
-
-        self._handlers_[eventName] =
-          self._handlers_[eventName].filter(function(e) {
-            return !e['one'];
-          });
-      }
-    });
-
-    return this;
-  };
-
-  /**
-   * Return an event Object.
-   * @param  {string} events The name of the event.
-   * @param  {?Object} data  The content of the event (optional).
-   * @return {Object} Returns itself.
-   */
-  dispatcher.prototype.getEvent = function(event, data) {
-    return {
-      type: event,
-      data: data,
-      target: this
+    this.triggers = {
+      properties: {},
+      events: {}
     };
   };
+  var module = domino.module;
 })(window);
