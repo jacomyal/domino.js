@@ -1,4 +1,6 @@
 (function(ns, domino) {
+  'use strict';
+
   // Requires a namespace to be initialized:
   if (!ns)
     throw (new Error('The namespace is not valid.'));
@@ -31,8 +33,8 @@
     var self = this,
         o = options || {};
 
-    if(!o['property'])
-      throw(new Error('[Text] Property missing'));
+    if (!o['property'])
+      throw (new Error('[Text] Property missing'));
 
     var label = o['label'] || d.label(o['property']),
         html = $('<' + (o['htmlTag'] || 'span') + '>' +
@@ -118,8 +120,8 @@
     var self = this,
         o = options || {};
 
-    if(!o['property'])
-      throw(new Error('[Checkbox] Property missing'));
+    if (!o['property'])
+      throw (new Error('[Checkbox] Property missing'));
 
     var dispatch =
           o['dispatch'] ||
@@ -127,7 +129,7 @@
               d.events(o['property'])[0] :
               null),
         html = $('<fieldset>' +
-                   '<input type="checkbox" id="'+
+                   '<input type="checkbox" id="' +
                      (o['cssId'] || o['property']) +
                    '" />' +
                    '<label for="' + (o['cssId'] || o['property']) + '">' +
@@ -199,8 +201,8 @@
     var self = this,
         o = options || {};
 
-    if(!o['property'])
-      throw(new Error('[SwitchButton] Property missing'));
+    if (!o['property'])
+      throw (new Error('[SwitchButton] Property missing'));
 
     var dispatch =
           o['dispatch'] ||
@@ -239,7 +241,7 @@
       }
     }
 
-    if(o['events'])
+    if (o['events'])
       domino.utils.array(o['events']).forEach(function(eventName) {
         self.triggers.events[eventName] = update;
       });
@@ -275,8 +277,8 @@
     var self = this,
         o = options || {};
 
-    if(!o['property'])
-      throw(new Error('[Select] Property missing'));
+    if (!o['property'])
+      throw (new Error('[Select] Property missing'));
 
     var dispatch =
           o['dispatch'] ||

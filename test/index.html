@@ -2,8 +2,8 @@
 <head>
   <title>domino.js test</title>
   <style type="text/css">
-    div.modify > *,
-    div.observe > * {
+    div.line1 > *,
+    div.line2 > * {
       padding: 5px;
     }
     fieldset {
@@ -12,8 +12,13 @@
     }
   </style>
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+  <!-- domino.js + modules -->
   <script type="text/javascript" src="../src/domino.js"></script>
   <script type="text/javascript" src="../src/domino.modules.js"></script>
+  <!-- unit tests -->
+  <script type="text/javascript" src="test.utils.type.js"></script>
+  
+  <!-- sample -->
   <script type="text/javascript">
     $(document).ready(function() {
       // Setup domino:
@@ -22,14 +27,17 @@
         strict: true
       });
 
+      // Launch unit tests:
+      domino.launchTests();
+
       /**
        * TEST 1:
        *********
        * Basic flags + hack
        */
       var dom1 = $('#test1'),
-          domModify1 = $('.modify', dom1),
-          domObserve1 = $('.observe', dom1),
+          dom1_1 = $('.line1', dom1),
+          dom1_2 = $('.line2', dom1),
           d1 = new domino({
             name: 'd1',
             // Here are two flags, initially equals to 'false':
@@ -70,7 +78,7 @@
       d1.addModule(domino.modules.Button, [{
         dispatch: 'resetFlags',
         htmlContent: 'Reset flags'
-      }]).html.appendTo(domModify1);
+      }]).html.appendTo(dom1_1);
 
       // Let's now instanciate two different modules to represent booleanA,
       // to be sure that the communication works fine:
@@ -78,25 +86,25 @@
         htmlOff: 'Turn boolean A on',
         htmlOn: 'Turn boolean A off',
         property: 'booleanA'
-      }]).html.appendTo(domModify1);
+      }]).html.appendTo(dom1_1);
 
       d1.addModule(domino.modules.Checkbox, [{
         property: 'booleanA'
-      }]).html.appendTo(domModify1);
+      }]).html.appendTo(dom1_1);
 
       // Now a module to manipulate booleanB:
       d1.addModule(domino.modules.Checkbox, [{
         property: 'booleanB'
-      }]).html.appendTo(domModify1);
+      }]).html.appendTo(dom1_1);
 
       // And two simple module to represent all the time our flags:
       d1.addModule(domino.modules.Text, [{
         property: 'booleanA'
-      }]).html.appendTo(domObserve1);
+      }]).html.appendTo(dom1_2);
 
       d1.addModule(domino.modules.Text, [{
         property: 'booleanB'
-      }]).html.appendTo(domObserve1);
+      }]).html.appendTo(dom1_2);
 
       /**
        * TEST 2:
@@ -104,8 +112,8 @@
        * Multiple choice properties
        */
       var dom2 = $('#test2'),
-          domModify2 = $('.modify', dom2),
-          domObserve2 = $('.observe', dom2),
+          dom2_1 = $('.line1', dom2),
+          dom2_2 = $('.line2', dom2),
           d2 = new domino({
             name: 'd2',
             properties: [
@@ -145,39 +153,39 @@
       d2.addModule(domino.modules.Select, [{
         values: ['a1', 'a2', 'a3', 'a4', 'a5'],
         property: 'stringA'
-      }]).html.appendTo(domModify2);
+      }]).html.appendTo(dom2_1);
 
       d2.addModule(domino.modules.Select, [{
         values: 'valuesB',
         property: 'stringB'
-      }]).html.appendTo(domModify2);
+      }]).html.appendTo(dom2_1);
 
       d2.addModule(domino.modules.Select, [{
         values: 'valuesB',
         property: 'stringB'
-      }]).html.appendTo(domModify2);
+      }]).html.appendTo(dom2_1);
 
       // And two simple module to represent all the time our strings:
       d2.addModule(domino.modules.Text, [{
         property: 'stringA'
-      }]).html.appendTo(domObserve2);
+      }]).html.appendTo(dom2_2);
 
       d2.addModule(domino.modules.Text, [{
         property: 'stringB'
-      }]).html.appendTo(domObserve2);
+      }]).html.appendTo(dom2_2);
     });
   </script>
 </head>
 <body>
   <div class="testing" id="test1">
     <h2>Test 1: Basic flags + hack</h2>
-    <div class="modify"></div>
-    <div class="observe"></div>
+    <div class="line1"></div>
+    <div class="line2"></div>
   </div>
   <div class="testing" id="test2">
     <h2>Test 2: Multiple choice properties</h2>
-    <div class="modify"></div>
-    <div class="observe"></div>
+    <div class="line1"></div>
+    <div class="line2"></div>
   </div>
 </body>
 </html>
