@@ -9,11 +9,12 @@
 
     // Misc:
     var _self = this,
-        _instance = 'domino',
         _utils = window.domino.utils;
 
     // Properties management:
     var _types = {},
+        _labels = {},
+        _events = {},
         _getters = {},
         _setters = {},
         _statics = {},
@@ -34,13 +35,31 @@
     var _services = {};
 
     // Scopes:
-    var _eventsScope = {
-          get: _getters
+    var _modulesScope = {
+          get: _getters,
+          dump: self.dump,
+          warn: self.warn,
+          die: self.die,
+          events: _getEvents,
+          label: _getLabel
+        },
+        _eventsScope = {
+          get: _getters,
+          dump: self.dump,
+          warn: self.warn,
+          die: self.die,
+          events: _getEvents,
+          label: _getLabel
         },
         _hackScope = {
           get: _getters,
           set: _setters,
-          update: update
+          dump: self.dump,
+          warn: self.warn,
+          die: self.die,
+          events: _getEvents,
+          label: _getLabel,
+          update: _update
         };
 
     // Initialization:
@@ -63,7 +82,7 @@
     this.name = _o['name'] || this.name;
 
     (_o.properties || []).forEach(function(p) {
-      addProperty(p.name, p);
+      addProperty(p.id, p);
     });
 
     (_o.hacks || []).forEach(function(h) {
@@ -101,38 +120,41 @@
      *            of the property. Can be an array or the list of events
      *            separated by spaces.
      */
-    function addProperty(name, options) {
+    function addProperty(id, options) {
       var o = options || {};
 
       // Check errors:
-      (name === undefined) &&
+      (id === undefined) &&
         _self.die('Property name not specified');
 
-      (_properties[name] !== undefined) &&
-        _self.die('Property "' + name + '" already exists');
+      (_properties[id] !== undefined) &&
+        _self.die('Property "' + id + '" already exists');
+
+      // Label:
+      _labels[id] = o['label'] || id;
 
       // Type:
       if (o['type'] !== undefined)
         !_utils.type.isValid(o['type']) ?
           _self.warn(
-            'Property "' + name + '": Type not valid'
+            'Property "' + id + '": Type not valid'
           ) :
-          (_types[name] = o['type']);
+          (_types[id] = o['type']);
 
       // Setter:
       if (o['setter'] !== undefined)
         !_utils.type.get(o['setter']) !== 'function' ?
           _self.warn(
-            'Property "' + name + '": Setter is not a function'
+            'Property "' + id + '": Setter is not a function'
           ) :
-          (_setters[name] = o['setter']);
+          (_setters[id] = o['setter']);
 
-      _setters[name] = _setters[name] || function(v) {
-        (_types[name] && !_utils.type.check(_types[name], v)) ?
+      _setters[id] = _setters[id] || function(v) {
+        (_types[id] && !_utils.type.check(_types[id], v)) ?
           _self.warn(
-            'Property "' + name + '": Wrong type error'
+            'Property "' + id + '": Wrong type error'
           ) :
-          (_properties[name] = v);
+          (_properties[id] = v);
 
           return true;
       };
@@ -141,44 +163,48 @@
       if (o['getter'] !== undefined)
         !_utils.type.get(o['getter']) !== 'function' ?
           _self.warn(
-            'Property "' + name + '": Getter is not a function'
+            'Property "' + id + '": Getter is not a function'
           ) :
-          (_getters[name] = o['getter']);
+          (_getters[id] = o['getter']);
 
-      _getters[name] = _getters[name] || function() {
-        return _properties[name];
+      _getters[id] = _getters[id] || function() {
+        return _properties[id];
       };
 
       // Initial value:
-      if (o['value'] !== undefined || _types[name])
-        _setters[name](
+      if (o['value'] !== undefined || _types[id])
+        _setters[id](
           o['value'] !== undefined ?
             o['value'] :
-            _utils.type.getDefault(_types[name])
+            _utils.type.getDefault(_types[id])
         );
 
       // Triggers (modules-to-domino events):
-      if (o['triggers'] !== undefined)
-        !_utils.type.check(o['triggers'], 'array|string') ?
+      if (o['triggers'] !== undefined) {
+        !_utils.type.check(o['triggers'], 'array|string') &&
           _self.warn(
-            'Property "' + name + '":' +
+            'Property "' + id + '":' +
               'Events ("triggers") must be specified in an array or ' +
               'separated by spaces in a string'
-          ) :
-          utils.array(o['triggers']).forEach(function(event) {
-            _ascending[event] = _ascending[event] || [];
-            _ascending[event].push(name);
-          });
+          );
+
+
+        _events[id] = _utils.array(o['triggers']);
+        _utils.array(o['triggers']).forEach(function(event) {
+          _ascending[event] = _ascending[event] || [];
+          _ascending[event].push(id);
+        });
+      }
 
       // Dispatched events (domino-to-modules event):
       if (o['dispatch'] !== undefined)
         !_utils.type.check(o['dispatch'], 'array|string') ?
           _self.warn(
-            'Property "' + name + '":' +
+            'Property "' + id + '":' +
               'Events ("dispatch") must be specified in an array or ' +
               'separated by spaces in a string'
           ) :
-          (_descending[name] = utils.array(o['dispatch']));
+          (_descending[id] = _utils.array(o['dispatch']));
     }
 
     /**
@@ -210,7 +236,7 @@
           'A hack requires at least one trigger to be added'
         );
 
-      utils.array(o['triggers']).forEach(function(event) {
+      _utils.array(o['triggers']).forEach(function(event) {
         // Method to execute:
         if (o['method']) {
           _hackMethods[event] = _hackMethods[event] || [];
@@ -220,7 +246,7 @@
         // Events to dispatch:
         if (o['dispatch']) {
           _hackDispatch[event] = (_hackDispatch[event] || []).concat(
-            utils.array(o['dispatch'])
+            _utils.array(o['dispatch'])
           );
         }
       });
@@ -241,7 +267,7 @@
         _self.die('First parameter must be a function');
 
       // Instanciate the module:
-      klass.apply(module, params || []);
+      klass.apply(module, (params || []).concat([_modulesScope]));
       triggers = module.triggers || {};
 
       // Ascending communication:
@@ -327,7 +353,7 @@
         _mainLoop(dispatch, o);
     }
 
-    function update(options) {
+    function _update(options) {
       _self.dump('Updating', options);
 
       var o = options || {},
@@ -351,6 +377,14 @@
       // Reloop:
       dispatch.length &&
         _mainLoop(dispatch, o);
+    }
+
+    function _getLabel(id) {
+      return _labels[id];
+    }
+
+    function _getEvents(id) {
+      return _events[id];
     }
 
     this.addModule = addModule;
