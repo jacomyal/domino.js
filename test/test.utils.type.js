@@ -67,10 +67,12 @@
       {params: ['string|array', 'abc'], value: true},
       {params: ['string|array', [1, 2, 3]], value: true},
       {params: ['string|array', null], value: false},
+      {params: ['string|?array', 'abc'], error: 'Error: [domino.global] Invalid type'},
       {params: ['?string|array', 'abc'], value: true},
       {params: ['?string|array', [1, 2, 3]], value: true},
       {params: ['?string|array', null], value: true},
       {params: [{a: 'string'}, {a: 'abc', b: '12'}], value: false},
+      {params: [{a: 'sstring'}, {a: 'abc', b: '12'}], error: 'Error: [domino.global] Invalid type'},
       {params: [{a: 'string', b: 'object'}, {a: 'abc', b: {a: 1, b: 2}}], value: true},
       {params: [{a: 'string', b: 'object'}, {a: 'abc', b: 42}], value: false},
       {params: [{a: 'string', b: 'object'}, {b: {a: 1, b: 2}}], value: false},
@@ -104,16 +106,36 @@
       console.log('  [Testing "' + domino.test[k].method + '"]');
 
       for (i in tests) {
-        res = method.apply(pkg, tests[i].params);
-        if (res === tests[i].value) {
-          successed++;
-        } else {
-          failed++;
-          console.log(
-            '    -> [case ' + i + '] Method returned "' + res + '" ' +
-            'instead of "' + tests[i].value + '" ' +
-            'with params "' + tests[i].params + '".'
-          );
+        try {
+          res = method.apply(pkg, tests[i].params);
+          if (res === tests[i].value) {
+            successed++;
+          } else {
+            failed++;
+            console.log(
+              '    -> [case ' + i + '] Method returned "' + res + '" ' +
+              'instead of "' + tests[i].value + '" ' +
+              'with params "' + tests[i].params + '".'
+            );
+          }
+        } catch (e) {
+          if (tests[i].error) {
+            if (tests[i].error === e.toString())
+              successed++;
+            else {
+              failed++;
+              console.log(
+                '    -> [case ' + i + '] Method returned error "' + e + '" ' +
+                'with params "' + tests[i].params + '" instead of "' + tests[1].error + '".'
+              );
+            }
+          } else {
+            failed++;
+            console.log(
+              '    -> [case ' + i + '] Method returned error "' + e + '" ' +
+              'with params "' + tests[i].params + '".'
+            );
+          }
         }
       }
 

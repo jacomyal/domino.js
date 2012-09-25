@@ -488,7 +488,7 @@
             if (type.replace(/^\?/, '').split(/\|/).some(function(t) {
               return types.indexOf(t) < 0;
             }))
-              __warn__('[domino.global] Unvalid type');
+              __warn__('[domino.global] Invalid type');
 
             if (obj == null)
               return !!type.match(/^\?/, '');
