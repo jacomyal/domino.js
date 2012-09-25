@@ -394,26 +394,50 @@
    */
 
   // Logs:
-  domino.prototype.warn = function(s) {
+  function __warn__() {
     if (__settings__['strict'])
-      throw (new Error('[' + this.name + '] ' + s));
-    else if (__settings__['verbose'])
-      console.log('[' + this.name + '] ' + s);
-  };
+      __die__.apply(this, arguments);
+    else
+      __dump__.apply(this, arguments);
+  }
 
-  domino.prototype.die = function(s) {
-    throw (new Error('[' + this.name + '] ' + s));
-  };
+  function __die__() {
+    var m = '';
+    for (var k in arguments)
+      m += arguments[k];
 
-  domino.prototype.dump = function() {
+    throw (new Error(m));
+  }
+
+  function __dump__() {
     if (!__settings__['verbose'])
-      return this;
+      return;
 
+    console.log.apply(console, arguments);
+  }
+
+  domino.prototype.warn = function(s) {
     var a = ['[' + this.name + ']'];
     for (var k in arguments)
       a.push(arguments[k]);
 
-    console.log.apply(console, a);
+    __warn__.apply(this, a);
+  };
+
+  domino.prototype.die = function(s) {
+    var a = ['[' + this.name + ']'];
+    for (var k in arguments)
+      a.push(arguments[k]);
+
+    __die__.apply(this, a);
+  };
+
+  domino.prototype.dump = function() {
+    var a = ['[' + this.name + ']'];
+    for (var k in arguments)
+      a.push(arguments[k]);
+
+    __dump__.apply(this, a);
   };
 
   // Utils:
@@ -461,20 +485,30 @@
         check: function(type, obj) {
           var typeOf = this.get(obj);
           if (this.get(type) === 'string') {
+            if (type.replace(/^\?/, '').split(/\|/).some(function(t) {
+              return types.indexOf(t) < 0;
+            }))
+              __warn__('[domino.global] Unvalid type');
+
             if (obj == null)
               return !!type.match(/^\?/, '');
             else
               type = type.replace(/^\?/, '');
 
-            var types = type.split(/\|/);
+            var splitted = type.split(/\|/);
 
-            return !!(~types.indexOf('*') || ~types.indexOf(typeOf));
+            return !!(~splitted.indexOf('*') || ~splitted.indexOf(typeOf));
           } else if (this.get(type) === 'object') {
             if (typeOf !== 'object')
               return false;
+            var k;
 
-            for (var k in type)
+            for (k in type)
               if (!this.check(type[k], obj[k]))
+                return false;
+
+            for (k in obj)
+              if (type[k] === undefined)
                 return false;
 
             return true;

@@ -142,7 +142,7 @@
 
     o['cssId'] && html.attr('id', o['cssId']);
 
-    html.find('input').change(function() {console.log('bim');
+    html.find('input').change(function() {
       var data = {};
       data[o['property']] = $(this).is(':checked');
 
