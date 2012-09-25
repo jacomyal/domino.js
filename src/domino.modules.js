@@ -18,6 +18,7 @@
    *
    * Here is the list of options that are interpreted:
    *
+   *   {?string}         element  The HTML element
    *   {?string}         htmlTag  The tag of the HTML element (default: 'span')
    *   {?string}         cssClass The CSS class of the HTML element
    *   {?string}         cssId    The HTML id of the HTML element
@@ -37,7 +38,7 @@
       throw (new Error('[Text] Property missing'));
 
     var label = o['label'] || d.label(o['property']),
-        html = $('<' + (o['htmlTag'] || 'span') + '>' +
+        html = o['element'] || $('<' + (o['htmlTag'] || 'span') + '>' +
                  '</' + (o['htmlTag'] || 'span') + '>');
 
     o['cssClass'] && html.addClass(o['cssClass']);
@@ -73,6 +74,7 @@
    *
    * Here is the list of options that are interpreted:
    *
+   *   {?string}         element     The HTML element
    *   {?string}         htmlContent The content of the HTML element
    *   {?string}         cssClass    The CSS class of the HTML element
    *   {?string}         cssId       The HTML id of the HTML element
@@ -83,7 +85,7 @@
 
     var self = this,
         o = options || {},
-        html = $('<' + (o['htmlTag'] || 'button') + '>' +
+        html = o['element'] || $('<' + (o['htmlTag'] || 'button') + '>' +
                    (o['htmlContent'] || '') +
                  '</' + (o['htmlTag'] || 'button') + '>');
 
@@ -107,6 +109,7 @@
    *
    * Here is the list of options that are interpreted:
    *
+   *   {?string}         element        The HTML element
    *   {?string}         label          The label of the module (default: the
    *                                    label of the property)
    *   {?string}         cssId          The HTML id of the HTML element
@@ -128,7 +131,7 @@
             (d.events(o['property']).length === 1 ?
               d.events(o['property'])[0] :
               null),
-        html = $('<fieldset>' +
+        html = o['element'] || $('<fieldset>' +
                    '<input type="checkbox" id="' +
                      (o['cssId'] || o['property']) +
                    '" />' +
@@ -180,6 +183,7 @@
    *
    * Here is the list of options that are interpreted:
    *
+   *   {?string}         element     The HTML element
    *   {?string}         htmlTag     The tag of the HTML element (default:
    *                                 'button')
    *   {?string}         htmlOn      The content of the HTML element (state:
@@ -210,7 +214,7 @@
               d.events(o['property'])[0] :
               null),
         isOn,
-        html = $('<' + (o['htmlTag'] || 'button') + '>' +
+        html = o['element'] || $('<' + (o['htmlTag'] || 'button') + '>' +
                  '</' + (o['htmlTag'] || 'button') + '>');
 
     o['cssId'] && html.attr('id', o['cssId']);
@@ -262,6 +266,7 @@
    *
    * Here is the list of options that are interpreted:
    *
+   *   {?string}         element  The HTML element
    *   {(array|string)}  values   The array of the values, or the name of the
    *                              property that contains the values
    *   {?string}         cssClass The CSS class of the HTML element
@@ -287,7 +292,7 @@
               null),
         selected,
         values,
-        html = $('<select></select>');
+        html = o['element'] || $('<select></select>');
 
     o['cssClass'] && html.addClass(o['cssClass']);
     o['cssId'] && html.attr('id', o['cssId']);

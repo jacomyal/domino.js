@@ -37,7 +37,7 @@
     var _services = {};
 
     // Scopes:
-    var _modulesScope = {
+    var _lightScope = {
           get: _getters,
           dump: self.dump,
           warn: self.warn,
@@ -45,15 +45,7 @@
           events: _getEvents,
           label: _getLabel
         },
-        _eventsScope = {
-          get: _getters,
-          dump: self.dump,
-          warn: self.warn,
-          die: self.die,
-          events: _getEvents,
-          label: _getLabel
-        },
-        _hackScope = {
+        _fullScope = {
           get: _getters,
           set: _setters,
           dump: self.dump,
@@ -126,10 +118,10 @@
       var o = options || {};
 
       // Check errors:
-      (id === undefined) &&
+      if (id === undefined)
         _self.die('Property name not specified');
 
-      (_properties[id] !== undefined) &&
+      if (_properties[id] !== undefined)
         _self.die('Property "' + id + '" already exists');
 
       // Label:
@@ -152,13 +144,16 @@
           (_setters[id] = o['setter']);
 
       _setters[id] = _setters[id] || function(v) {
+        if (v === _properties[id])
+          return false;
+
         (_types[id] && !_utils.type.check(_types[id], v)) ?
           _self.warn(
             'Property "' + id + '": Wrong type error'
           ) :
           (_properties[id] = v);
 
-          return true;
+        return true;
       };
 
       // Getter:
@@ -190,7 +185,6 @@
               'Events ("triggers") must be specified in an array or ' +
               'separated by spaces in a string'
           );
-
 
         _events[id] = _utils.array(o['triggers']);
         _utils.array(o['triggers']).forEach(function(event) {
@@ -234,7 +228,7 @@
       var o = options || {};
 
       // Errors:
-      (o['triggers'] === undefined) &&
+      if (o['triggers'] === undefined)
         _self.die(
           'A hack requires at least one trigger to be added'
         );
@@ -247,11 +241,10 @@
         }
 
         // Events to dispatch:
-        if (o['dispatch']) {
+        if (o['dispatch'])
           _hackDispatch[event] = (_hackDispatch[event] || []).concat(
             _utils.array(o['dispatch'])
           );
-        }
       });
     }
 
@@ -263,14 +256,14 @@
           event;
 
       // Check errors:
-      (klass === undefined) &&
+      if (klass === undefined)
         _self.die('Module class not specified');
 
-      _utils.type.get(klass) !== 'function' &&
+      if (_utils.type.get(klass) !== 'function')
         _self.die('First parameter must be a function');
 
       // Instanciate the module:
-      klass.apply(module, (params || []).concat([_modulesScope]));
+      klass.apply(module, (params || []).concat([_lightScope]));
       triggers = module.triggers || {};
 
       // Ascending communication:
@@ -286,7 +279,7 @@
           var data = {};
           data[property] = _getters[property]();
           triggers.properties[property](
-            _self.getEvent('domino.initialUpdate', _eventsScope)
+            _self.getEvent('domino.initialUpdate', _lightScope)
           );
         }
       }
@@ -321,16 +314,17 @@
       eventsArray.forEach(function(event) {
         var data = event.data || {};
         // Check properties to update:
-        (data || o['force']) &&
+        if (data || o['force'])
           (_ascending[event.type] || []).forEach(function(propName) {
             var pushEvents = !!o['force'];
 
-            if (data[propName] !== undefined) {
-              // TODO: Precise scope
-              pushEvents = _setters[propName](data[propName]) || pushEvents;
-            }
+            if (data[propName] !== undefined)
+              pushEvents = _setters[propName].call(
+                _fullScope,
+                data[propName]
+              ) || pushEvents;
 
-            pushEvents &&
+            if (pushEvents)
               (_descending[propName] || []).forEach(function(descEvent) {
                 dispatch[descEvent] = 1;
               });
@@ -338,7 +332,7 @@
 
         // Check hacks to trigger:
         (_hackMethods[event.type] || []).forEach(function(hack) {
-          hack.call(_hackScope, event);
+          hack.call(_fullScope, event);
         });
 
         (_hackDispatch[event.type] || []).forEach(function(descEvent) {
@@ -347,12 +341,12 @@
       });
 
       dispatch = Object.keys(dispatch).map(function(event) {
-        _self.dispatchEvent(event, _eventsScope);
-        return _self.getEvent(event, _eventsScope);
+        _self.dispatchEvent(event, _lightScope);
+        return _self.getEvent(event, _lightScope);
       });
 
       // Reloop:
-      dispatch.length &&
+      if (dispatch.length)
         _mainLoop(dispatch, o);
     }
 
@@ -364,7 +358,7 @@
           k;
 
       for (k in o) {
-        _setters[k] &&
+        if (_setters[k])
           _setters[k](o[k]);
 
         (_descending[k] || []).forEach(function(descEvent) {
@@ -373,12 +367,12 @@
       }
 
       dispatch = Object.keys(dispatch).map(function(event) {
-        _self.dispatchEvent(event, _eventsScope);
-        return _self.getEvent(event, _eventsScope);
+        _self.dispatchEvent(event, _lightScope);
+        return _self.getEvent(event, _lightScope);
       });
 
       // Reloop:
-      dispatch.length &&
+      if (dispatch.length)
         _mainLoop(dispatch, o);
     }
 
@@ -468,9 +462,9 @@
           var typeOf = this.get(obj);
           if (this.get(type) === 'string') {
             if (obj == null)
-              return !!type.match(/^\?/,'');
+              return !!type.match(/^\?/, '');
             else
-              type = type.replace(/^\?/,'');
+              type = type.replace(/^\?/, '');
 
             var types = type.split(/\|/);
 
@@ -489,8 +483,8 @@
         },
         isValid: function(type) {
           if (this.get(type) === 'string')
-            return !type.replace(/^\?/,'').split(/\|/).some(function(t) {
-              return types.indexOf(t)<0;
+            return !type.replace(/^\?/, '').split(/\|/).some(function(t) {
+              return types.indexOf(t) < 0;
             });
           else if (this.get(type) === 'object') {
             for (var k in type)
@@ -513,19 +507,16 @@
   };
 
   domino.settings = function(a1, a2) {
-    if (typeof a1 === 'string' && a2 === undefined) {
+    if (typeof a1 === 'string' && a2 === undefined)
       return __settings__[a1];
-    } else {
+    else {
       var o = (typeof a1 === 'object' && a2 === undefined) ? a1 || {} : {};
-      if (typeof a1 === 'string') {
+      if (typeof a1 === 'string')
         o[a1] = a2;
-      }
 
-      for (var k in o) {
-        if (__settings__[k] !== undefined) {
+      for (var k in o)
+        if (__settings__[k] !== undefined)
           __settings__[k] = o[k];
-        }
-      }
 
       return this;
     }
@@ -544,16 +535,15 @@
      * @return {EventDispatcher} Returns itself.
      */
     function addEventListener(events, handler) {
-      if (!arguments.length) {
+      if (!arguments.length)
         return this;
-      }else if (
+      else if (
         arguments.length === 1 &&
         utils.type.get(arguments[0]) === 'object'
-      ) {
-        for (var events in arguments[0]) {
+      )
+        for (var events in arguments[0])
           this.addEventListener(events, arguments[0][events]);
-        }
-      }else if (arguments.length > 1) {
+      else if (arguments.length > 1) {
         var events = arguments[0],
             handler = arguments[1],
             eArray = utils.array(events),
@@ -603,15 +593,13 @@
             });
           }
 
-          if (_handlers[event] && _handlers[event].length === 0) {
+          if (_handlers[event] && _handlers[event].length === 0)
             delete _handlers[event];
-          }
         });
-      }else {
+      } else
         eArray.forEach(function(event) {
           delete _handlers[event];
         });
-      }
 
       return self;
     };
