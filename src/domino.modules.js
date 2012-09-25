@@ -8,27 +8,33 @@
     throw (new Error('domino.js is required to initialize the modules.'));
 
   /**
-   * The most basic module: a button that will just dispatch an event when it is
-   * clicked.
+   * The most basic module: a text displaying the value of a property
    *
    * @param   {?Object} options An object containing the specifications of the
    *                            module.
+   * @param   {?Object} d       The instance of domino.
    *
    * Here is the list of options that are interpreted:
    *
-   *   {?string}         htmlTag         The tag of the HTML element
-   *                                     (default: 'span')
-   *   {?string}         cssClass        The CSS class of the HTML element
-   *   {?string}         cssId           The HTML id of the HTML element
-   *   {?(array|string)} dispatch        The events to dispatch when clicked
-   *   {?string}         triggerProperty The name of the flag to represent
-   *   {?(array|string)} triggerEvents   The events to listen from domino
+   *   {?string}         htmlTag  The tag of the HTML element (default: 'span')
+   *   {?string}         cssClass The CSS class of the HTML element
+   *   {?string}         cssId    The HTML id of the HTML element
+   *   {?string}         label    The label of the module (default: the label
+   *                              of the property)
+   *   {?(array|string)} dispatch The events to dispatch when clicked
+   *   {string}          property The name of the flag to represent
+   *   {?(array|string)} triggers The events to listen from domino
    */
-  ns.Text = function(options) {
+  ns.Text = function(options, d) {
     domino.module.call(this);
 
     var self = this,
-        o = options || {},
+        o = options || {};
+
+    if(!o['property'])
+      throw(new Error('[Text] Property missing'));
+
+    var label = o['label'] || d.label(o['property']),
         html = $('<' + (o['htmlTag'] || 'span') + '>' +
                  '</' + (o['htmlTag'] || 'span') + '>');
 
@@ -36,21 +42,21 @@
     o['cssId'] && html.attr('id', o['cssId']);
 
     function update(event) {
-      if (!o['triggerProperty'] || !event.data.get[o['triggerProperty']])
+      if (!event.data.get[o['property']])
         return;
 
       html.text(
-        o['triggerProperty'] + ': ' +
-        event.data.get[o['triggerProperty']]()
+        label + ': ' +
+        event.data.get[o['property']]()
       );
     }
 
-    domino.utils.array(o['triggerEvents']).forEach(function(eventName) {
-      self.triggers.events[eventName] = update;
-    });
-
-    if (o['triggerProperty'])
-      self.triggers.properties[o['triggerProperty']] = update;
+    if (o['triggers'])
+      domino.utils.array(o['triggers']).forEach(function(eventName) {
+        self.triggers.events[eventName] = update;
+      });
+    else
+      self.triggers.properties[o['property']] = update;
 
     this.html = html;
   };
@@ -61,17 +67,16 @@
    *
    * @param   {?Object} options An object containing the specifications of the
    *                            module.
+   * @param   {?Object} d       The instance of domino.
    *
    * Here is the list of options that are interpreted:
    *
-   *   {?string}         htmlTag     The tag of the HTML element
-   *                                 (default: 'button')
    *   {?string}         htmlContent The content of the HTML element
    *   {?string}         cssClass    The CSS class of the HTML element
    *   {?string}         cssId       The HTML id of the HTML element
    *   {?(array|string)} dispatch    The events to dispatch when clicked
    */
-  ns.Button = function(options) {
+  ns.Button = function(options, d) {
     domino.module.call(this);
 
     var self = this,
@@ -91,35 +96,117 @@
   };
 
   /**
+   * A checkbox which will represent a Boolean property, and update this
+   * property when activated.
+   *
+   * @param   {?Object} options An object containing the specifications of the
+   *                            module.
+   * @param   {?Object} d       The instance of domino.
+   *
+   * Here is the list of options that are interpreted:
+   *
+   *   {?string}         label          The label of the module (default: the
+   *                                    label of the property)
+   *   {?string}         cssId          The HTML id of the HTML element
+   *   {?(array|string)} dispatch       The events to dispatch when clicked
+   *   {string}          property       The name of the flag to represent
+   *   {?(array|string)} triggers       The events to listen from domino
+   */
+  ns.Checkbox = function(options, d) {
+    domino.module.call(this);
+
+    var self = this,
+        o = options || {};
+
+    if(!o['property'])
+      throw(new Error('[Checkbox] Property missing'));
+
+    var dispatch =
+          o['dispatch'] ||
+            (d.events(o['property']).length === 1 ?
+              d.events(o['property'])[0] :
+              null),
+        html = $('<fieldset>' +
+                   '<input type="checkbox" id="'+
+                     (o['cssId'] || o['property']) +
+                   '" />' +
+                   '<label for="' + (o['cssId'] || o['property']) + '">' +
+                     (o['label'] || d.label(o['property'])) +
+                   '</label>' +
+                 '</fieldset>');
+
+    o['cssId'] && html.attr('id', o['cssId']);
+
+    html.find('input').change(function() {console.log('bim');
+      var data = {};
+      data[o['property']] = $(this).is(':checked');
+
+      // Dispatch the event
+      dispatch && self.dispatchEvent(dispatch, data);
+    });
+
+    function update(event) {
+      if (!event.data.get[o['property']])
+        return;
+
+      html.find('input').attr(
+        'checked',
+        !!event.data.get[o['property']]() ?
+          'checked' :
+          null
+      );
+    }
+
+    if (o['triggers'])
+      domino.utils.array(o['triggers']).forEach(function(eventName) {
+        self.triggers.events[eventName] = update;
+      });
+    else
+      self.triggers.properties[o['property']] = update;
+
+    this.html = html;
+  };
+
+  /**
    * A button which will represent a Boolean property. When clicked, it will
    * toggle the property, and when the property is updated, the button will be
    * toggled as well.
    *
    * @param   {?Object} options An object containing the specifications of the
    *                            module.
+   * @param   {?Object} d       The instance of domino.
    *
    * Here is the list of options that are interpreted:
    *
-   *   {?string}         htmlTag         The tag of the HTML element
-   *                                     (default: 'button')
-   *   {?string}         htmlContentOn   The content of the HTML element
-   *                                     (state: on)
-   *   {?string}         htmlContentOff  The content of the HTML element
-   *                                     (state: off)
-   *   {?string}         cssClassOn      The CSS class of the HTML element
-   *                                     (state: on)
-   *   {?string}         cssClassOff     The CSS class of the HTML element
-   *                                     (state: off)
-   *   {?string}         cssId           The HTML id of the HTML element
-   *   {?(array|string)} dispatch        The events to dispatch when clicked
-   *   {?string}         triggerProperty The name of the flag to represent
-   *   {?(array|string)} triggerEvents   The events to listen from domino
+   *   {?string}         htmlTag     The tag of the HTML element (default:
+   *                                 'button')
+   *   {?string}         htmlOn      The content of the HTML element (state:
+   *                                 on)
+   *   {?string}         htmlOff     The content of the HTML element (state:
+   *                                 off)
+   *   {?string}         cssClassOn  The CSS class of the HTML element (state:
+   *                                 on)
+   *   {?string}         cssClassOff The CSS class of the HTML element (state:
+   *                                 off)
+   *   {?string}         cssId       The HTML id of the HTML element
+   *   {?(array|string)} dispatch    The events to dispatch when clicked
+   *   {string}          property    The name of the flag to represent
+   *   {?(array|string)} events      The events to listen from domino
    */
-  ns.SwitchButton = function(options) {
+  ns.SwitchButton = function(options, d) {
     domino.module.call(this);
 
     var self = this,
-        o = options || {},
+        o = options || {};
+
+    if(!o['property'])
+      throw(new Error('[SwitchButton] Property missing'));
+
+    var dispatch =
+          o['dispatch'] ||
+            (d.events(o['property']).length === 1 ?
+              d.events(o['property'])[0] :
+              null),
         isOn,
         html = $('<' + (o['htmlTag'] || 'button') + '>' +
                  '</' + (o['htmlTag'] || 'button') + '>');
@@ -127,37 +214,37 @@
     o['cssId'] && html.attr('id', o['cssId']);
 
     html.click(function() {
-      if (!o['triggerProperty'])
+      if (!o['property'])
         return;
 
       var data = {};
-      data[o['triggerProperty']] = !isOn;
+      data[o['property']] = !isOn;
 
       // Dispatch the event
-      o['dispatch'] && self.dispatchEvent(o['dispatch'], data);
+      dispatch && self.dispatchEvent(dispatch, data);
     });
 
     function update(event) {
-      if (!o['triggerProperty'] || !event.data.get[o['triggerProperty']])
+      if (!event.data.get[o['property']])
         return;
 
       // Check the current state of the flag:
-      isOn = !!event.data.get[o['triggerProperty']]();
+      isOn = !!event.data.get[o['property']]();
       if (isOn) {
         o['cssClassOn'] && html.attr('class', o['cssClassOn']);
-        o['htmlContentOn'] && html.html(o['htmlContentOn']);
+        o['htmlOn'] && html.html(o['htmlOn']);
       }else {
         o['cssClassOff'] && html.attr('class', o['cssClassOff']);
-        o['htmlContentOff'] && html.html(o['htmlContentOff']);
+        o['htmlOff'] && html.html(o['htmlOff']);
       }
     }
 
-    domino.utils.array(o['triggerEvents']).forEach(function(eventName) {
-      self.triggers.events[eventName] = update;
-    });
-
-    if (o['triggerProperty'])
-      self.triggers.properties[o['triggerProperty']] = update;
+    if(o['events'])
+      domino.utils.array(o['events']).forEach(function(eventName) {
+        self.triggers.events[eventName] = update;
+      });
+    else
+      self.triggers.properties[o['property']] = update;
 
     this.html = html;
   };
@@ -169,25 +256,33 @@
    *
    * @param   {?Object} options An object containing the specifications of the
    *                            module.
+   * @param   {?Object} d       The instance of domino.
    *
    * Here is the list of options that are interpreted:
    *
-   *   {(array|string)}  values          The array of the values, or the name
-   *                                     of the property that contains the
-   *                                     values
-   *   {?string}         cssClass        The CSS class of the HTML element
-   *   {?string}         htmlTag         The tag of the HTML element
-   *   {?string}         cssId           The HTML id of the HTML element
-   *   {?(array|string)} dispatch        The events to dispatch when clicked
-   *   {?string}         triggerProperty The name of the string property to
-   *                                     represent
-   *   {?(array|string)} triggerEvents   The events to listen from domino
+   *   {(array|string)}  values   The array of the values, or the name of the
+   *                              property that contains the values
+   *   {?string}         cssClass The CSS class of the HTML element
+   *   {?string}         htmlTag  The tag of the HTML element
+   *   {?string}         cssId    The HTML id of the HTML element
+   *   {?(array|string)} dispatch The events to dispatch when clicked
+   *   {string}          property The name of the string property to represent
+   *   {?(array|string)} triggers The events to listen from domino
    */
-  ns.Select = function(options) {
+  ns.Select = function(options, d) {
     domino.module.call(this);
 
     var self = this,
-        o = options || {},
+        o = options || {};
+
+    if(!o['property'])
+      throw(new Error('[Select] Property missing'));
+
+    var dispatch =
+          o['dispatch'] ||
+            (d.events(o['property']).length === 1 ?
+              d.events(o['property'])[0] :
+              null),
         selected,
         values,
         html = $('<select></select>');
@@ -205,21 +300,18 @@
     }
 
     html.change(function() {
-      if (!o['triggerProperty'])
-        return;
-
       var data = {};
-      data[o['triggerProperty']] = $(this).val();
+      data[o['property']] = $(this).val();
 
       // Dispatch the event
-      o['dispatch'] && self.dispatchEvent(o['dispatch'], data);
+      dispatch && self.dispatchEvent(dispatch, data);
     });
 
     function updateSelection(event) {
-      if (!o['triggerProperty'] || !event.data.get[o['triggerProperty']])
+      if (!event.data.get[o['property']])
         return;
 
-      selected = event.data.get[o['triggerProperty']]();
+      selected = event.data.get[o['property']]();
       html.val(selected);
     }
 
@@ -235,12 +327,12 @@
       })).val(selected);
     }
 
-    domino.utils.array(o['triggerEvents']).forEach(function(eventName) {
-      self.triggers.events[eventName] = update;
-    });
-
-    if (o['triggerProperty'])
-      self.triggers.properties[o['triggerProperty']] = updateSelection;
+    if (o['triggers'])
+      domino.utils.array(o['triggers']).forEach(function(eventName) {
+        self.triggers.events[eventName] = update;
+      });
+    else
+      self.triggers.properties[o['property']] = updateSelection;
 
     if (typeof o['values'] === 'string')
       self.triggers.properties[o['values']] = updateList;

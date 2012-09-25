@@ -2,8 +2,13 @@
 <head>
   <title>domino.js test</title>
   <style type="text/css">
-    div.testing > * {
+    div.modify > *,
+    div.observe > * {
       padding: 5px;
+    }
+    fieldset {
+      display: inline;
+      border: none;
     }
   </style>
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
@@ -20,139 +25,159 @@
       /**
        * TEST 1:
        *********
+       * Basic flags + hack
        */
       var dom1 = $('#test1'),
+          domModify1 = $('.modify', dom1),
+          domObserve1 = $('.observe', dom1),
           d1 = new domino({
             name: 'd1',
+            // Here are two flags, initially equals to 'false':
             properties: [
               {
-                name: 'flagA',
+                id: 'booleanA',
+                label: 'Boolean A',
                 value: false,
                 type: 'boolean',
-                triggers: 'updateFlagA',
-                dispatch: 'flagAUpdated'
+                triggers: 'updateBooleanA',
+                dispatch: 'booleanAUpdated'
               },
               {
-                name: 'flagB',
+                id: 'booleanB',
+                label: 'Boolean B',
                 value: false,
                 type: 'boolean',
-                triggers: 'updateFlagB',
-                dispatch: 'flagBUpdated'
+                triggers: 'updateBooleanB',
+                dispatch: 'booleanBUpdated'
               }
             ],
+            // The following hack says to domino to reset our two flags when it
+            // receive a 'resetFlags' event:
             hacks: [
               {
                 triggers: 'resetFlags',
                 method: function() {
                   this.update({
-                    flagA: false,
-                    flagB: false
+                    booleanA: false,
+                    booleanB: false
                   });
                 }
               }
             ]
           });
 
+      // First, here is a button that will trigger our hack when clicked:
       d1.addModule(domino.modules.Button, [{
         dispatch: 'resetFlags',
         htmlContent: 'Reset flags'
-      }]).html.appendTo(dom1);
+      }]).html.appendTo(domModify1);
 
+      // Let's now instanciate two different modules to represent booleanA,
+      // to be sure that the communication works fine:
       d1.addModule(domino.modules.SwitchButton, [{
-        htmlContentOff: 'Turn flag A on',
-        htmlContentOn: 'Turn flag A off',
-        triggerProperty: 'flagA',
-        dispatch: 'updateFlagA'
-      }]).html.appendTo(dom1);
+        htmlOff: 'Turn boolean A on',
+        htmlOn: 'Turn boolean A off',
+        property: 'booleanA'
+      }]).html.appendTo(domModify1);
 
-      d1.addModule(domino.modules.SwitchButton, [{
-        htmlContentOff: 'Turn flag B on',
-        htmlContentOn: 'Turn flag B off',
-        triggerProperty: 'flagB',
-        dispatch: 'updateFlagB'
-      }]).html.appendTo(dom1);
+      d1.addModule(domino.modules.Checkbox, [{
+        property: 'booleanA'
+      }]).html.appendTo(domModify1);
 
-      d1.addModule(domino.modules.SwitchButton, [{
-        htmlContentOff: 'Turn flag B on',
-        htmlContentOn: 'Turn flag B off',
-        triggerProperty: 'flagB',
-        dispatch: 'updateFlagB'
-      }]).html.appendTo(dom1);
+      // Now a module to manipulate booleanB:
+      d1.addModule(domino.modules.Checkbox, [{
+        property: 'booleanB'
+      }]).html.appendTo(domModify1);
+
+      // And two simple module to represent all the time our flags:
+      d1.addModule(domino.modules.Text, [{
+        property: 'booleanA'
+      }]).html.appendTo(domObserve1);
 
       d1.addModule(domino.modules.Text, [{
-        triggerProperty: 'flagA'
-      }]).html.appendTo(dom1);
-
-      d1.addModule(domino.modules.Text, [{
-        triggerProperty: 'flagB'
-      }]).html.appendTo(dom1);
+        property: 'booleanB'
+      }]).html.appendTo(domObserve1);
 
       /**
-       * TEST 1:
+       * TEST 2:
        *********
+       * Multiple choice properties
        */
       var dom2 = $('#test2'),
+          domModify2 = $('.modify', dom2),
+          domObserve2 = $('.observe', dom2),
           d2 = new domino({
             name: 'd2',
             properties: [
+              // We declare here two string properties, which values will be
+              // restricted directly by the modules.
+              // 
+              // The available values for A are directly declared in the
+              // related module, while the values for B are declared in another
+              // property: 'valuesB'.
               {
-                name: 'stringA',
+                id: 'stringA',
+                label: 'String A',
                 value: 'a1',
                 type: 'string',
                 triggers: 'updateStringA',
                 dispatch: 'stringAUpdated'
               },
               {
-                name: 'valuesB',
-                value: ['b1', 'b2', 'b3', 'b4', 'b5'],
-                type: 'array',
-                triggers: 'updateValuesB',
-                dispatch: 'valuesBUpdated'
-              },
-              {
-                name: 'stringB',
+                id: 'stringB',
+                label: 'String B',
                 value: 'b1',
                 type: 'string',
                 triggers: 'updateStringB',
                 dispatch: 'stringBUpdated'
+              },
+              {
+                id: 'valuesB',
+                value: ['b1', 'b2', 'b3', 'b4', 'b5'],
+                type: 'array',
+                triggers: 'updateValuesB',
+                dispatch: 'valuesBUpdated'
               }
             ]
           });
 
+      // Here are our modules:
       d2.addModule(domino.modules.Select, [{
         values: ['a1', 'a2', 'a3', 'a4', 'a5'],
-        triggerProperty: 'stringA',
-        dispatch: 'updateStringA'
-      }]).html.appendTo(dom2);
+        property: 'stringA'
+      }]).html.appendTo(domModify2);
 
       d2.addModule(domino.modules.Select, [{
         values: 'valuesB',
-        triggerProperty: 'stringB',
-        dispatch: 'updateStringB'
-      }]).html.appendTo(dom2);
+        property: 'stringB'
+      }]).html.appendTo(domModify2);
 
       d2.addModule(domino.modules.Select, [{
         values: 'valuesB',
-        triggerProperty: 'stringB',
-        dispatch: 'updateStringB'
-      }]).html.appendTo(dom2);
+        property: 'stringB'
+      }]).html.appendTo(domModify2);
+
+      // And two simple module to represent all the time our strings:
+      d2.addModule(domino.modules.Text, [{
+        property: 'stringA'
+      }]).html.appendTo(domObserve2);
 
       d2.addModule(domino.modules.Text, [{
-        triggerProperty: 'stringA'
-      }]).html.appendTo(dom2);
-
-      d2.addModule(domino.modules.Text, [{
-        triggerProperty: 'stringB'
-      }]).html.appendTo(dom2);
+        property: 'stringB'
+      }]).html.appendTo(domObserve2);
     });
   </script>
 </head>
 <body>
   <div class="testing" id="test1">
     <h2>Test 1: Basic flags + hack</h2>
+    <div class="modify"></div>
+    <div class="observe"></div>
   </div>
   <div class="testing" id="test2">
-    <h2>Test 2: Multi values properties</h2>
+    <h2>Test 2: Multiple choice properties</h2>
+    <div class="modify"></div>
+    <div class="observe"></div>
   </div>
 </body>
 </html>
