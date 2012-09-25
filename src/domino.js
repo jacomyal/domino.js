@@ -1,4 +1,6 @@
 (function(window) {
+  'use strict';
+
   // Check domino.js existance:
   if (window.domino) {
     throw new Error('domino already exists');
@@ -173,17 +175,18 @@
 
       // Initial value:
       if (o['value'] !== undefined || _types[id])
-        _setters[id](
-          o['value'] !== undefined ?
-            o['value'] :
-            _utils.type.getDefault(_types[id])
-        );
+        o['value'] !== undefined ?
+            _setters[id](o['value']) :
+            _self.warn(
+              'Property "' + id + '": ' +
+                'Initial value is missing'
+            );
 
       // Triggers (modules-to-domino events):
       if (o['triggers'] !== undefined) {
-        !_utils.type.check(o['triggers'], 'array|string') &&
+        !_utils.type.check('array|string', o['triggers']) &&
           _self.warn(
-            'Property "' + id + '":' +
+            'Property "' + id + '": ' +
               'Events ("triggers") must be specified in an array or ' +
               'separated by spaces in a string'
           );
@@ -198,9 +201,9 @@
 
       // Dispatched events (domino-to-modules event):
       if (o['dispatch'] !== undefined)
-        !_utils.type.check(o['dispatch'], 'array|string') ?
+        !_utils.type.check('array|string', o['dispatch']) ?
           _self.warn(
-            'Property "' + id + '":' +
+            'Property "' + id + '": ' +
               'Events ("dispatch") must be specified in an array or ' +
               'separated by spaces in a string'
           ) :
@@ -445,13 +448,15 @@
       return res;
     },
     type: (function() {
-      // Thanks jQuery:
       var class2type = (
-        'Boolean Number String Function Array Date RegExp Object'
-      ).split(' ').reduce(function(o, name) {
-        o['[object ' + name + ']'] = name.toLowerCase();
-        return o;
-      },{});
+            'Boolean Number String Function Array Date RegExp Object'
+          ).split(' ').reduce(function(o, name) {
+            o['[object ' + name + ']'] = name.toLowerCase();
+            return o;
+          },{}),
+          types = Object.keys(class2type).map(function(k) {
+            return class2type[k];
+          }).concat('*');
 
       return {
         get: function(obj) {
@@ -460,20 +465,41 @@
             class2type[Object.prototype.toString.call(obj)] || 'object';
         },
         check: function(type, obj) {
-          return true;
-          if (typeof type == 'string') {
-            // TODO
-          } else {
-            // TODO
-          }
-        },
-        getDefault: function(type) {
-          return false;
-          // TODO
+          var typeOf = this.get(obj);
+          if (this.get(type) === 'string') {
+            if (obj == null)
+              return !!type.match(/^\?/,'');
+            else
+              type = type.replace(/^\?/,'');
+
+            var types = type.split(/\|/);
+
+            return !!(~types.indexOf('*') || ~types.indexOf(typeOf));
+          } else if (this.get(type) === 'object') {
+            if (typeOf !== 'object')
+              return false;
+
+            for (var k in type)
+              if (!this.check(type[k], obj[k]))
+                return false;
+
+            return true;
+          } else
+            return false;
         },
         isValid: function(type) {
-          return true;
-          // TODO
+          if (this.get(type) === 'string')
+            return !type.replace(/^\?/,'').split(/\|/).some(function(t) {
+              return types.indexOf(t)<0;
+            });
+          else if (this.get(type) === 'object') {
+            for (var k in type)
+              if (!this.isValid(type[k]))
+                return false;
+
+            return true;
+          } else
+            return false;
         }
       };
     })()
@@ -490,7 +516,7 @@
     if (typeof a1 === 'string' && a2 === undefined) {
       return __settings__[a1];
     } else {
-      var o = (typeof a1 === 'object' && a2 === undefined) ? a1 : {};
+      var o = (typeof a1 === 'object' && a2 === undefined) ? a1 || {} : {};
       if (typeof a1 === 'string') {
         o[a1] = a2;
       }
