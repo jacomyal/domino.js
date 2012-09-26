@@ -4,10 +4,55 @@
   domino = domino || {};
   domino.test = domino.test || {};
 
+  // domino.utils.array
+  domino.test.utils_array = {
+    method: 'utils.array',
+    compare: function(a, b) {
+      return !!a && !!b &&
+        a.length === b.length &&
+        !a.some(function(v, i) {
+          return v !== b[i];
+        });
+    },
+    tests: [
+      {params: ['a'], value: ['a']},
+      {params: [['a']], value: ['a']},
+      {params: ['a b'], value: ['a', 'b']},
+      {params: [['a', 'b']], value: ['a', 'b']},
+      // Here, a closure is used because the returned object
+      // in the array as to be the same than the one given as
+      // parameter:
+      (function() {
+        var o = {a:1, b:2};
+        return {
+          params: [o],
+          value: [o]
+        };
+      })()
+    ]
+  };
+
+  // domino.utils.type.get
+  domino.test.utils_type_get = {
+    method: 'utils.type.get',
+    tests: [
+      {params: [true], value: 'boolean'},
+      {params: [42], value: 'number'},
+      {params: ['abc'], value: 'string'},
+      {params: [function() {return 'bim';}], value: 'function'},
+      {params: [[]], value: 'array'},
+      {params: [new Date()], value: 'date'},
+      {params: [/abc/], value: 'regexp'},
+      {params: [{}], value: 'object'},
+      {params: [null], value: 'null'},
+      {params: [undefined], value: 'undefined'},
+      {params: [], value: 'undefined'}
+    ]
+  };
+
   // domino.utils.type.isValid
   domino.test.utils_type_isValid = {
-    pkg: domino.utils.type,
-    method: 'isValid',
+    method: 'utils.type.isValid',
     tests: [
       {params: ['boolean'], value: true},
       {params: ['number'], value: true},
@@ -39,8 +84,7 @@
 
   // domino.utils.type.check
   domino.test.utils_type_check = {
-    pkg: domino.utils.type,
-    method: 'check',
+    method: 'utils.type.check',
     tests: [
       {params: ['boolean', true], value: true},
       {params: ['boolean', 42], value: false},
@@ -95,27 +139,34 @@
     console.log('[Start tests]');
 
     for (k in domino.test) {
-      pkg = domino.test[k].pkg;
-      method = pkg[domino.test[k].method];
+      pkg = window;
+      method = domino.test[k].method.split('.').reduce(function(o, s) {
+        pkg = o;
+        return o[s] || {};
+      }, domino);
       tests = domino.test[k].tests;
 
       failed = 0;
       successed = 0;
       passed = tests.length;
 
-      console.log('  [Testing "' + domino.test[k].method + '"]');
+      console.log('  [Testing "domino.' + domino.test[k].method + '"]');
 
       for (i in tests) {
         try {
           res = method.apply(pkg, tests[i].params);
-          if (res === tests[i].value) {
+          if (
+            domino.test[k].compare ?
+              domino.test[k].compare(res, tests[i].value) :
+              res === tests[i].value
+          ) {
             successed++;
           } else {
             failed++;
             console.log(
-              '    -> [case ' + i + '] Method returned "' + res + '" ' +
-              'instead of "' + tests[i].value + '" ' +
-              'with params "' + tests[i].params + '".'
+              '    -> [case ' + i + '] Method returned "', res, '" ' +
+              'instead of "', tests[i].value, '" ' +
+              'with params "', tests[i].params, '".'
             );
           }
         } catch (e) {
@@ -125,21 +176,21 @@
             else {
               failed++;
               console.log(
-                '    -> [case ' + i + '] Method returned error "' + e + '" ' +
-                'with params "' + tests[i].params + '" instead of "' + tests[1].error + '".'
+                '    -> [case ' + i + '] Method returned error "', e, '" ' +
+                'with params "', tests[i].params, '" instead of "', tests[i].error, '".'
               );
             }
           } else {
             failed++;
             console.log(
-              '    -> [case ' + i + '] Method returned error "' + e + '" ' +
-              'with params "' + tests[i].params + '".'
+              '    -> [case ' + i + '] Method returned error "', e, '" ' +
+              'with params "', tests[i].params, '".'
             );
           }
         }
       }
 
-      console.log('  [Testing "' + domino.test[k].method + '" ended]');
+      console.log('  [Testing "domino.' + domino.test[k].method + '" ended]');
       console.log('    Success: ' + successed);
       console.log('    Fails:   ' + failed);
       console.log('    Total:   ' + passed);

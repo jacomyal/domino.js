@@ -488,18 +488,6 @@
 
       return res;
     },
-    unique: function(a) {
-      var u = {},
-          res = [];
-
-      for (var i = 0, l = a.length; i < l; ++i) {
-        if (!u[a[i]]) {
-          res.push(a[i]);
-          u[a[i]] = 1;
-        }
-      }
-      return res;
-    },
     type: (function() {
       var classes = (
             'Boolean Number String Function Array Date RegExp Object'
