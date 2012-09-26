@@ -173,6 +173,53 @@
       d2.addModule(domino.modules.Text, [{
         property: 'stringB'
       }]).html.appendTo(dom2_2);
+
+      /**
+       * TEST 2:
+       *********
+       * Multiple choice properties
+       */
+      var dom3 = $('#test3'),
+          dom3_1 = $('.line1', dom3),
+          dom3_2 = $('.line2', dom3),
+          d3 = new domino({
+            name: 'd3',
+            properties: [
+              {
+                id: 'stringA',
+                label: 'String A',
+                value: 'a1',
+                type: 'string',
+                triggers: 'updateStringA',
+                dispatch: 'stringAUpdated'
+              },
+              {
+                id: 'valuesA',
+                label: 'Values A',
+                value: ['a1', 'a2', 'a3', 'a4', 'a5'],
+                type: 'array',
+                triggers: 'updateValuesA',
+                dispatch: 'valuesAUpdated'
+              }
+            ]
+          });
+
+      d3.addModule(domino.modules.Select, [{
+        values: 'valuesA',
+        property: 'stringA'
+      }]).html.appendTo(dom3_1);
+
+      d3.addModule(domino.modules.TextInput, [{
+        property: 'valuesA'
+      }]).html.appendTo(dom3_1);
+
+      d3.addModule(domino.modules.Text, [{
+        property: 'stringA'
+      }]).html.appendTo(dom3_2);
+
+      d3.addModule(domino.modules.Text, [{
+        property: 'valuesA'
+      }]).html.appendTo(dom3_2);
     });
   </script>
 </head>
@@ -184,6 +231,11 @@
   </div>
   <div class="testing" id="test2">
     <h2>Test 2: Multiple choice properties</h2>
+    <div class="line1"></div>
+    <div class="line2"></div>
+  </div>
+  <div class="testing" id="test3">
+    <h2>Test 3: Array and select</h2>
     <div class="line1"></div>
     <div class="line2"></div>
   </div>
