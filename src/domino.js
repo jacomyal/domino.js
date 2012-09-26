@@ -531,7 +531,7 @@
     function _set(property, value) {
       if (_setters[property])
         return _setters[property].call(_fullScope, value);
-      
+
       _self.warn('Property "' + property + '" not referenced.');
       return false;
     }
@@ -670,30 +670,24 @@
         }
       }
 
-      if (!o.error)
-        o.error = function(t, xhr) {
-          console.error(t, xhr);
-        };
-
-      if (!o.ok)
-        o.ok = function() {};
-
       xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
           if (timer)
             clearTimeout(timer);
+
           if (xhr.status >= 200) {
             d = xhr.responseText;
             if (/json/.test(dtyp)) {
               try {
                 d = JSON.parse(xhr.responseText);
               } catch (e) {
-                return o.error('json parse error: ' + e.message, xhr);
+                return (o.error &&
+                  o.error('json parse error: ' + e.message, xhr));
               }
             }
-            o.ok(d, xhr);
+            o.success && o.success(d, xhr);
           } else
-            o.error(xhr.responseText, xhr);
+            o.error && o.error(xhr.responseText, xhr);
         }
       };
 
@@ -709,7 +703,7 @@
           xhr.onreadystatechange = function() {};
           xhr.abort();
           if (o.error)
-            o.error('timeout', xhr);
+            o.error && o.error('timeout', xhr);
         }, o.timeout * 1000);
 
       xhr.send(d);
