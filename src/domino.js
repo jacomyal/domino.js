@@ -34,7 +34,8 @@
         _hackDispatch = {};
 
     // AJAX management:
-    var _services = {};
+    var _services = {},
+        _shortcuts = {};
 
     // Scopes:
     var _lightScope = {
@@ -384,6 +385,27 @@
       return _events[id];
     }
 
+    function _getValue(v) {
+      var a = (v || '').toString().match(
+        new RegExp('^' + __settings__['shortcutPrefix'])
+      );
+
+      // Case where the string doesn't match:
+      if (!a || !a.length)
+        return v;
+      a = a[0];
+
+      // Check shortcuts:
+      if (_utils.type.get(_shortcuts[a]) === 'function')
+        return _shortcuts[a].call(_fullScope);
+
+      // Check properties:
+      if (_utils.type.get(_getters[a]) === 'function')
+        return _getters[a]();
+
+      return v;
+    }
+
     this.addModule = addModule;
   };
   var domino = window.domino;
@@ -537,7 +559,8 @@
   // Global settings:
   var __settings__ = {
     strict: false,
-    verbose: false
+    verbose: false,
+    shortcutPrefix: ':'
   };
 
   domino.settings = function(a1, a2) {
