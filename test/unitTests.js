@@ -139,6 +139,7 @@
         }
       }
 
+      console.log('  [Testing "' + domino.test[k].method + '" ended]');
       console.log('    Success: ' + successed);
       console.log('    Fails:   ' + failed);
       console.log('    Total:   ' + passed);
