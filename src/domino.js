@@ -11,7 +11,8 @@
 
     // Misc:
     var _self = this,
-        _utils = window.domino.utils;
+        _utils = domino.utils,
+        _type = _utils.type;
 
     // Properties management:
     var _types = {},
@@ -61,16 +62,16 @@
     var _o = {};
     this.name = 'domino';
 
-    if (_utils.type.get(arguments[0]) === 'string')
+    if (_type.get(arguments[0]) === 'string')
       this.name = arguments[0];
     else if (
       arguments[0] !== undefined &&
-      _utils.type.get(arguments[0]) === 'object'
+      _type.get(arguments[0]) === 'object'
     )
       _o = arguments[0];
     else if (
       arguments[1] !== undefined &&
-      _utils.type.get(arguments[1]) === 'object'
+      _type.get(arguments[1]) === 'object'
     )
       _o = arguments[1];
 
@@ -132,7 +133,7 @@
 
       // Type:
       if (o['type'] !== undefined)
-        !_utils.type.isValid(o['type']) ?
+        !_type.isValid(o['type']) ?
           _self.warn(
             'Property "' + id + '": Type not valid'
           ) :
@@ -140,7 +141,7 @@
 
       // Setter:
       if (o['setter'] !== undefined)
-        !_utils.type.get(o['setter']) !== 'function' ?
+        !_type.get(o['setter']) !== 'function' ?
           _self.warn(
             'Property "' + id + '": Setter is not a function'
           ) :
@@ -150,7 +151,7 @@
         if (v === _properties[id])
           return false;
 
-        (_types[id] && !_utils.type.check(_types[id], v)) ?
+        (_types[id] && !_type.check(_types[id], v)) ?
           _self.warn(
             'Property "' + id + '": Wrong type error'
           ) :
@@ -161,7 +162,7 @@
 
       // Getter:
       if (o['getter'] !== undefined)
-        !_utils.type.get(o['getter']) !== 'function' ?
+        !_type.get(o['getter']) !== 'function' ?
           _self.warn(
             'Property "' + id + '": Getter is not a function'
           ) :
@@ -182,7 +183,7 @@
 
       // Triggers (modules-to-domino events):
       if (o['triggers'] !== undefined) {
-        !_utils.type.check('array|string', o['triggers']) &&
+        !_type.check('array|string', o['triggers']) &&
           _self.warn(
             'Property "' + id + '": ' +
               'Events ("triggers") must be specified in an array or ' +
@@ -198,7 +199,7 @@
 
       // Dispatched events (domino-to-modules event):
       if (o['dispatch'] !== undefined)
-        !_utils.type.check('array|string', o['dispatch']) ?
+        !_type.check('array|string', o['dispatch']) ?
           _self.warn(
             'Property "' + id + '": ' +
               'Events ("dispatch") must be specified in an array or ' +
@@ -253,6 +254,143 @@
       }
     }
 
+    /**
+     * TODO
+     *
+     * @param   {?Object} options An object containing some more precise
+     *                            indications about the service.
+     *
+     * Here is the list of options that are interpreted:
+     *
+     *   {string}             id      The name of the property.
+     *   {(string|function)}  url     The URL to call. If function, it will be
+     *                                called with the provider as parameter and
+     *                                it has to return the URL as a string.
+     *   {?string}            type    The REST method to use (default: 'GET').
+     *   {?(object|function)} params  If function, a function taking the
+     *                                provider as parameter. Else, the different
+     *                                params to send.
+     *   {?(string|array)}    event   The event to dispatch after success.
+     *   {?(string|array)}    json    "data", "content" or ["data","content"].
+     *                                Indicated if the sent/received data is in
+     *                                JSON.
+     *   {?string}            setter  See below...
+     *   {?(function|string)} success The function to call in case of success.
+     *                                If not indicated, will try to set in the
+     *                                provider the value named as this service
+     *                                ID.
+     *                                If a string, will split it on "." and call
+     *                                the path in the "data" object before
+     *                                calling the setter (like the "setter").
+     *   {?function}          error   The function to call in case of error.
+     */
+    function addService(options) {
+      var o = options || {};
+
+      // Errors:
+      if (o['id'] === undefined || _type.get(o['id']) !== 'string')
+        _self.die(
+          'The service id is not indicated.'
+        );
+
+      if (!_type.check('function|string', o['url']))
+        _self.die(
+          'The service URL is not valid.'
+        );
+
+      if (_services[o['id']] !== undefined)
+        _self.die(
+          'The service "' + o['id'] + '" already exists.'
+        );
+
+      _services[o['id']] = function(params) {
+        var p = params || {};
+            ajaxObj = {
+              type: (p.type || o.type || 'GET').toString().toUpperCase(),
+              data: _type.get(o.params) === 'function' ?
+                      o.params.apply(_lightScope, p.params || []) :
+                      (p.params || o.params),
+              url: o['url'],
+              error: p.error || o.error || function(mes, xhr) {
+                _self.die('Loading failed with message "' + mes + '".');
+              }
+            };
+
+        var i, exp, k, doTest,
+            pref = __settings__['shortcutPrefix'],
+            regexContains = new RegExp(pref + '\w*', 'g'),
+            regexFull = new RegExp('^' + pref + '\w*$'),
+            matches;
+
+        // Manage shortcuts in URL:
+        while (matches = p['url'].match(regexContains)) {
+          for (i in matches) {
+            exp = _expand(matches[i]);
+            p['url'] = p['url'].replace(new RegExp(matches[i], 'g'), exp);
+          }
+        }
+
+        // Manage shortcuts in params:
+        // (NOT DEEP - only first level)
+        doTest = true;
+        if (_type.get(ajaxObj['data']) === 'string')
+          if (ajaxObj['data'].match(regexFull))
+            ajaxObj['data'] = _expand(ajaxObj['data']);
+
+        if (_type.get(ajaxObj['data']) === 'object')
+          while (doTest) {
+            doTest = false;
+            for (k in ajaxObj['data'])
+              if (ajaxObj['data'][k].match(regexFull)) {
+                ajaxObj['data'][k] = _expand(ajaxObj['data'][k]);
+                doTest = true;
+              }
+          }
+
+        // Success management:
+        ajaxObj.success = function(data) {
+          var i, a, pushEvents,
+              dispatch = {},
+              setter = p.setter || o.setter,
+              success = p.success || o.success;
+
+          // Events to dispatch (service config):
+          a = _utils.array(o.events);
+          for (i in a)
+            dispatch[a[i]] = 1;
+
+          // Events to dispatch (call config):
+          a = _utils.array(p.events);
+          for (i in a)
+            dispatch[a[i]] = 1;
+
+          // Check setter:
+          if (setter && _setters[setter])
+            if (_setters[setter].call(_fullScope, data))
+              for (k in _descending[setter] || [])
+                dispatch[_descending[setter][k]] = 1;
+
+          // Check setter:
+          if (_type.get(success) === 'string' && _setters[success])
+            if (_setters[success].call(_fullScope, data))
+              for (k in _descending[success] || [])
+                dispatch[_descending[success][k]] = 1;
+          else if (_type.get(success) === 'function')
+            success.call(_fullScope, data, p);
+
+          a = [];
+          for (event in dispatch) {
+            _self.dispatchEvent(event, _lightScope);
+            a.push(_self.getEvent(event, _lightScope));
+          }
+
+          // Reloop:
+          if (a.length)
+            _mainLoop(a);
+        };
+      };
+    }
+
     function addModule(klass, params, options) {
       var i,
           o = options || {},
@@ -265,7 +403,7 @@
       if (klass === undefined)
         _self.die('Module class not specified');
 
-      if (_utils.type.get(klass) !== 'function')
+      if (_type.get(klass) !== 'function')
         _self.die('First parameter must be a function');
 
       // Instanciate the module:
@@ -363,7 +501,7 @@
     function _update(options) {
       _self.dump('Updating', options);
 
-      var i, k,
+      var i, k, a, event,
           o = options || {},
           dispatch = {};
 
@@ -405,11 +543,11 @@
       a = a[0];
 
       // Check shortcuts:
-      if (_utils.type.get(_shortcuts[a]) === 'function')
+      if (_type.get(_shortcuts[a]) === 'function')
         return _shortcuts[a].call(_fullScope);
 
       // Check properties:
-      if (_utils.type.get(_getters[a]) === 'function')
+      if (_type.get(_getters[a]) === 'function')
         return _getters[a]();
 
       return v;
@@ -487,6 +625,83 @@
           res.push(a[i]);
 
       return res;
+    },
+    ajax: function(o, fn) {
+      if (typeof o === 'string')
+        o = { url: o, ok: fn };
+
+      var type = o.type || 'GET',
+          url = o.url || '',
+          ctyp = o.contenttype || 'application/x-www-form-urlencoded',
+          dtyp = o.datatype || 'application/json',
+          xhr = new XMLHttpRequest(),
+          timer,
+          d;
+
+      if (o.data) {
+        if (typeof o.data === 'string')
+          d = o.data;
+        else if (/json/.test(ctyp))
+          d = JSON.stringify(o.data);
+        else {
+          d = [];
+          for (var n in o.data)
+            d.push(encodeURIComponent(n) + '=' + encodeURIComponent(o.data[n]));
+          d = d.join('&');
+        }
+
+        if (/GET|DEL/i.test(type)) {
+          url += /\?/.test(url) ?
+            '&' + d :
+            '?' + d;
+          d = '';
+        }
+      }
+
+      if (!o.error)
+        o.error = function(t, xhr) {
+          console.error(t, xhr);
+        };
+
+      if (!o.ok)
+        o.ok = function() {};
+
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4) {
+          if (timer)
+            clearTimeout(timer);
+          if (xhr.status >= 200) {
+            d = xhr.responseText;
+            if (/json/.test(dtyp)) {
+              try {
+                d = JSON.parse(xhr.responseText);
+              } catch (e) {
+                return o.error('json parse error: ' + e.message, xhr);
+              }
+            }
+            o.ok(d, xhr);
+          } else
+            o.error(xhr.responseText, xhr);
+        }
+      };
+
+      xhr.open(type, url, true);
+      xhr.setRequestHeader('Content-Type', ctyp);
+
+      if (o.headers)
+        for (var n in o.headers)
+          xhr.setRequestHeader(n, o.headers[n]);
+
+      if (o.timeout)
+        timer = setTimeout(function() {
+          xhr.onreadystatechange = function() {};
+          xhr.abort();
+          if (o.error)
+            o.error('timeout', xhr);
+        }, o.timeout * 1000);
+
+      xhr.send(d);
+      return xhr;
     },
     type: (function() {
       var classes = (
