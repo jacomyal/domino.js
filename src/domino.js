@@ -40,21 +40,21 @@
     // Scopes:
     var _lightScope = {
           get: _getters,
-          dump: self.dump,
-          warn: self.warn,
-          die: self.die,
           events: _getEvents,
-          label: _getLabel
+          label: _getLabel,
+          dump: self.dump,
+          expand: _expand
         },
         _fullScope = {
           get: _getters,
           set: _setters,
+          events: _getEvents,
+          label: _getLabel,
           dump: self.dump,
           warn: self.warn,
           die: self.die,
-          events: _getEvents,
-          label: _getLabel,
-          update: _update
+          update: _update,
+          expand: _expand
         };
 
     // Initialization:
@@ -76,13 +76,14 @@
 
     this.name = _o['name'] || this.name;
 
-    (_o.properties || []).forEach(function(p) {
-      addProperty(p.id, p);
-    });
+    (function() {
+      var i;
+      for (i in _o.properties || [])
+        addProperty(_o.properties[i].id, _o.properties[i]);
 
-    (_o.hacks || []).forEach(function(h) {
-      addHack(h);
-    });
+      for (i in _o.hacks || [])
+        addHack(_o.hacks[i]);
+    })();
 
 
     /**
@@ -116,7 +117,8 @@
      *            separated by spaces.
      */
     function addProperty(id, options) {
-      var o = options || {};
+      var i,
+          o = options || {};
 
       // Check errors:
       if (id === undefined)
@@ -188,10 +190,10 @@
           );
 
         _events[id] = _utils.array(o['triggers']);
-        _utils.array(o['triggers']).forEach(function(event) {
-          _ascending[event] = _ascending[event] || [];
-          _ascending[event].push(id);
-        });
+        for (i in _events[id] || []) {
+          _ascending[_events[id][i]] = _ascending[_events[id][i]] || [];
+          _ascending[_events[id][i]].push(id);
+        }
       }
 
       // Dispatched events (domino-to-modules event):
@@ -226,7 +228,8 @@
      *                              specified events.
      */
     function addHack(options) {
-      var o = options || {};
+      var a, i,
+          o = options || {};
 
       // Errors:
       if (o['triggers'] === undefined)
@@ -234,23 +237,25 @@
           'A hack requires at least one trigger to be added'
         );
 
-      _utils.array(o['triggers']).forEach(function(event) {
+      a = _utils.array(o['triggers']);
+      for (i in a) {
         // Method to execute:
         if (o['method']) {
-          _hackMethods[event] = _hackMethods[event] || [];
-          _hackMethods[event].push(o['method']);
+          _hackMethods[a[i]] = _hackMethods[a[i]] || [];
+          _hackMethods[a[i]].push(o['method']);
         }
 
         // Events to dispatch:
         if (o['dispatch'])
-          _hackDispatch[event] = (_hackDispatch[event] || []).concat(
+          _hackDispatch[a[i]] = (_hackDispatch[a[i]] || []).concat(
             _utils.array(o['dispatch'])
           );
-      });
+      }
     }
 
     function addModule(klass, params, options) {
-      var o = options || {},
+      var i,
+          o = options || {},
           module = {},
           triggers,
           property,
@@ -264,7 +269,7 @@
         _self.die('First parameter must be a function');
 
       // Instanciate the module:
-      klass.apply(module, (params || []).concat([_lightScope]));
+      klass.apply(module, (params || []).concat(_lightScope));
       triggers = module.triggers || {};
 
       // Ascending communication:
@@ -272,9 +277,11 @@
         _self.addEventListener(event, triggers.events[event]);
 
       for (property in triggers.properties || {}) {
-        (_descending[property] || []).forEach(function(event) {
-          _self.addEventListener(event, triggers.properties[property]);
-        });
+        for (i in _descending[property] || [])
+          _self.addEventListener(
+            _descending[property][i],
+            triggers.properties[property]
+          );
 
         if (_getters[property] !== undefined) {
           var data = {};
@@ -307,74 +314,76 @@
     function _mainLoop(events, options) {
       _self.dump('Main loop', events, options);
 
-      var o = options || {},
+      var a, i, j, k, event, data,
+          o = options || {},
           dispatch = {};
 
       var eventsArray = _utils.array(events);
+      for (i in eventsArray) {
+        event = eventsArray[i];
+        data = event.data || {};
 
-      eventsArray.forEach(function(event) {
-        var data = event.data || {};
         // Check properties to update:
-        if (data || o['force'])
-          (_ascending[event.type] || []).forEach(function(propName) {
+        if (data || o['force']) {
+          a = _ascending[event.type] || [];
+          for (j in a) {
             var pushEvents = !!o['force'];
 
-            if (data[propName] !== undefined)
-              pushEvents = _setters[propName].call(
+            if (data[a[j]] !== undefined)
+              pushEvents = _setters[a[j]].call(
                 _fullScope,
-                data[propName]
+                data[a[j]]
               ) || pushEvents;
 
             if (pushEvents)
-              (_descending[propName] || []).forEach(function(descEvent) {
-                dispatch[descEvent] = 1;
-              });
-          });
+              for (k in _descending[a[j]] || [])
+                dispatch[_descending[a[j]][k]] = 1;
+          }
+        }
 
         // Check hacks to trigger:
-        (_hackMethods[event.type] || []).forEach(function(hack) {
-          hack.call(_fullScope, event);
-        });
+        for (j in _hackMethods[event.type] || [])
+          _hackMethods[event.type][j].call(_fullScope, event);
 
-        (_hackDispatch[event.type] || []).forEach(function(descEvent) {
-          dispatch[descEvent] = 1;
-        });
-      });
+        for (j in _hackDispatch[event.type] || [])
+          dispatch[_hackDispatch[event.type][j]] = 1;
+      }
 
-      dispatch = Object.keys(dispatch).map(function(event) {
+      a = [];
+      for (event in dispatch) {
         _self.dispatchEvent(event, _lightScope);
-        return _self.getEvent(event, _lightScope);
-      });
+        a.push(_self.getEvent(event, _lightScope));
+      }
 
       // Reloop:
-      if (dispatch.length)
-        _mainLoop(dispatch, o);
+      if (a.length)
+        _mainLoop(a, o);
     }
 
     function _update(options) {
       _self.dump('Updating', options);
 
-      var o = options || {},
-          dispatch = {},
-          k;
+      var i, k,
+          o = options || {},
+          dispatch = {};
 
       for (k in o) {
         if (_setters[k])
           _setters[k](o[k]);
 
-        (_descending[k] || []).forEach(function(descEvent) {
-          dispatch[descEvent] = 1;
-        });
+        for (i in _descending[k] || [])
+          dispatch[_descending[k][i]] = 1;
       }
 
-      dispatch = Object.keys(dispatch).map(function(event) {
+      a = [];
+      for (event in dispatch) {
         _self.dispatchEvent(event, _lightScope);
-        return _self.getEvent(event, _lightScope);
-      });
+        a.push(_self.getEvent(event, _lightScope));
+      }
 
       // Reloop:
-      if (dispatch.length)
-        _mainLoop(dispatch, o);
+      if (a.length)
+        _mainLoop(a, o);
     }
 
     function _getLabel(id) {
@@ -385,7 +394,7 @@
       return _events[id];
     }
 
-    function _getValue(v) {
+    function _expand(v) {
       var a = (v || '').toString().match(
         new RegExp('^' + __settings__['shortcutPrefix'])
       );
@@ -465,15 +474,19 @@
   // Utils:
   domino.utils = {
     array: function(v, sep) {
-      return (
-        domino.utils.type.get(v) === 'string' ?
-          v.split(sep || ' ') :
-          domino.utils.type.get(v) === 'array' ?
-            v :
-            [v]
-      ).filter(function(s) {
-        return !!s;
-      });
+      var a = (
+            domino.utils.type.get(v) === 'string' ?
+              v.split(sep || ' ') :
+              domino.utils.type.get(v) === 'array' ?
+                v :
+                [v]
+          ),
+          res = [];
+      for (var i in a)
+        if (!!a[i])
+          res.push(a[i]);
+
+      return res;
     },
     unique: function(a) {
       var u = {},
@@ -488,15 +501,18 @@
       return res;
     },
     type: (function() {
-      var class2type = (
+      var classes = (
             'Boolean Number String Function Array Date RegExp Object'
-          ).split(' ').reduce(function(o, name) {
-            o['[object ' + name + ']'] = name.toLowerCase();
-            return o;
-          },{}),
-          types = Object.keys(class2type).map(function(k) {
-            return class2type[k];
-          }).concat('*');
+          ).split(' '),
+          class2type = {},
+          types = ['*'];
+
+      // Fill types
+      for (var k in classes) {
+        var name = classes[k];
+        types.push(name.toLowerCase());
+        class2type['[object ' + name + ']'] = name.toLowerCase();
+      }
 
       return {
         get: function(obj) {
@@ -505,12 +521,14 @@
             class2type[Object.prototype.toString.call(obj)] || 'object';
         },
         check: function(type, obj) {
-          var typeOf = this.get(obj);
+          var a, i,
+              typeOf = this.get(obj);
+
           if (this.get(type) === 'string') {
-            if (type.replace(/^\?/, '').split(/\|/).some(function(t) {
-              return types.indexOf(t) < 0;
-            }))
-              __warn__('[domino.global] Invalid type');
+            a = type.replace(/^\?/, '').split(/\|/);
+            for (i in a)
+              if (types.indexOf(a[i]) < 0)
+                __warn__('[domino.global] Invalid type');
 
             if (obj == null)
               return !!type.match(/^\?/, '');
@@ -538,12 +556,15 @@
             return false;
         },
         isValid: function(type) {
-          if (this.get(type) === 'string')
-            return !type.replace(/^\?/, '').split(/\|/).some(function(t) {
-              return types.indexOf(t) < 0;
-            });
-          else if (this.get(type) === 'object') {
-            for (var k in type)
+          var a, k, i;
+          if (this.get(type) === 'string') {
+            a = type.replace(/^\?/, '').split(/\|/);
+            for (i in a)
+              if (types.indexOf(a[i]) < 0)
+                return false;
+            return true;
+          } else if (this.get(type) === 'object') {
+            for (k in type)
               if (!this.isValid(type[k]))
                 return false;
 
@@ -601,22 +622,24 @@
         for (var events in arguments[0])
           this.addEventListener(events, arguments[0][events]);
       else if (arguments.length > 1) {
-        var events = arguments[0],
+        var event,
+            events = arguments[0],
             handler = arguments[1],
             eArray = utils.array(events),
             self = this;
 
-        eArray.forEach(function(event) {
-          if (!_handlers[event]) {
+        for (var i in eArray) {
+          event = eArray[i];
+
+          if (!_handlers[event])
             _handlers[event] = [];
-          }
 
           // Using an object instead of directly the handler will make possible
           // later to add flags
           _handlers[event].push({
             handler: handler
           });
-        });
+        }
       }
 
       return this;
@@ -639,24 +662,28 @@
         return this;
       }
 
-      var eArray = utils.array(events),
+      var i, j, a, event,
+          eArray = utils.array(events),
           self = this;
 
       if (handler) {
-        eArray.forEach(function(event) {
+        for (i in eArray) {
+          event = eArray[i];
           if (_handlers[event]) {
-            _handlers[event] = _handlers[event].filter(function(e) {
-              return e.handler !== handler;
-            });
+            a = [];
+            for (j in _handlers[event])
+              if (_handlers[event][j].handler !== handler)
+                a.push(_handlers[event][j]);
+
+            _handlers[event] = a;
           }
 
           if (_handlers[event] && _handlers[event].length === 0)
             delete _handlers[event];
-        });
+        }
       } else
-        eArray.forEach(function(event) {
-          delete _handlers[event];
-        });
+        for (i in eArray)
+          delete _handlers[eArray[i]];
 
       return self;
     };
@@ -669,26 +696,28 @@
      * @return {EventDispatcher} Returns itself.
      */
     function dispatchEvent(events, data) {
-      var event,
+      var i, j, a, event, eventName,
           eArray = utils.array(events),
           self = this;
 
       data = data === undefined ? {} : data;
 
-      eArray.forEach(function(eventName) {
+      for (i in eArray) {
+        eventName = eArray[i];
+
         if (_handlers[eventName]) {
           event = self.getEvent(eventName, data);
+          a = [];
 
-          _handlers[eventName].forEach(function(e) {
-            e.handler(event);
-          });
+          for (j in _handlers[eventName]) {
+            _handlers[eventName][j].handler(event);
+            if (!_handlers[eventName][j]['one'])
+              a.push(_handlers[eventName][j]);
+          }
 
-          _handlers[eventName] =
-            _handlers[eventName].filter(function(e) {
-              return !e['one'];
-            });
+          _handlers[eventName] = a;
         }
-      });
+      }
 
       return this;
     };
