@@ -40,15 +40,15 @@
 
     // Scopes:
     var _lightScope = {
-          get: _getters,
+          get: _get,
           events: _getEvents,
           label: _getLabel,
           dump: self.dump,
           expand: _expand
         },
         _fullScope = {
-          get: _getters,
-          set: _setters,
+          get: _get,
+          set: _set,
           events: _getEvents,
           label: _getLabel,
           dump: self.dump,
@@ -175,7 +175,7 @@
       // Initial value:
       if (o['value'] !== undefined || _types[id])
         o['value'] !== undefined ?
-            _setters[id](o['value']) :
+            _set(id, o['value']) :
             _self.warn(
               'Property "' + id + '": ' +
                 'Initial value is missing'
@@ -366,13 +366,13 @@
 
           // Check setter:
           if (setter && _setters[setter])
-            if (_setters[setter].call(_fullScope, data))
+            if (_set(setter, data))
               for (k in _descending[setter] || [])
                 dispatch[_descending[setter][k]] = 1;
 
           // Check setter:
           if (_type.get(success) === 'string' && _setters[success])
-            if (_setters[success].call(_fullScope, data))
+            if (_set(success, data))
               for (k in _descending[success] || [])
                 dispatch[_descending[success][k]] = 1;
           else if (_type.get(success) === 'function')
@@ -423,7 +423,7 @@
 
         if (_getters[property] !== undefined) {
           var data = {};
-          data[property] = _getters[property]();
+          data[property] = _get(property);
           triggers.properties[property](
             _self.getEvent('domino.initialUpdate', _lightScope)
           );
@@ -468,10 +468,7 @@
             var pushEvents = !!o['force'];
 
             if (data[a[j]] !== undefined)
-              pushEvents = _setters[a[j]].call(
-                _fullScope,
-                data[a[j]]
-              ) || pushEvents;
+              pushEvents = _set(a[j], data[a[j]]) || pushEvents;
 
             if (pushEvents)
               for (k in _descending[a[j]] || [])
@@ -507,7 +504,7 @@
 
       for (k in o) {
         if (_setters[k])
-          _setters[k](o[k]);
+          _set(k, o[k]);
 
         for (i in _descending[k] || [])
           dispatch[_descending[k][i]] = 1;
@@ -522,6 +519,21 @@
       // Reloop:
       if (a.length)
         _mainLoop(a, o);
+    }
+
+    function _get(property) {
+      if (_getters[property])
+        return _getters[property].call(_lightScope);
+      else
+        _self.warn('Property "' + property + '" not referenced.');
+    }
+
+    function _set(property, value) {
+      if (_setters[property])
+        return _setters[property].call(_fullScope, value);
+      
+      _self.warn('Property "' + property + '" not referenced.');
+      return false;
     }
 
     function _getLabel(id) {
@@ -548,7 +560,7 @@
 
       // Check properties:
       if (_type.get(_getters[a]) === 'function')
-        return _getters[a]();
+        return _get(a);
 
       return v;
     }

@@ -45,12 +45,9 @@
     o['cssId'] && html.attr('id', o['cssId']);
 
     function update(event) {
-      if (!event.data.get[o['property']])
-        return;
-
       html.text(
         label + ': ' +
-        event.data.get[o['property']]()
+        event.data.get(o['property'])
       );
     }
 
@@ -151,12 +148,9 @@
     });
 
     function update(event) {
-      if (!event.data.get[o['property']])
-        return;
-
       html.find('input').attr(
         'checked',
-        !!event.data.get[o['property']]() ?
+        !!event.data.get(o['property']) ?
           'checked' :
           null
       );
@@ -231,11 +225,8 @@
     });
 
     function update(event) {
-      if (!event.data.get[o['property']])
-        return;
-
       // Check the current state of the flag:
-      isOn = !!event.data.get[o['property']]();
+      isOn = !!event.data.get(o['property']);
       if (isOn) {
         o['cssClassOn'] && html.attr('class', o['cssClassOn']);
         o['htmlOn'] && html.html(o['htmlOn']);
@@ -315,10 +306,7 @@
     });
 
     function updateSelection(event) {
-      if (!event.data.get[o['property']])
-        return;
-
-      selected = event.data.get[o['property']]();
+      selected = event.data.get(o['property']);
       html.val(selected);
     }
 
@@ -326,7 +314,7 @@
       if (typeof o['values'] !== 'string')
         return;
 
-      values = event.data.get[o['values']]();
+      values = event.data.get(o['values']);
       html.empty().append(values.map(function(v) {
         return typeof v === 'string' ?
           '<option value="' + v + '">' + v + '</option>' :
