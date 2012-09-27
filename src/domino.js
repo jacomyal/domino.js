@@ -516,22 +516,24 @@
      * @private
      */
     function _mainLoop(events, options) {
-      _self.dump('Main loop', events, options);
-
-      var a, i, j, k, event, data,
+      var a, i, j, k, event, data, pushEvents,
+          log = [],
           o = options || {},
           dispatch = {};
+
+      o['loop'] = (o['loop']||0) + 1;
 
       var eventsArray = _utils.array(events);
       for (i in eventsArray) {
         event = eventsArray[i];
         data = event.data || {};
+        log.push(event.type);
 
         // Check properties to update:
         if (data || o['force']) {
           a = _ascending[event.type] || [];
           for (j in a) {
-            var pushEvents = !!o['force'];
+            pushEvents = !!o['force'];
 
             if (data[a[j]] !== undefined)
               pushEvents = _set(a[j], data[a[j]]) || pushEvents;
@@ -550,6 +552,8 @@
           dispatch[_hackDispatch[event.type][j]] = 1;
       }
 
+      _self.dump('Main loop ' + o['loop'] + ':', log);
+
       a = [];
       for (event in dispatch) {
         _self.dispatchEvent(event, _lightScope);
@@ -562,19 +566,20 @@
     }
 
     function _update(options) {
-      _self.dump('Updating', options);
-
       var i, k, a, event,
+          log = [],
           o = options || {},
           dispatch = {};
 
       for (k in o) {
-        if (_setters[k])
-          _set(k, o[k]);
+        log.push(k);
 
-        for (i in _descending[k] || [])
-          dispatch[_descending[k][i]] = 1;
+        if (_setters[k] && _set(k, o[k]))
+          for (i in _descending[k] || [])
+            dispatch[_descending[k][i]] = 1;
       }
+
+      _self.dump('Updating properties :', log);
 
       a = [];
       for (event in dispatch) {
@@ -729,7 +734,7 @@
           dtyp = o.dataType || 'json',
           xhr = new XMLHttpRequest(),
           timer,
-          d;
+          d, n;
 
       if (o.data) {
         if (typeof o.data === 'string')
@@ -738,7 +743,7 @@
           d = JSON.stringify(o.data);
         else {
           d = [];
-          for (var n in o.data)
+          for (n in o.data)
             d.push(encodeURIComponent(n) + '=' + encodeURIComponent(o.data[n]));
           d = d.join('&');
         }
@@ -756,14 +761,16 @@
           if (timer)
             clearTimeout(timer);
 
-          if (xhr.status >= 200) {
+          if (/^2/.test(xhr.status)) {
             d = xhr.responseText;
             if (/json/.test(dtyp)) {
               try {
                 d = JSON.parse(xhr.responseText);
               } catch (e) {
-                return (o.error &&
-                  o.error('json parse error: ' + e.message, xhr));
+                return (
+                  o.error &&
+                  o.error('JSON parse error: ' + e.message, xhr)
+                );
               }
             }
             o.success && o.success(d, xhr);
@@ -776,7 +783,7 @@
       xhr.setRequestHeader('Content-Type', ctyp);
 
       if (o.headers)
-        for (var n in o.headers)
+        for (n in o.headers)
           xhr.setRequestHeader(n, o.headers[n]);
 
       if (o.timeout)
