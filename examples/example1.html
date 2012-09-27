@@ -15,20 +15,16 @@
   <!-- domino.js + modules -->
   <script type="text/javascript" src="../src/domino.js"></script>
   <script type="text/javascript" src="../src/domino.modules.js"></script>
-  <!-- unit tests -->
-  <script type="text/javascript" src="testServer/public/javascripts/unitTests.js"></script>
-  
   <!-- sample -->
   <script type="text/javascript">
     $(document).ready(function() {
+      'use strict';
+
       // Setup domino:
       domino.settings({
         verbose: true,
         strict: true
       });
-
-      // Launch unit tests:
-      domino.launchTests();
 
       /**
        * TEST 1:
@@ -175,9 +171,9 @@
       }]).html.appendTo(dom2_2);
 
       /**
-       * TEST 2:
+       * TEST 3:
        *********
-       * Multiple choice properties
+       * Array and select
        */
       var dom3 = $('#test3'),
           dom3_1 = $('.line1', dom3),
@@ -185,6 +181,10 @@
           d3 = new domino({
             name: 'd3',
             properties: [
+              // As in the previous example, stringA value is restricted by
+              // the values of the property valuesA.
+              // But this time, the values in valuesA can be edited by a
+              // module:
               {
                 id: 'stringA',
                 label: 'String A',
@@ -204,15 +204,18 @@
             ]
           });
 
+      // Here is the select module to set "stringA":
       d3.addModule(domino.modules.Select, [{
         values: 'valuesA',
         property: 'stringA'
       }]).html.appendTo(dom3_1);
 
+      // And here is the input module to set the values:
       d3.addModule(domino.modules.ArrayInput, [{
         property: 'valuesA'
       }]).html.appendTo(dom3_1);
 
+      // Finally, as usual, two modules to observe the different values:
       d3.addModule(domino.modules.Text, [{
         property: 'stringA'
       }]).html.appendTo(dom3_2);
