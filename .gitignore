@@ -1,0 +1,3 @@
+# Build results / binary files
+build/compiler.jar
+test/testServer/*
