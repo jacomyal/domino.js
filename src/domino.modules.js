@@ -251,6 +251,75 @@
   };
 
   /**
+   * An text-input which will represent a string property, and update this
+   * property when validated.
+   *
+   * @param   {?Object} options An object containing the specifications of the
+   *                            module.
+   * @param   {?Object} d       The instance of domino.
+   *
+   * Here is the list of options that are interpreted:
+   *
+   *   {?string}         element     The HTML element
+   *   {?string}         label       The label of the module (default: the
+   *                                 label of the property)
+   *   {?string}         cssId       The HTML id of the HTML element
+   *   {?string}         buttonLabel The HTML id of the HTML element
+   *   {?(array|string)} dispatch    The events to dispatch when clicked
+   *   {string}          property    The name of the flag to represent
+   *   {?(array|string)} triggers    The events to listen from domino
+   */
+  ns.TextInput = function(options, d) {
+    domino.module.call(this);
+
+    var self = this,
+        o = options || {};
+
+    if (!o['property'])
+      throw (new Error('[TextInput] Property missing'));
+
+    var dispatch =
+          o['dispatch'] ||
+            (d.events(o['property']).length === 1 ?
+              d.events(o['property'])[0] :
+              null),
+        html = o['element'] || $('<fieldset>' +
+                   '<label for="' + (o['cssId'] || o['property']) + '">' +
+                     (o['label'] || d.label(o['property'])) +
+                   '</label>' +
+                   '<input type="text" id="' +
+                     (o['cssId'] || o['property']) +
+                   '" />' +
+                   '<button>' +
+                   (o['buttonLabel'] || 'Validate') +
+                   '</button>' +
+                 '</fieldset>');
+
+    o['cssId'] && html.attr('id', o['cssId']);
+
+    html.find('button').click(function() {
+      var data = {};
+      data[o['property']] = html.find('input').val();
+
+      // Dispatch the event
+      dispatch && self.dispatchEvent(dispatch, data);
+    });
+
+    function update(event) {
+      html.find('input').val(event.data.get(o['property']));
+    }
+
+    if (o['triggers'])
+      domino.utils.array(o['triggers']).forEach(function(eventName) {
+        self.triggers.events[eventName] = update;
+      });
+    else
+      self.triggers.properties[o['property']] = update;
+
+    this.html = html;
+  };
+
+  /**
    * An text-input which will represent an Array property, and update this
    * property when validated.
    *
@@ -270,14 +339,14 @@
    *   {string}          property    The name of the flag to represent
    *   {?(array|string)} triggers    The events to listen from domino
    */
-  ns.TextInput = function(options, d) {
+  ns.ArrayInput = function(options, d) {
     domino.module.call(this);
 
     var self = this,
         o = options || {};
 
     if (!o['property'])
-      throw (new Error('[TextInput] Property missing'));
+      throw (new Error('[ArrayInput] Property missing'));
 
     var dispatch =
           o['dispatch'] ||
@@ -315,6 +384,75 @@
       html.find('input').val(
         event.data.get(o['property']).join(', ' || o['sep'])
       );
+    }
+
+    if (o['triggers'])
+      domino.utils.array(o['triggers']).forEach(function(eventName) {
+        self.triggers.events[eventName] = update;
+      });
+    else
+      self.triggers.properties[o['property']] = update;
+
+    this.html = html;
+  };
+
+  /**
+   * An number-input which will represent a number property, and update this
+   * property when validated.
+   *
+   * @param   {?Object} options An object containing the specifications of the
+   *                            module.
+   * @param   {?Object} d       The instance of domino.
+   *
+   * Here is the list of options that are interpreted:
+   *
+   *   {?string}         element     The HTML element
+   *   {?string}         label       The label of the module (default: the
+   *                                 label of the property)
+   *   {?string}         cssId       The HTML id of the HTML element
+   *   {?string}         buttonLabel The HTML id of the HTML element
+   *   {?(array|string)} dispatch    The events to dispatch when clicked
+   *   {string}          property    The name of the flag to represent
+   *   {?(array|string)} triggers    The events to listen from domino
+   */
+  ns.NumberInput = function(options, d) {
+    domino.module.call(this);
+
+    var self = this,
+        o = options || {};
+
+    if (!o['property'])
+      throw (new Error('[NumberInput] Property missing'));
+
+    var dispatch =
+          o['dispatch'] ||
+            (d.events(o['property']).length === 1 ?
+              d.events(o['property'])[0] :
+              null),
+        html = o['element'] || $('<fieldset>' +
+                   '<label for="' + (o['cssId'] || o['property']) + '">' +
+                     (o['label'] || d.label(o['property'])) +
+                   '</label>' +
+                   '<input type="number" id="' +
+                     (o['cssId'] || o['property']) +
+                   '" />' +
+                   '<button>' +
+                   (o['buttonLabel'] || 'Validate') +
+                   '</button>' +
+                 '</fieldset>');
+
+    o['cssId'] && html.attr('id', o['cssId']);
+
+    html.find('button').click(function() {
+      var data = {};
+      data[o['property']] = +html.find('input').val();
+
+      // Dispatch the event
+      dispatch && self.dispatchEvent(dispatch, data);
+    });
+
+    function update(event) {
+      html.find('input').val(+event.data.get(o['property']));
     }
 
     if (o['triggers'])
