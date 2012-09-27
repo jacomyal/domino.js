@@ -43,7 +43,7 @@
           get: _get,
           events: _getEvents,
           label: _getLabel,
-          dump: self.dump,
+          dump: _self.dump,
           expand: _expand
         },
         _fullScope = {
@@ -51,11 +51,13 @@
           set: _set,
           events: _getEvents,
           label: _getLabel,
-          dump: self.dump,
-          warn: self.warn,
-          die: self.die,
+          dump: _self.dump,
+          warn: _self.warn,
+          die: _self.die,
           update: _update,
-          expand: _expand
+          expand: _expand,
+          call: _call,
+          addModule: addModule
         };
 
     // Initialization:
@@ -84,6 +86,12 @@
 
       for (i in _o.hacks || [])
         addHack(_o.hacks[i]);
+
+      for (i in _o.services || [])
+        addService(_o.services[i]);
+
+      for (i in _o.shortcuts || [])
+        addShortcut(_o.shortcuts[i]);
     })();
 
 
@@ -304,12 +312,14 @@
         );
 
       _services[o['id']] = function(params) {
-        var p = params || {};
+        var p = params || {},
             ajaxObj = {
+              contentType: p.contentType || o.contentType,
+              dataType: p.dataType || o.dataType,
               type: (p.type || o.type || 'GET').toString().toUpperCase(),
-              data: _type.get(o.params) === 'function' ?
-                      o.params.apply(_lightScope, p.params || []) :
-                      (p.params || o.params),
+              data: _type.get(o.data) === 'function' ?
+                      o.data.apply(_lightScope, p.data || []) :
+                      (p.data || o.data),
               url: o['url'],
               error: p.error || o.error || function(mes, xhr) {
                 _self.die('Loading failed with message "' + mes + '".');
@@ -318,15 +328,21 @@
 
         var i, exp, k, doTest,
             pref = __settings__['shortcutPrefix'],
-            regexContains = new RegExp(pref + '\w*', 'g'),
-            regexFull = new RegExp('^' + pref + '\w*$'),
+            regexContains = new RegExp(pref + '(\\w+)', 'g'),
+            regexFull = new RegExp('^' + pref + '(\\w+)$'),
+            oldURL = null,
             matches;
 
         // Manage shortcuts in URL:
-        while (matches = p['url'].match(regexContains)) {
+        while (
+          (matches = ajaxObj['url'].match(regexContains)) &&
+          ajaxObj['url'] !== oldURL
+        ) {
+          oldURL = ajaxObj['url'];
           for (i in matches) {
-            exp = _expand(matches[i]);
-            p['url'] = p['url'].replace(new RegExp(matches[i], 'g'), exp);
+            exp = _expand(matches[i], p['params']);
+            ajaxObj['url'] =
+              ajaxObj['url'].replace(new RegExp(matches[i], 'g'), exp);
           }
         }
 
@@ -335,24 +351,58 @@
         doTest = true;
         if (_type.get(ajaxObj['data']) === 'string')
           if (ajaxObj['data'].match(regexFull))
-            ajaxObj['data'] = _expand(ajaxObj['data']);
+            ajaxObj['data'] = _expand(ajaxObj['data'], p['params']);
 
         if (_type.get(ajaxObj['data']) === 'object')
           while (doTest) {
             doTest = false;
             for (k in ajaxObj['data'])
-              if (ajaxObj['data'][k].match(regexFull)) {
-                ajaxObj['data'][k] = _expand(ajaxObj['data'][k]);
+              if (
+                _type.get(ajaxObj['data'][k]) === 'string' &&
+                ajaxObj['data'][k].match(regexFull)
+              ) {
+                ajaxObj['data'][k] = _expand(ajaxObj['data'][k], p['params']);
                 doTest = true;
               }
           }
 
         // Success management:
         ajaxObj.success = function(data) {
-          var i, a, pushEvents,
+          var i, a, pushEvents, event,
               dispatch = {},
+              path = (p.path || o.path),
+              pathArray, d,
               setter = p.setter || o.setter,
               success = p.success || o.success;
+
+          // Expand different string params:
+          if (_type.get(setter) === 'string')
+            setter = _expand(setter, p['params']);
+          if (_type.get(success) === 'string')
+            success = _expand(success, p['params']);
+          if (_type.get(path) === 'string')
+            path = _expand(path, p['params']);
+
+          // Check path:
+          d = data;
+          pathArray = _type.get(path, 'string') ?
+            path.split('.') :
+            undefined;
+
+          if (pathArray)
+            for (i in pathArray) {
+              d = d[pathArray[i]];
+              if (d === undefined) {
+                _self.warn(
+                  'Wrong path "' +
+                    path +
+                  '" for service "' +
+                    o['id'] +
+                  '".'
+                );
+                continue;
+              }
+            }
 
           // Events to dispatch (service config):
           a = _utils.array(o.events);
@@ -364,19 +414,18 @@
           for (i in a)
             dispatch[a[i]] = 1;
 
-          // Check setter:
-          if (setter && _setters[setter])
-            if (_set(setter, data))
-              for (k in _descending[setter] || [])
-                dispatch[_descending[setter][k]] = 1;
-
-          // Check setter:
+          // Check success:
           if (_type.get(success) === 'string' && _setters[success])
-            if (_set(success, data))
+            if (_set(success, d))
               for (k in _descending[success] || [])
                 dispatch[_descending[success][k]] = 1;
-          else if (_type.get(success) === 'function')
-            success.call(_fullScope, data, p);
+          // Check setter:
+          else if (setter && _setters[setter])
+            if (_set(setter, d))
+              for (k in _descending[setter] || [])
+                dispatch[_descending[setter][k]] = 1;
+          if (_type.get(success) === 'function')
+            success.call(_fullScope, d, p);
 
           a = [];
           for (event in dispatch) {
@@ -388,7 +437,24 @@
           if (a.length)
             _mainLoop(a);
         };
+
+        // Launch AJAX call:
+        _utils.ajax(ajaxObj);
       };
+    }
+
+    function addShortcut(options) {
+      var o = options || {};
+
+      // Check errors:
+      if (o['id'] === undefined)
+        _self.die('Shortcut ID not specified.');
+
+      if (_shortcuts[o['id']])
+        _self.die('Shortcut "' + o['id'] + '" already exists.');
+
+      // Add shortcut:
+      _shortcuts[o['id']] = o['method'];
     }
 
     function addModule(klass, params, options) {
@@ -401,10 +467,10 @@
 
       // Check errors:
       if (klass === undefined)
-        _self.die('Module class not specified');
+        _self.die('Module class not specified.');
 
       if (_type.get(klass) !== 'function')
-        _self.die('First parameter must be a function');
+        _self.die('First parameter must be a function.');
 
       // Instanciate the module:
       klass.apply(module, (params || []).concat(_lightScope));
@@ -536,6 +602,14 @@
       return false;
     }
 
+    function _call(service, params) {
+      if (_services[service])
+        return _services[service](params);
+
+      _self.warn('Service "' + service + '" not referenced.');
+      return false;
+    }
+
     function _getLabel(id) {
       return _labels[id];
     }
@@ -545,14 +619,15 @@
     }
 
     function _expand(v) {
-      var a = (v || '').toString().match(
-        new RegExp('^' + __settings__['shortcutPrefix'])
-      );
+      var l = arguments.length,
+          a = (v || '').toString().match(
+            new RegExp('^' + __settings__['shortcutPrefix'] + '(\\w+)$')
+          );
 
       // Case where the string doesn't match:
       if (!a || !a.length)
         return v;
-      a = a[0];
+      a = a[1];
 
       // Check shortcuts:
       if (_type.get(_shortcuts[a]) === 'function')
@@ -562,10 +637,16 @@
       if (_type.get(_getters[a]) === 'function')
         return _get(a);
 
+      // Check other custom objects:
+      for (var i = 1; i < l; i++)
+        if ((arguments[i] || {})[a] !== undefined)
+          return arguments[i][a];
+
       return v;
     }
 
-    this.addModule = addModule;
+    // Return a scope:
+    return _fullScope;
   };
   var domino = window.domino;
 
@@ -644,8 +725,8 @@
 
       var type = o.type || 'GET',
           url = o.url || '',
-          ctyp = o.contenttype || 'application/x-www-form-urlencoded',
-          dtyp = o.datatype || 'application/json',
+          ctyp = o.contentType || 'application/x-www-form-urlencoded',
+          dtyp = o.dataType || 'json',
           xhr = new XMLHttpRequest(),
           timer,
           d;
