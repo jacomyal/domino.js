@@ -521,7 +521,7 @@
           o = options || {},
           dispatch = {};
 
-      o['loop'] = (o['loop']||0) + 1;
+      o['loop'] = (o['loop'] || 0) + 1;
 
       var eventsArray = _utils.array(events);
       for (i in eventsArray) {
