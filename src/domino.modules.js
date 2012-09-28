@@ -371,7 +371,7 @@
       var data = {};
       data[o['property']] =
         html.find('input').val().split(',' || o['sep']).map(function(s) {
-          return s.replace(/^ */g,'').replace(/ *$/g,'');
+          return s.replace(/^ */g, '').replace(/ *$/g, '');
         }).filter(function(s) {
           return !!s;
         });
