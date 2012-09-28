@@ -28,7 +28,9 @@
         _getters = {},
         _setters = {},
         _statics = {},
-        _properties = {};
+        _properties = {},
+        _overriddenGetters = {},
+        _overriddenSetters = {};
 
     // Modules:
     var _modules = [];
@@ -43,37 +45,45 @@
 
     // AJAX management:
     var _services = {},
+        _currentCalls = {},
         _shortcuts = {};
 
     // Scopes:
-    var _lightScope = {
-          get: _get,
-          events: _getEvents,
-          label: _getLabel,
-          dump: _self.dump,
-          expand: _expand
-        },
-        _fullScope = {
-          get: _get,
-          set: _set,
-          events: _getEvents,
-          label: _getLabel,
-          dump: _self.dump,
-          warn: _self.warn,
-          die: _self.die,
-          update: _update,
-          expand: _expand,
-          call: _call,
-          addModule: addModule
-        };
+    function _getLightScope() {
+      return {
+        get: _get,
+        events: _getEvents,
+        label: _getLabel,
+        dump: _self.dump,
+        expand: _expand // ??
+      };
+    }
+
+    function _getFullScope() {
+      return {
+        get: _get,
+        set: _set,
+        events: _getEvents,
+        label: _getLabel,
+        dump: _self.dump,
+        warn: _self.warn,
+        die: _self.die,
+        update: _update,
+        expand: _expand,
+        call: _call,
+        addModule: addModule
+      };
+    }
 
     // Set protected property names:
-    var _protectedNames = {};
+    var _protectedNames = {
+      dispatch: 1
+    };
     (function() {
       var k;
-      for (k in _lightScope)
+      for (k in _getLightScope())
         _protectedNames[k] = 1;
-      for (k in _fullScope)
+      for (k in _getFullScope())
         _protectedNames[k] = 1;
     })();
 
@@ -161,40 +171,48 @@
 
       // Type:
       if (o['type'] !== undefined)
-        !_type.isValid(o['type']) ?
+        if (!_type.isValid(o['type']))
           _self.warn(
             'Property "' + id + '": Type not valid'
-          ) :
-          (_types[id] = o['type']);
+          );
+        else
+          _types[id] = o['type'];
 
       // Setter:
       if (o['setter'] !== undefined)
-        !_type.get(o['setter']) !== 'function' ?
+        if (_type.get(o['setter']) !== 'function')
           _self.warn(
             'Property "' + id + '": Setter is not a function'
-          ) :
-          (_setters[id] = o['setter']);
+          );
+        else {
+          _setters[id] = o['setter'];
+          _overriddenSetters[id] = true;
+        }
 
       _setters[id] = _setters[id] || function(v) {
         if (v === _properties[id])
           return false;
 
-        (_types[id] && !_type.check(_types[id], v)) ?
+        if (_types[id] && !_type.check(_types[id], v))
           _self.warn(
             'Property "' + id + '": Wrong type error'
-          ) :
-          (_properties[id] = v);
+          );
+        else
+          _properties[id] = v;
 
         return true;
       };
 
       // Getter:
       if (o['getter'] !== undefined)
-        !_type.get(o['getter']) !== 'function' ?
+        if (!_type.get(o['getter']) !== 'function')
           _self.warn(
             'Property "' + id + '": Getter is not a function'
-          ) :
-          (_getters[id] = o['getter']);
+          );
+        else {
+          _getters[id] = o['getter'];
+          _overriddenGetters[id] = true;
+        }
 
       _getters[id] = _getters[id] || function() {
         return _properties[id];
@@ -358,17 +376,17 @@
               dataType: p['dataType'] || o['dataType'],
               type: (p['type'] || o['type'] || 'GET').toString().toUpperCase(),
               data: _type.get(o['data']) === 'function' ?
-                      o['data'].apply(_lightScope, p['data'] || []) :
+                      o['data'].apply(_getLightScope(), p['data'] || []) :
                       (p['data'] || o['data']),
               url: _type.get(o['url']) === 'function' ?
-                      o['url'].call(_lightScope) :
+                      o['url'].call(_getLightScope()) :
                       o['url'],
               error: function(mes, xhr) {
                 _self.dispatchEvent('domino.ajaxFailed');
                 var error = p['error'] || o['error'];
 
                 if (_type.get(error) === 'function')
-                  error.call(_fullScope, mes, xhr);
+                  error.call(_getFullScope(), mes, xhr);
                 else
                   _self.die('Loading failed with message "' + mes + '".');
               }
@@ -474,12 +492,12 @@
 
           // Check success:
           if (_type.get(success) === 'function')
-            success.call(_fullScope, data, p);
+            success.call(_getFullScope(), data, p);
 
           a = [];
           for (event in dispatch) {
-            _self.dispatchEvent(event, _lightScope);
-            a.push(_self.getEvent(event, _lightScope));
+            _self.dispatchEvent(event, _getLightScope());
+            a.push(_self.getEvent(event, _getLightScope()));
           }
 
           // Reloop:
@@ -487,8 +505,12 @@
             _mainLoop(a);
         };
 
+        // Abort:
+        if (p['abort'] && _currentCalls[o['id']])
+          _currentCalls[o['id']].abort();
+
         // Launch AJAX call:
-        _utils.ajax(ajaxObj);
+        _currentCalls[o['id']] = _utils.ajax(ajaxObj);
       };
 
       return _self;
@@ -545,6 +567,7 @@
       var i,
           o = options || {},
           module = {},
+          bind = {},
           triggers,
           property,
           event;
@@ -557,7 +580,7 @@
         _self.die('First parameter must be a function.');
 
       // Instanciate the module:
-      klass.apply(module, (params || []).concat(_lightScope));
+      klass.apply(module, (params || []).concat(_getLightScope()));
       triggers = module.triggers || {};
 
       // Ascending communication:
@@ -575,16 +598,22 @@
           var data = {};
           data[property] = _get(property);
           triggers.properties[property](
-            _self.getEvent('domino.initialUpdate', _lightScope)
+            _self.getEvent('domino.initialUpdate', _getLightScope())
           );
         }
       }
 
       // Descending communication:
       for (event in _ascending || {})
-        module.addEventListener(event, _mainLoop);
+        bind[event] = 1;
 
       for (event in _hackMethods || {})
+        bind[event] = 1;
+
+      for (event in _hackDispatch || {})
+        bind[event] = 1;
+
+      for (event in bind)
         module.addEventListener(event, _mainLoop);
 
       // Finalize:
@@ -631,8 +660,14 @@
         }
 
         // Check hacks to trigger:
-        for (j in _hackMethods[event.type] || [])
-          _hackMethods[event.type][j].call(_fullScope, event);
+        for (j in _hackMethods[event.type] || []) {
+          var scope = _getFullScope();
+          _hackMethods[event.type][j].call(scope, event);
+
+          a = _utils.array(scope.dispatch);
+          for (k in a)
+            dispatch[a[k]] = 1;
+        }
 
         for (j in _hackDispatch[event.type] || [])
           dispatch[_hackDispatch[event.type][j]] = 1;
@@ -642,8 +677,8 @@
 
       a = [];
       for (event in dispatch) {
-        _self.dispatchEvent(event, _lightScope);
-        a.push(_self.getEvent(event, _lightScope));
+        _self.dispatchEvent(event, _getLightScope());
+        a.push(_self.getEvent(event, _getLightScope()));
       }
 
       // Reloop:
@@ -657,46 +692,85 @@
      * For each property actually updated, the related events will be
      * dispatched through the _mainLoop method.
      *
-     * @param   {?object}   properties The optional parameters.
+     * @param   {?object}   properties The properties to update.
+     * @param   {?object}   options    The optional parameters to give to the
+     *                                 setters.
      * @private
      */
-    function _update(properties) {
+    function _update(properties, options) {
       var i, k, a, event,
           log = [],
-          o = properties || {},
-          dispatch = {};
+          p = properties,
+          dispatch = {},
+          o = options || {};
 
-      for (k in o) {
-        log.push(k);
+      if (p == null)
+        _self.warn('Nothing to update.');
 
-        if (_setters[k] && _set(k, o[k]))
-          for (i in _descending[k] || [])
-            dispatch[_descending[k][i]] = 1;
-      }
+      if (_type.get(p) === 'array')
+        for (k in p) {
+          log.push(k);
+
+          if (_setters[p[k]['property']] === undefined)
+            _self.warn('The property is not specified.');
+          else if (_set(p[k]['property'], p[k]['value']))
+            for (i in _descending[p[k]['property']] || [])
+              dispatch[_descending[k][i]] = 1;
+        }
+      else if (_type.get(p) === 'object')
+        for (k in p) {
+          log.push(k);
+
+          if (_setters[k] && _set(k, p[k]))
+            for (i in _descending[k] || [])
+              dispatch[_descending[k][i]] = 1;
+        }
 
       _self.dump('Updating properties :', log);
 
       a = [];
       for (event in dispatch) {
-        _self.dispatchEvent(event, _lightScope);
-        a.push(_self.getEvent(event, _lightScope));
+        _self.dispatchEvent(event, _getLightScope());
+        a.push(_self.getEvent(event, _getLightScope()));
       }
 
       // Reloop:
       if (a.length)
-        _mainLoop(a, o);
+        _mainLoop(a, p);
     }
 
     function _get(property) {
-      if (_getters[property])
-        return _getters[property].call(_lightScope);
-      else
+      if (_getters[property]) {
+        if (_overriddenGetters[property]) {
+          var arg = [];
+          for (var i = 1, l = arguments.length; i < l; i++)
+            arg.push(arguments[i]);
+
+          return _getters[property].apply(_getLightScope(), arg);
+        } else
+          return _getters[property].call(_getLightScope());
+      } else
         _self.warn('Property "' + property + '" not referenced.');
     }
 
     function _set(property, value) {
-      if (_setters[property])
-        return _setters[property].call(_fullScope, value);
+      if (_setters[property]) {
+        if (_overriddenSetters[property]) {
+          var scope = _getFullScope();
+          scope[property] = _get(property);
+
+          var arg = [];
+          for (var i = 1, l = arguments.length; i < l; i++)
+            arg.push(arguments[i]);
+
+          var updated = _setters[property].apply(scope, arg);
+          if (updated)
+            _properties[property] = scope[property];
+
+          return updated;
+        } else
+          return _setters[property].call(_getFullScope(), value);
+      }
 
       _self.warn('Property "' + property + '" not referenced.');
       return false;
@@ -731,7 +805,7 @@
 
       // Check shortcuts:
       if (_type.get(_shortcuts[a]) === 'function')
-        return _shortcuts[a].call(_fullScope);
+        return _shortcuts[a].call(_getFullScope());
 
       // Check properties:
       if (_type.get(_getters[a]) === 'function')
@@ -746,7 +820,7 @@
     }
 
     // Return a scope:
-    return _fullScope;
+    return _getFullScope();
   };
   var domino = window.domino;
 
@@ -779,7 +853,7 @@
   }
 
   domino.prototype.warn = function(s) {
-    var a = ['[' + this.name + ']'];
+    var a = ['[' + this.name + '] '];
     for (var k in arguments)
       a.push(arguments[k]);
 
@@ -787,7 +861,7 @@
   };
 
   domino.prototype.die = function(s) {
-    var a = ['[' + this.name + ']'];
+    var a = ['[' + this.name + '] '];
     for (var k in arguments)
       a.push(arguments[k]);
 
@@ -795,7 +869,7 @@
   };
 
   domino.prototype.dump = function() {
-    var a = ['[' + this.name + ']'];
+    var a = ['[' + this.name + '] '];
     for (var k in arguments)
       a.push(arguments[k]);
 
