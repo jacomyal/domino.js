@@ -6,6 +6,13 @@
     throw new Error('domino already exists');
   }
 
+  /**
+   * TThe constructor of any domino.js instance.
+   *
+   * @constructor
+   * @extends domino.EventDispatcher
+   * @this {domino}
+   */
   window.domino = function() {
     dispatcher.call(this);
 
@@ -60,6 +67,17 @@
           addModule: addModule
         };
 
+    // Set protected property names:
+    var _protectedNames = {};
+    (function() {
+      var k;
+      for (k in _lightScope)
+        _protectedNames[k] = 1;
+      for (k in _fullScope)
+        _protectedNames[k] = 1;
+    })();
+
+
     // Initialization:
     var _o = {};
     this.name = 'domino';
@@ -91,7 +109,7 @@
         addService(_o.services[i]);
 
       for (i in _o.shortcuts || [])
-        addShortcut(_o.shortcuts[i]);
+        addShortcut(_o.shortcuts[i]['id'], _o.shortcuts[i]['method']);
     })();
 
 
@@ -99,31 +117,30 @@
      * References a new property, generated the setter and getter if not
      * specified, and binds the events.
      *
-     * @param   {string}  name    The name  of the property.
-     * @param   {(?{
-     *   type:     (?string),
-     *   setter:   (?function),
-     *   getter:   (?function),
-     *   value:    (?*)
-     *   triggers: (?(string|array))
-     *   dispatch: (?(string|array))
-     * })}                options An object containing eventually some more
-     *                            precise indications about the property.
+     * @param   {string}  id     The id of the property.
+     * @param   {?Object} options An object containing some more precise
+     *                            indications about the hack.
+     *
+     * @private
+     * @return {domino} Returns the domino instance itself.
      *
      * Here is the list of options that are interpreted:
      *
-     *   type     Indicated the type of the property. Use "?" to specify a
-     *            nullable property, and "|" for multiple valid types.
-     *   setter   Overrides the default property setter.
-     *   getter   Overrides the default property getter.
-     *   value    The initial value of the property. If not specified, the
-     *            value will be null if no type is specified, and the default
-     *            empty value else.
-     *   triggers The list of events that can modify the property. Can be an
-     *            array or the list of events separated by spaces.
-     *   dispatch The list of events that must be triggered after modification
-     *            of the property. Can be an array or the list of events
-     *            separated by spaces.
+     *   {?string}          label    The label of the property (the ID by
+     *                               default)
+     *   {?(string|object)} type     Indicated the type of the property. Use
+     *                               "?" to specify a nullable property, and
+     *                               "|" for multiple valid types.
+     *   {?function}        setter   Overrides the default property setter.
+     *   {?function}        getter   Overrides the default property getter.
+     *   {?*}               value    The initial value of the property.
+     *   {?(string|array)}  triggers The list of events that can modify the
+     *                               property. Can be an array or the list of
+     *                               events separated by spaces.
+     *   {?(string|array)}  dispatch The list of events that must be triggered
+     *                               after modification of the property. Can be
+     *                               an array or the list of events separated
+     *                               by spaces.
      */
     function addProperty(id, options) {
       var i,
@@ -135,6 +152,9 @@
 
       if (_properties[id] !== undefined)
         _self.die('Property "' + id + '" already exists');
+
+      if (_protectedNames[id] !== undefined)
+        _self.die('"' + id + '" can not be used to name a property');
 
       // Label:
       _labels[id] = o['label'] || id;
@@ -214,6 +234,8 @@
               'separated by spaces in a string'
           ) :
           (_descending[id] = _utils.array(o['dispatch']));
+
+      return _self;
     }
 
     /**
@@ -222,6 +244,9 @@
      *
      * @param   {?Object} options An object containing some more precise
      *                            indications about the hack.
+     *
+     * @private
+     * @return {domino} Returns the domino instance itself.
      *
      * Here is the list of options that are interpreted:
      *
@@ -260,37 +285,52 @@
             _utils.array(o['dispatch'])
           );
       }
+
+      return _self;
     }
 
     /**
-     * TODO
+     * References a new service, ie an helper to easily interact between your
+     * server and your properties. This service will take itself as parameter
+     * an object, whose most keys can override the default described bellow.
      *
      * @param   {?Object} options An object containing some more precise
      *                            indications about the service.
      *
+     * @private
+     * @return {domino} Returns the domino instance itself.
+     *
      * Here is the list of options that are interpreted:
      *
-     *   {string}             id      The name of the property.
-     *   {(string|function)}  url     The URL to call. If function, it will be
-     *                                called with the provider as parameter and
-     *                                it has to return the URL as a string.
-     *   {?string}            type    The REST method to use (default: 'GET').
-     *   {?(object|function)} params  If function, a function taking the
-     *                                provider as parameter. Else, the different
-     *                                params to send.
-     *   {?(string|array)}    event   The event to dispatch after success.
-     *   {?(string|array)}    json    "data", "content" or ["data","content"].
-     *                                Indicated if the sent/received data is in
-     *                                JSON.
-     *   {?string}            setter  See below...
-     *   {?(function|string)} success The function to call in case of success.
-     *                                If not indicated, will try to set in the
-     *                                provider the value named as this service
-     *                                ID.
-     *                                If a string, will split it on "." and call
-     *                                the path in the "data" object before
-     *                                calling the setter (like the "setter").
-     *   {?function}          error   The function to call in case of error.
+     *   {string}          id
+     *   {string|function} url
+     *   {?string}         contentType+ The AJAX query content-type
+     *   {?string}         dataType+    The AJAX query data-type
+     *   {?string}         type+        The AJAX call type (GET|POST|DELETE)
+     *   {?(*|function)}   data+*       The data sent in the AJAX call. Can be
+     *                                  either an object or a function (in
+     *                                  which case it will be evaluated with
+     *                                  the "light" scope). Then, the object
+     *                                  will be parsed, and shortcuts can be
+     *                                  used in the first depth of the object.
+     *   {?function}       error+       A function to execute if AJAX failed.
+     *                                  Will be called in the "full" scope.
+     *   {?function}       success+     A function to execute if AJAX
+     *                                  successed. Will be called in the
+     *                                  "full" scope.
+     *   {?string}         setter+*     The name of a property. If the setter
+     *                                  exists, then it will be called with the
+     *                                  received data as parameter, or the
+     *                                  value corresponding to the path, if
+     *                                  specified.
+     *   {?(string|array)} path+*       Indicates the path of the data to give
+     *                                  to the setter, if specified.
+     *   {?(string|array)} events++     The events to dispatch in case of
+     *                                  success
+     *
+     * The properties followed by + are overridable when the service is called.
+     * The properties followed by ++ are cumulative when the service is called.
+     * The properties followed by "*" accept shortcut values.
      */
     function addService(options) {
       var o = options || {};
@@ -314,15 +354,23 @@
       _services[o['id']] = function(params) {
         var p = params || {},
             ajaxObj = {
-              contentType: p.contentType || o.contentType,
-              dataType: p.dataType || o.dataType,
-              type: (p.type || o.type || 'GET').toString().toUpperCase(),
-              data: _type.get(o.data) === 'function' ?
-                      o.data.apply(_lightScope, p.data || []) :
-                      (p.data || o.data),
-              url: o['url'],
-              error: p.error || o.error || function(mes, xhr) {
-                _self.die('Loading failed with message "' + mes + '".');
+              contentType: p['contentType'] || o['contentType'],
+              dataType: p['dataType'] || o['dataType'],
+              type: (p['type'] || o['type'] || 'GET').toString().toUpperCase(),
+              data: _type.get(o['data']) === 'function' ?
+                      o['data'].apply(_lightScope, p['data'] || []) :
+                      (p['data'] || o['data']),
+              url: _type.get(o['url']) === 'function' ?
+                      o['url'].call(_lightScope) :
+                      o['url'],
+              error: function(mes, xhr) {
+                _self.dispatchEvent('domino.ajaxFailed');
+                var error = p['error'] || o['error'];
+
+                if (_type.get(error) === 'function')
+                  error.call(_fullScope, mes, xhr);
+                else
+                  _self.die('Loading failed with message "' + mes + '".');
               }
             };
 
@@ -369,25 +417,29 @@
         // Success management:
         ajaxObj.success = function(data) {
           var i, a, pushEvents, event,
-              dispatch = {},
-              path = (p.path || o.path),
               pathArray, d,
-              setter = p.setter || o.setter,
-              success = p.success || o.success;
+              dispatch = {},
+              path = p['path'] || o['path'],
+              setter = p['setter'] || o['setter'],
+              success = p['success'] || o['success'];
 
           // Expand different string params:
           if (_type.get(setter) === 'string')
             setter = _expand(setter, p['params']);
-          if (_type.get(success) === 'string')
-            success = _expand(success, p['params']);
           if (_type.get(path) === 'string')
             path = _expand(path, p['params']);
 
           // Check path:
           d = data;
-          pathArray = _type.get(path, 'string') ?
-            path.split('.') :
-            undefined;
+
+          if (path.match(/^(?:\w+\.)*\w+$/))
+            pathArray = _type.get(path, 'string') ?
+              path.split('.') :
+              undefined;
+          else if (_type.get(path) === 'string')
+            _self.warn(
+              'Path "' + path + '" does not match regExp /^(?:\\w+\\.)*\\w+$/'
+            );
 
           if (pathArray)
             for (i in pathArray) {
@@ -405,27 +457,24 @@
             }
 
           // Events to dispatch (service config):
-          a = _utils.array(o.events);
+          a = _utils.array(o['events']);
           for (i in a)
             dispatch[a[i]] = 1;
 
           // Events to dispatch (call config):
-          a = _utils.array(p.events);
+          a = _utils.array(p['events']);
           for (i in a)
             dispatch[a[i]] = 1;
 
-          // Check success:
-          if (_type.get(success) === 'string' && _setters[success])
-            if (_set(success, d))
-              for (k in _descending[success] || [])
-                dispatch[_descending[success][k]] = 1;
           // Check setter:
-          else if (setter && _setters[setter])
+          if (setter && _setters[setter])
             if (_set(setter, d))
               for (k in _descending[setter] || [])
                 dispatch[_descending[setter][k]] = 1;
+
+          // Check success:
           if (_type.get(success) === 'function')
-            success.call(_fullScope, d, p);
+            success.call(_fullScope, data, p);
 
           a = [];
           for (event in dispatch) {
@@ -441,22 +490,57 @@
         // Launch AJAX call:
         _utils.ajax(ajaxObj);
       };
+
+      return _self;
     }
 
-    function addShortcut(options) {
-      var o = options || {};
-
+    /**
+     * Creates a shortcut, that can be called from different parameters in the
+     * services. Basically, makes easier to insert changing values in URLs,
+     * data, etc...
+     *
+     * Any property is already registered as shortcut (that returns then the
+     * value when called), but can be overridden safely.
+     *
+     * @param   {string}   id     The string to use to call the shortcut.
+     * @param   {function} method The method to call.
+     *
+     * @private
+     * @return {domino} Returns the domino instance itself.
+     */
+    function addShortcut(id, method) {
       // Check errors:
-      if (o['id'] === undefined)
+      if (id === undefined)
         _self.die('Shortcut ID not specified.');
 
-      if (_shortcuts[o['id']])
-        _self.die('Shortcut "' + o['id'] + '" already exists.');
+      if (_shortcuts[id])
+        _self.die('Shortcut "' + id + '" already exists.');
+
+      if (method === undefined)
+        _self.die('Shortcut method not specified.');
 
       // Add shortcut:
-      _shortcuts[o['id']] = o['method'];
+      _shortcuts[id] = method;
+
+      return _self;
     }
 
+    /**
+     * This module will create and reference a module, and return it
+     *
+     * @param   {function} klass   The module class constructor.
+     * @param   {?array}   params  The array of the parameters to give to the
+     *                             module constructor. The "light" scope will
+     *                             always be given as the last parameter, to
+     *                             make it easier to find labels or events
+     *                             related to any property.
+     * @param   {?object}  options An object containing some more precise
+     *                             indications about the service (currently not
+     *                             used).
+     *
+     * @private
+     * @return {*} Returns the module just created.
+     */
     function addModule(klass, params, options) {
       var i,
           o = options || {},
@@ -509,10 +593,12 @@
     }
 
     /**
-     * The main loop, that will update
+     * The main loop, that is triggered either by modules, hacks or event by
+     * itself, and that will update properties and dispatch events to the
+     * modules, trigger hacks (and so eventually load services, for example).
      *
-     * @param   {array}   events  [description].
-     * @param   {?object} options [description].
+     * @param   {array|object}   events  The event or an array of events.
+     * @param   {?object}        options The optional parameters.
      * @private
      */
     function _mainLoop(events, options) {
@@ -565,10 +651,19 @@
         _mainLoop(a, o);
     }
 
-    function _update(options) {
+    /**
+     * A method that can update any of the properties - designed to be used
+     * especially from the hacks, eventually from the services success methods.
+     * For each property actually updated, the related events will be
+     * dispatched through the _mainLoop method.
+     *
+     * @param   {?object}   properties The optional parameters.
+     * @private
+     */
+    function _update(properties) {
       var i, k, a, event,
           log = [],
-          o = options || {},
+          o = properties || {},
           dispatch = {};
 
       for (k in o) {
@@ -904,7 +999,7 @@
     /**
      * Will execute the handler everytime that the indicated event (or the
      * indicated events) will be triggered.
-     * @param  {string} events            The name of the event (or the events
+     * @param  {string}           events  The name of the event (or the events
      *                                    separated by spaces).
      * @param  {function(Object)} handler The handler to addEventListener.
      * @return {EventDispatcher} Returns itself.
@@ -944,7 +1039,7 @@
 
     /**
      * Removes the handler from a specified event (or specified events).
-     * @param  {?string} events            The name of the event (or the events
+     * @param  {?string}           events  The name of the event (or the events
      *                                     separated by spaces). If undefined,
      *                                     then all handlers are removed.
      * @param  {?function(Object)} handler The handler to removeEventListener.
@@ -987,9 +1082,9 @@
 
     /**
      * Executes each handler bound to the event
-     * @param  {string} events The name of the event (or the events
-     *                         separated by spaces).
-     * @param  {?Object} data  The content of the event (optional).
+     * @param  {string}  events The name of the event (or the events separated
+     *                          by spaces).
+     * @param  {?Object} data   The content of the event (optional).
      * @return {EventDispatcher} Returns itself.
      */
     function dispatchEvent(events, data) {
@@ -1021,8 +1116,8 @@
 
     /**
      * Return an event Object.
-     * @param  {string} events The name of the event.
-     * @param  {?Object} data  The content of the event (optional).
+     * @param  {string}  events The name of the event.
+     * @param  {?Object} data   The content of the event (optional).
      * @return {Object} Returns itself.
      */
     function getEvent(event, data) {
