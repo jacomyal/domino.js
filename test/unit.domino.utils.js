@@ -21,6 +21,12 @@ test('test 4', function() {
 test('test 5', function() {
   deepEqual(domino.utils.array({a:1, b:2}), [{a:1, b:2}], 'Object succeeds');
 });
+test('test 6', function() {
+  deepEqual(domino.utils.array(undefined), [], 'Undefined succeeds');
+});
+test('test 7', function() {
+  deepEqual(domino.utils.array(null), [], 'Null succeeds');
+});
 
 // domino.type.get():
 module('domino.type.get()');
