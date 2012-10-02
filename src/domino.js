@@ -7,7 +7,7 @@
   }
 
   /**
-   * TThe constructor of any domino.js instance.
+   * The constructor of any domino.js instance.
    *
    * @constructor
    * @extends domino.EventDispatcher
@@ -37,7 +37,9 @@
 
     // Communication management:
     var _ascending = {},
-        _descending = {};
+        _descending = {},
+        _eventListeners = {},
+        _propertyListeners = {};
 
     // Hacks management:
     var _hackMethods = {},
@@ -55,6 +57,8 @@
         events: _getEvents,
         label: _getLabel,
         dump: _self.dump,
+        warn: _self.warn,
+        die: _self.die,
         expand: _expand // ??
       };
     }
@@ -81,6 +85,8 @@
     };
     (function() {
       var k;
+      for (k in Object.prototype)
+        _protectedNames[k] = 1;
       for (k in _getLightScope())
         _protectedNames[k] = 1;
       for (k in _getFullScope())
@@ -376,7 +382,7 @@
               dataType: p['dataType'] || o['dataType'],
               type: (p['type'] || o['type'] || 'GET').toString().toUpperCase(),
               data: _type.get(o['data']) === 'function' ?
-                      o['data'].apply(_getLightScope(), p['data'] || []) :
+                      o['data'].call(_getLightScope(), p['data']) :
                       (p['data'] || o['data']),
               url: _type.get(o['url']) === 'function' ?
                       o['url'].call(_getLightScope()) :
@@ -386,7 +392,7 @@
                 var error = p['error'] || o['error'];
 
                 if (_type.get(error) === 'function')
-                  error.call(_getFullScope(), mes, xhr);
+                  error.call(_getLightScope(), mes, xhr);
                 else
                   _self.die('Loading failed with message "' + mes + '".');
               }
@@ -450,7 +456,7 @@
           // Check path:
           d = data;
 
-          if (path.match(/^(?:\w+\.)*\w+$/))
+          if ((path || '').match(/^(?:\w+\.)*\w+$/))
             pathArray = _type.get(path, 'string') ?
               path.split('.') :
               undefined;
@@ -486,9 +492,18 @@
 
           // Check setter:
           if (setter && _setters[setter])
-            if (_set(setter, d))
+            if (_set(setter, d)) {
               for (k in _descending[setter] || [])
                 dispatch[_descending[setter][k]] = 1;
+
+              for (k in _propertyListeners[setter])
+                _execute(_propertyListeners[setter][k], {
+                  parameters: [_self.getEvent(
+                    setter,
+                    _getLightScope()
+                  )]
+                });
+            }
 
           // Check success:
           if (_type.get(success) === 'function')
@@ -570,6 +585,7 @@
           bind = {},
           triggers,
           property,
+          events,
           event;
 
       // Check errors:
@@ -584,15 +600,21 @@
       triggers = module.triggers || {};
 
       // Ascending communication:
-      for (event in triggers.events || {})
-        _self.addEventListener(event, triggers.events[event]);
+      for (events in triggers.events || {})
+        for (event in _utils.array(events)) {
+          _eventListeners[event] = _eventListeners[event] || [];
+          _eventListeners[event].push(triggers.events[event]);
+        }
 
       for (property in triggers.properties || {}) {
-        for (i in _descending[property] || [])
-          _self.addEventListener(
-            _descending[property][i],
+        for (i in _descending[property] || []) {
+          _propertyListeners[property] =
+            _propertyListeners[property] || [];
+
+          _propertyListeners[property].push(
             triggers.properties[property]
           );
+        }
 
         if (_getters[property] !== undefined) {
           var data = {};
@@ -653,13 +675,24 @@
             if (data[a[j]] !== undefined)
               pushEvents = _set(a[j], data[a[j]]) || pushEvents;
 
-            if (pushEvents)
+            if (pushEvents) {
+              for (k in _propertyListeners[a[j]])
+                _execute(_propertyListeners[a[j]][k], {
+                  parameters: [_self.getEvent(a[j], _getLightScope())]
+                });
+
               for (k in _descending[a[j]] || [])
                 dispatch[_descending[a[j]][k]] = 1;
+            }
           }
         }
 
         // Check hacks to trigger:
+        for (k in _eventListeners[event.type])
+          _execute(_eventListeners[event.type][k], {
+            parameters: event
+          });
+
         for (j in _hackMethods[event.type] || []) {
           var scope = _getFullScope();
           _hackMethods[event.type][j].call(scope, event);
@@ -673,7 +706,7 @@
           dispatch[_hackDispatch[event.type][j]] = 1;
       }
 
-      _self.dump('Main loop ' + o['loop'] + ':', log);
+      _self.dump('Iteration ' + o['loop'] + ' (main loop) :', log);
 
       a = [];
       for (event in dispatch) {
@@ -713,9 +746,18 @@
 
           if (_setters[p[k]['property']] === undefined)
             _self.warn('The property is not specified.');
-          else if (_set(p[k]['property'], p[k]['value']))
+          else if (_set(p[k]['property'], p[k]['value'])) {
+            for (i in _propertyListeners[p[k]['property']])
+              _execute(_propertyListeners[p[k]['property']][i], {
+                parameters: [_self.getEvent(
+                  p[k]['property'],
+                  _getLightScope()
+                )]
+              });
+
             for (i in _descending[p[k]['property']] || [])
-              dispatch[_descending[k][i]] = 1;
+              dispatch[_descending[p[k]['property']][i]] = 1;
+          }
         }
       else if (_type.get(p) === 'object')
         for (k in p) {
@@ -737,18 +779,30 @@
       // Reloop:
       if (a.length)
         _mainLoop(a, p);
+
+      return this;
     }
 
     function _get(property) {
       if (_getters[property]) {
         if (_overriddenGetters[property]) {
-          var arg = [];
+          var arg = [],
+              inputs = {},
+              res;
+
           for (var i = 1, l = arguments.length; i < l; i++)
             arg.push(arguments[i]);
 
-          return _getters[property].apply(_getLightScope(), arg);
+          inputs[property] = _properties[property];
+
+          res = _execute(_getters[property], {
+            parameters: arg,
+            inputValues: inputs
+          });
+
+          return res['returned'];
         } else
-          return _getters[property].call(_getLightScope());
+          return _getters[property]();
       } else
         _self.warn('Property "' + property + '" not referenced.');
     }
@@ -756,16 +810,24 @@
     function _set(property, value) {
       if (_setters[property]) {
         if (_overriddenSetters[property]) {
-          var scope = _getFullScope();
-          scope[property] = _get(property);
+          var updated, res,
+              arg = [],
+              inputs = {};
 
-          var arg = [];
+          inputs[property] = value;
+
           for (var i = 1, l = arguments.length; i < l; i++)
-            arg.push(arguments[i]);
+            args.push(arguments[i]);
 
-          var updated = _setters[property].apply(scope, arg);
+          res = _execute(_setters[property], {
+            parameters: arg,
+            inputValues: inputs
+          });
+
+          update = _type.get(res['returned']) !== 'boolean' || res['returned'];
+
           if (updated)
-            _properties[property] = scope[property];
+            _properties[property] = res['values'][property];
 
           return updated;
         } else
@@ -778,10 +840,50 @@
 
     function _call(service, params) {
       if (_services[service])
-        return _services[service](params);
+        _services[service](params);
+      else
+        _self.warn('Service "' + service + '" not referenced.');
 
-      _self.warn('Service "' + service + '" not referenced.');
-      return false;
+      return this;
+    }
+
+    function _execute(closure, options) {
+      var k, res, returned,
+          o = options || {},
+          scope = _getLightScope();
+      if (_type.get(closure) !== 'function')
+        _self.die('The first parameter must be a function');
+
+      for (k in o['inputValues'] || {})
+        scope[k] = o['inputValues'][k];
+
+      // Execute the function on the related scope:
+      returned = closure.apply(scope, o['parameters'] || []);
+
+      // Initialize result object:
+      res = {
+        'returned': returned,
+        'values': {}
+      };
+
+      // Check new vars:
+      if (scope['dispatch'] != null && !_type.check('array', scope['dispatch']))
+        _self.warn('Events must be stored in an array.');
+      else
+        res['events'] = scope['dispatch'];
+
+      if (
+        scope['properties'] != null &&
+        !_type.check('array', scope['properties'])
+      )
+        _self.warn('Properties must be stored in an array.');
+      else
+        res['properties'] = scope['properties'];
+
+      for (k in o['inputValues'])
+        res['values'][k] = scope['properties'];
+
+      return res;
     }
 
     function _getLabel(id) {
