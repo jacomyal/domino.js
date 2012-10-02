@@ -211,7 +211,7 @@
 
       // Getter:
       if (o['getter'] !== undefined)
-        if (!_type.get(o['getter']) !== 'function')
+        if (_type.get(o['getter']) !== 'function')
           _self.warn(
             'Property "' + id + '": Getter is not a function'
           );
@@ -690,12 +690,13 @@
         // Check hacks to trigger:
         for (k in _eventListeners[event.type])
           _execute(_eventListeners[event.type][k], {
-            parameters: event
+            parameters: [event]
           });
 
         for (j in _hackMethods[event.type] || []) {
-          var scope = _getFullScope();
-          _hackMethods[event.type][j].call(scope, event);
+          var obj = _execute(_hackMethods[event.type][j], {
+            parameters: [event]
+          });
 
           a = _utils.array(scope.dispatch);
           for (k in a)
@@ -742,7 +743,7 @@
 
       if (_type.get(p) === 'array')
         for (k in p) {
-          log.push(k);
+          log.push(p[k]['property']);
 
           if (_setters[p[k]['property']] === undefined)
             _self.warn('The property is not specified.');
@@ -817,14 +818,13 @@
           inputs[property] = value;
 
           for (var i = 1, l = arguments.length; i < l; i++)
-            args.push(arguments[i]);
+            arg.push(arguments[i]);
 
           res = _execute(_setters[property], {
             parameters: arg,
             inputValues: inputs
           });
-
-          update = _type.get(res['returned']) !== 'boolean' || res['returned'];
+          updated = _type.get(res['returned']) !== 'boolean' || res['returned'];
 
           if (updated)
             _properties[property] = res['values'][property];
@@ -881,7 +881,7 @@
         res['properties'] = scope['properties'];
 
       for (k in o['inputValues'])
-        res['values'][k] = scope['properties'];
+        res['values'][k] = scope[k];
 
       return res;
     }

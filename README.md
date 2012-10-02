@@ -3,7 +3,7 @@ domino.js - README
 
 There is a lot of functions given to *domino.js* through the initial configuration and the modules. One particularity of *domino.js* is that these methods are called in a specific scope, that contains safe accesses to different properties, and tools to display logs.
 
-Also, for some type of functions, some other parameters or values can be added in the scope - and 
+Also, for some type of functions, some other parameters or values can be added in the scope - and TODO
 
 ## Default scope :
  
@@ -31,7 +31,7 @@ Also, for some type of functions, some other parameters or values can be added i
 ## Methods given to domino :
 
  - **Hacks** :
-   * Parameters given through the scope : `(none)`
+   * Parameters given through the scope : *(none)*
    * Function parameters :
      + `Object` event: The event that triggered the hack
    * Accepted scope alterations :
@@ -40,14 +40,14 @@ Also, for some type of functions, some other parameters or values can be added i
    * Returns : *(not evaluated)*
 
  - **Triggers (in modules)** :
-   * Parameters given through the scope : `(none)`
+   * Parameters given through the scope : *(none)*
    * Function parameters :
      + `Object` The dispatched event
-   * Accepted scope alterations : `(none)`
+   * Accepted scope alterations : *(none)*
    * Returns : *(not evaluated)*
 
  - **Service "success"** :
-   * Parameters given through the scope : `(none)`
+   * Parameters given through the scope : *(none)*
    * Function parameters :
      + `Object` data: The data received from AJAX
    * Accepted scope alterations :
@@ -56,7 +56,7 @@ Also, for some type of functions, some other parameters or values can be added i
    * Returns : *(not evaluated)*
 
  - **Service "error"** :
-   * Parameters given through the scope : `(none)`
+   * Parameters given through the scope : *(none)*
    * Function parameters :
      + `String` mes: The error message
      + `Object` xhr: The related XHR object
@@ -66,24 +66,24 @@ Also, for some type of functions, some other parameters or values can be added i
    * Returns : *(not evaluated)*
 
  - **Service "url"** :
-   * Parameters given through the scope : `(none)`
-   * Function parameters : `(none)`
-   * Accepted scope alterations : `(none)`
+   * Parameters given through the scope : *(none)*
+   * Function parameters : *(none)*
+   * Accepted scope alterations : *(none)*
    * Returns :
      + `String` The final URL
 
  - **Service "data"** :
-   * Parameters given through the scope : `(none)`
+   * Parameters given through the scope : *(none)*
    * Function parameters :
-     + `?*` If indicated, the `data` given by the overridding parameters
-   * Accepted scope alterations : `(none)`
+     + `?*` If specified, the `data` attribute given in the overridding parameters
+   * Accepted scope alterations : *(none)*
    * Returns :
      + `*` The data given to AJAX
 
  - **Shortcuts** :
-   * Parameters given through the scope : `(none)`
-   * Function parameters : `(none)`
-   * Accepted scope alterations : `(none)`
+   * Parameters given through the scope : *(none)*
+   * Function parameters : *(none)*
+   * Accepted scope alterations : *(none)*
    * Returns :
      + `*` Anything you want, that's the point of the shortcuts
 
@@ -103,6 +103,6 @@ Also, for some type of functions, some other parameters or values can be added i
      + `*` this[property] contains the current value of the property
    * Function parameters :
      + `*` Eventually parameters, if you are using custom getters
-   * Accepted scope alterations : `(none)`
+   * Accepted scope alterations : *(none)*
    * Returns :
      + `*` The value you want to see returned through `.get(property)`
