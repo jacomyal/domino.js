@@ -51,32 +51,29 @@
         _shortcuts = {};
 
     // Scopes:
-    function _getLightScope() {
-      return {
-        get: _get,
-        events: _getEvents,
-        label: _getLabel,
-        dump: _self.dump,
-        warn: _self.warn,
-        die: _self.die,
-        expand: _expand // ??
-      };
-    }
+    function _getScope(options) {
+      var o = options || {},
+          scope = {
+            get: _get,
+            getEvents: _getEvents,
+            getLabel: _getLabel,
+            dump: _dump,
+            warn: _warn,
+            die: _die,
+            expand: _expand
+          };
 
-    function _getFullScope() {
-      return {
-        get: _get,
-        set: _set,
-        events: _getEvents,
-        label: _getLabel,
-        dump: _self.dump,
-        warn: _self.warn,
-        die: _self.die,
-        update: _update,
-        expand: _expand,
-        call: _call,
-        addModule: addModule
-      };
+      if (o.write || o.full) {
+        scope.set = _set;
+        scope.call = _call;
+      }
+
+      if (o.full) {
+        scope.addModule = _addModule;
+        scope.update = _update;
+      }
+
+      return scope;
     }
 
     // Set protected property names:
@@ -87,9 +84,7 @@
       var k;
       for (k in Object.prototype)
         _protectedNames[k] = 1;
-      for (k in _getLightScope())
-        _protectedNames[k] = 1;
-      for (k in _getFullScope())
+      for (k in _getScope({full: 1}))
         _protectedNames[k] = 1;
     })();
 
@@ -164,13 +159,13 @@
 
       // Check errors:
       if (id === undefined)
-        _self.die('Property name not specified');
+        _die('Property name not specified');
 
       if (_properties[id] !== undefined)
-        _self.die('Property "' + id + '" already exists');
+        _die('Property "' + id + '" already exists');
 
       if (_protectedNames[id] !== undefined)
-        _self.die('"' + id + '" can not be used to name a property');
+        _die('"' + id + '" can not be used to name a property');
 
       // Label:
       _labels[id] = o['label'] || id;
@@ -178,7 +173,7 @@
       // Type:
       if (o['type'] !== undefined)
         if (!_type.isValid(o['type']))
-          _self.warn(
+          _warn(
             'Property "' + id + '": Type not valid'
           );
         else
@@ -187,7 +182,7 @@
       // Setter:
       if (o['setter'] !== undefined)
         if (_type.get(o['setter']) !== 'function')
-          _self.warn(
+          _warn(
             'Property "' + id + '": Setter is not a function'
           );
         else {
@@ -200,7 +195,7 @@
           return false;
 
         if (_types[id] && !_type.check(_types[id], v))
-          _self.warn(
+          _warn(
             'Property "' + id + '": Wrong type error'
           );
         else
@@ -212,7 +207,7 @@
       // Getter:
       if (o['getter'] !== undefined)
         if (_type.get(o['getter']) !== 'function')
-          _self.warn(
+          _warn(
             'Property "' + id + '": Getter is not a function'
           );
         else {
@@ -228,7 +223,7 @@
       if (o['value'] !== undefined || _types[id])
         o['value'] !== undefined ?
             _set(id, o['value']) :
-            _self.warn(
+            _warn(
               'Property "' + id + '": ' +
                 'Initial value is missing'
             );
@@ -236,7 +231,7 @@
       // Triggers (modules-to-domino events):
       if (o['triggers'] !== undefined) {
         !_type.check('array|string', o['triggers']) &&
-          _self.warn(
+          _warn(
             'Property "' + id + '": ' +
               'Events ("triggers") must be specified in an array or ' +
               'separated by spaces in a string'
@@ -252,7 +247,7 @@
       // Dispatched events (domino-to-modules event):
       if (o['dispatch'] !== undefined)
         !_type.check('array|string', o['dispatch']) ?
-          _self.warn(
+          _warn(
             'Property "' + id + '": ' +
               'Events ("dispatch") must be specified in an array or ' +
               'separated by spaces in a string'
@@ -291,7 +286,7 @@
 
       // Errors:
       if (o['triggers'] === undefined)
-        _self.die(
+        _die(
           'A hack requires at least one trigger to be added'
         );
 
@@ -361,17 +356,17 @@
 
       // Errors:
       if (o['id'] === undefined || _type.get(o['id']) !== 'string')
-        _self.die(
+        _die(
           'The service id is not indicated.'
         );
 
       if (!_type.check('function|string', o['url']))
-        _self.die(
+        _die(
           'The service URL is not valid.'
         );
 
       if (_services[o['id']] !== undefined)
-        _self.die(
+        _die(
           'The service "' + o['id'] + '" already exists.'
         );
 
@@ -382,19 +377,19 @@
               dataType: p['dataType'] || o['dataType'],
               type: (p['type'] || o['type'] || 'GET').toString().toUpperCase(),
               data: _type.get(o['data']) === 'function' ?
-                      o['data'].call(_getLightScope(), p['data']) :
+                      o['data'].call(_getScope(), p['data']) :
                       (p['data'] || o['data']),
               url: _type.get(o['url']) === 'function' ?
-                      o['url'].call(_getLightScope()) :
+                      o['url'].call(_getScope()) :
                       o['url'],
               error: function(mes, xhr) {
                 _self.dispatchEvent('domino.ajaxFailed');
                 var error = p['error'] || o['error'];
 
                 if (_type.get(error) === 'function')
-                  error.call(_getLightScope(), mes, xhr);
+                  error.call(_getScope({ write: true }), mes, xhr);
                 else
-                  _self.die('Loading failed with message "' + mes + '".');
+                  _die('Loading failed with message "' + mes + '".');
               }
             };
 
@@ -461,7 +456,7 @@
               path.split('.') :
               undefined;
           else if (_type.get(path) === 'string')
-            _self.warn(
+            _warn(
               'Path "' + path + '" does not match regExp /^(?:\\w+\\.)*\\w+$/'
             );
 
@@ -469,7 +464,7 @@
             for (i in pathArray) {
               d = d[pathArray[i]];
               if (d === undefined) {
-                _self.warn(
+                _warn(
                   'Wrong path "' +
                     path +
                   '" for service "' +
@@ -500,19 +495,19 @@
                 _execute(_propertyListeners[setter][k], {
                   parameters: [_self.getEvent(
                     setter,
-                    _getLightScope()
+                    _getScope()
                   )]
                 });
             }
 
           // Check success:
           if (_type.get(success) === 'function')
-            success.call(_getFullScope(), data, p);
+            success.call(_getScope({ write: true }), data, p);
 
           a = [];
           for (event in dispatch) {
-            _self.dispatchEvent(event, _getLightScope());
-            a.push(_self.getEvent(event, _getLightScope()));
+            _self.dispatchEvent(event, _getScope());
+            a.push(_self.getEvent(event, _getScope()));
           }
 
           // Reloop:
@@ -548,13 +543,13 @@
     function addShortcut(id, method) {
       // Check errors:
       if (id === undefined)
-        _self.die('Shortcut ID not specified.');
+        _die('Shortcut ID not specified.');
 
       if (_shortcuts[id])
-        _self.die('Shortcut "' + id + '" already exists.');
+        _die('Shortcut "' + id + '" already exists.');
 
       if (method === undefined)
-        _self.die('Shortcut method not specified.');
+        _die('Shortcut method not specified.');
 
       // Add shortcut:
       _shortcuts[id] = method;
@@ -578,7 +573,7 @@
      * @private
      * @return {*} Returns the module just created.
      */
-    function addModule(klass, params, options) {
+    function _addModule(klass, params, options) {
       var i,
           o = options || {},
           module = {},
@@ -590,13 +585,13 @@
 
       // Check errors:
       if (klass === undefined)
-        _self.die('Module class not specified.');
+        _die('Module class not specified.');
 
       if (_type.get(klass) !== 'function')
-        _self.die('First parameter must be a function.');
+        _die('First parameter must be a function.');
 
       // Instanciate the module:
-      klass.apply(module, (params || []).concat(_getLightScope()));
+      klass.apply(module, (params || []).concat(_getScope({ write: true })));
       triggers = module.triggers || {};
 
       // Ascending communication:
@@ -620,7 +615,7 @@
           var data = {};
           data[property] = _get(property);
           triggers.properties[property](
-            _self.getEvent('domino.initialUpdate', _getLightScope())
+            _self.getEvent('domino.initialUpdate', _getScope())
           );
         }
       }
@@ -653,10 +648,11 @@
      * @private
      */
     function _mainLoop(events, options) {
-      var a, i, j, k, event, data, pushEvents,
+      var a, i, j, k, event, data, pushEvents, property,
           log = [],
           o = options || {},
-          dispatch = {};
+          dispatch = {},
+          update = {};
 
       o['loop'] = (o['loop'] || 0) + 1;
 
@@ -678,7 +674,7 @@
             if (pushEvents) {
               for (k in _propertyListeners[a[j]])
                 _execute(_propertyListeners[a[j]][k], {
-                  parameters: [_self.getEvent(a[j], _getLightScope())]
+                  parameters: [_self.getEvent(a[j], _getScope())]
                 });
 
               for (k in _descending[a[j]] || [])
@@ -698,21 +694,45 @@
             parameters: [event]
           });
 
-          a = _utils.array(scope.dispatch);
+          a = _utils.array(obj.events);
           for (k in a)
             dispatch[a[k]] = 1;
+
+          for (k in obj.properties)
+            if (update[k] === undefined)
+              update[k] = obj.properties[k];
+            else
+              _warn('The property "' + k + '" is not a method nor a property.');
         }
 
         for (j in _hackDispatch[event.type] || [])
           dispatch[_hackDispatch[event.type][j]] = 1;
       }
 
-      _self.dump('Iteration ' + o['loop'] + ' (main loop) :', log);
+      // Check if hacks have left some properties to update:
+      for (property in update) {
+        if (_setters[property] === undefined)
+            _warn('The property is not referenced.');
+          else if (_set.apply(self, [property, update[property]])) {
+            for (i in _propertyListeners[property])
+              _execute(_propertyListeners[property][i], {
+                parameters: [_self.getEvent(
+                  property,
+                  _getScope()
+                )]
+              });
+
+            for (i in _descending[property] || [])
+              dispatch[_descending[property][i]] = 1;
+          }
+      }
+
+      _dump('Iteration ' + o['loop'] + ' (main loop) :', log);
 
       a = [];
       for (event in dispatch) {
-        _self.dispatchEvent(event, _getLightScope());
-        a.push(_self.getEvent(event, _getLightScope()));
+        _self.dispatchEvent(event, _getScope());
+        a.push(_self.getEvent(event, _getScope()));
       }
 
       // Reloop:
@@ -726,9 +746,8 @@
      * For each property actually updated, the related events will be
      * dispatched through the _mainLoop method.
      *
-     * @param   {?object}   properties The properties to update.
-     * @param   {?object}   options    The optional parameters to give to the
-     *                                 setters.
+     * @param   {object|array}   properties The properties to update.
+     * @param   {?object}        options    The optional parameters.
      * @private
      */
     function _update(properties, options) {
@@ -739,20 +758,25 @@
           o = options || {};
 
       if (p == null)
-        _self.warn('Nothing to update.');
+        _warn('Nothing to update.');
 
       if (_type.get(p) === 'array')
         for (k in p) {
           log.push(p[k]['property']);
 
           if (_setters[p[k]['property']] === undefined)
-            _self.warn('The property is not specified.');
-          else if (_set(p[k]['property'], p[k]['value'])) {
+            _warn('The property is not referenced.');
+          else if (_set.apply(
+            [
+              p[k]['property'],
+              p[k]['value']
+            ].concat(p[k]['parameters'] || [])
+          )) {
             for (i in _propertyListeners[p[k]['property']])
               _execute(_propertyListeners[p[k]['property']][i], {
                 parameters: [_self.getEvent(
                   p[k]['property'],
-                  _getLightScope()
+                  _getScope()
                 )]
               });
 
@@ -768,13 +792,15 @@
             for (i in _descending[k] || [])
               dispatch[_descending[k][i]] = 1;
         }
+      else
+        _warn('The properties must be stored in an array or an object.');
 
-      _self.dump('Updating properties :', log);
+      _dump('Updating properties :', log);
 
       a = [];
       for (event in dispatch) {
-        _self.dispatchEvent(event, _getLightScope());
-        a.push(_self.getEvent(event, _getLightScope()));
+        _self.dispatchEvent(event, _getScope());
+        a.push(_self.getEvent(event, _getScope()));
       }
 
       // Reloop:
@@ -805,7 +831,7 @@
         } else
           return _getters[property]();
       } else
-        _self.warn('Property "' + property + '" not referenced.');
+        _warn('Property "' + property + '" not referenced.');
     }
 
     function _set(property, value) {
@@ -831,10 +857,10 @@
 
           return updated;
         } else
-          return _setters[property].call(_getFullScope(), value);
+          return _setters[property].call(_getScope({ write: true }), value);
       }
 
-      _self.warn('Property "' + property + '" not referenced.');
+      _warn('Property "' + property + '" not referenced.');
       return false;
     }
 
@@ -842,7 +868,7 @@
       if (_services[service])
         _services[service](params);
       else
-        _self.warn('Service "' + service + '" not referenced.');
+        _warn('Service "' + service + '" not referenced.');
 
       return this;
     }
@@ -850,9 +876,10 @@
     function _execute(closure, options) {
       var k, res, returned,
           o = options || {},
-          scope = _getLightScope();
+          scope = _getScope(o.scope);
+
       if (_type.get(closure) !== 'function')
-        _self.die('The first parameter must be a function');
+        _die('The first parameter must be a function');
 
       for (k in o['inputValues'] || {})
         scope[k] = o['inputValues'][k];
@@ -863,25 +890,24 @@
       // Initialize result object:
       res = {
         'returned': returned,
-        'values': {}
+        'properties': {},
+        'events': {}
       };
 
       // Check new vars:
-      if (scope['dispatch'] != null && !_type.check('array', scope['dispatch']))
-        _self.warn('Events must be stored in an array.');
+      if (scope['events'] != null && !_type.check('array', scope['events']))
+        _warn('Events must be stored in an array.');
       else
-        res['events'] = scope['dispatch'];
+        res['events'] = scope['events'];
 
-      if (
-        scope['properties'] != null &&
-        !_type.check('array', scope['properties'])
-      )
-        _self.warn('Properties must be stored in an array.');
-      else
-        res['properties'] = scope['properties'];
+      for (k in scope)
+        if (_setters[k] !== undefined) {
+          res['properties'][k] = scope[k];
+        } else if (_protectedNames[k] === undefined)
+          _warn('The key "' + k + '" is not a method nor a property.');
 
       for (k in o['inputValues'])
-        res['values'][k] = scope[k];
+        res['properties'][k] = scope[k];
 
       return res;
     }
@@ -893,6 +919,30 @@
     function _getEvents(id) {
       return _events[id];
     }
+
+    function _warn(s) {
+      var a = ['[' + _self.name + '] WARNING - '];
+      for (var k in arguments)
+        a.push(arguments[k]);
+
+      __warn__.apply(_self, a);
+    };
+
+    function _die(s) {
+      var a = ['[' + _self.name + '] '];
+      for (var k in arguments)
+        a.push(arguments[k]);
+
+      __die__.apply(_self, a);
+    };
+
+    function _dump() {
+      var a = ['[' + _self.name + '] '];
+      for (var k in arguments)
+        a.push(arguments[k]);
+
+      __dump__.apply(_self, a);
+    };
 
     function _expand(v) {
       var l = arguments.length,
@@ -907,7 +957,7 @@
 
       // Check shortcuts:
       if (_type.get(_shortcuts[a]) === 'function')
-        return _shortcuts[a].call(_getFullScope());
+        return _shortcuts[a].call(_getScope({ write: true }));
 
       // Check properties:
       if (_type.get(_getters[a]) === 'function')
@@ -921,8 +971,8 @@
       return v;
     }
 
-    // Return a scope:
-    return _getFullScope();
+    // Return the full scope:
+    return _getScope({ full: true });
   };
   var domino = window.domino;
 
@@ -953,30 +1003,6 @@
 
     console.log.apply(console, arguments);
   }
-
-  domino.prototype.warn = function(s) {
-    var a = ['[' + this.name + '] '];
-    for (var k in arguments)
-      a.push(arguments[k]);
-
-    __warn__.apply(this, a);
-  };
-
-  domino.prototype.die = function(s) {
-    var a = ['[' + this.name + '] '];
-    for (var k in arguments)
-      a.push(arguments[k]);
-
-    __die__.apply(this, a);
-  };
-
-  domino.prototype.dump = function() {
-    var a = ['[' + this.name + '] '];
-    for (var k in arguments)
-      a.push(arguments[k]);
-
-    __dump__.apply(this, a);
-  };
 
   // Utils:
   domino.utils = {

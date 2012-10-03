@@ -36,7 +36,7 @@
     if (!o['property'])
       throw (new Error('[Text] Property missing'));
 
-    var label = o['label'] || d.label(o['property']),
+    var label = o['label'] || d.getLabel(o['property']),
         html = o['element'] || $(
           '<fieldset></fieldset>'
         );
@@ -129,15 +129,15 @@
 
     var dispatch =
           o['dispatch'] ||
-            (d.events(o['property']).length === 1 ?
-              d.events(o['property'])[0] :
+            (d.getEvents(o['property']).length === 1 ?
+              d.getEvents(o['property'])[0] :
               null),
         html = o['element'] || $('<fieldset>' +
                    '<input type="checkbox" id="' +
                      (o['cssId'] || o['property']) +
                    '" />' +
                    '<label for="' + (o['cssId'] || o['property']) + '">' +
-                     (o['label'] || d.label(o['property'])) +
+                     (o['label'] || d.getLabel(o['property'])) +
                    '</label>' +
                  '</fieldset>');
 
@@ -208,8 +208,8 @@
 
     var dispatch =
           o['dispatch'] ||
-            (d.events(o['property']).length === 1 ?
-              d.events(o['property'])[0] :
+            (d.getEvents(o['property']).length === 1 ?
+              d.getEvents(o['property'])[0] :
               null),
         isOn,
         html = o['element'] || $('<' + (o['htmlTag'] || 'button') + '>' +
@@ -280,12 +280,12 @@
 
     var dispatch =
           o['dispatch'] ||
-            (d.events(o['property']).length === 1 ?
-              d.events(o['property'])[0] :
+            (d.getEvents(o['property']).length === 1 ?
+              d.getEvents(o['property'])[0] :
               null),
         html = o['element'] || $('<fieldset>' +
                    '<label for="' + (o['cssId'] || o['property']) + '">' +
-                     (o['label'] || d.label(o['property'])) +
+                     (o['label'] || d.getLabel(o['property'])) +
                    '</label>' +
                    '<input type="text" id="' +
                      (o['cssId'] || o['property']) +
@@ -350,12 +350,12 @@
 
     var dispatch =
           o['dispatch'] ||
-            (d.events(o['property']).length === 1 ?
-              d.events(o['property'])[0] :
+            (d.getEvents(o['property']).length === 1 ?
+              d.getEvents(o['property'])[0] :
               null),
         html = o['element'] || $('<fieldset>' +
                    '<label for="' + (o['cssId'] || o['property']) + '">' +
-                     (o['label'] || d.label(o['property'])) +
+                     (o['label'] || d.getLabel(o['property'])) +
                    '</label>' +
                    '<input type="text" id="' +
                      (o['cssId'] || o['property']) +
@@ -426,12 +426,12 @@
 
     var dispatch =
           o['dispatch'] ||
-            (d.events(o['property']).length === 1 ?
-              d.events(o['property'])[0] :
+            (d.getEvents(o['property']).length === 1 ?
+              d.getEvents(o['property'])[0] :
               null),
         html = o['element'] || $('<fieldset>' +
                    '<label for="' + (o['cssId'] || o['property']) + '">' +
-                     (o['label'] || d.label(o['property'])) +
+                     (o['label'] || d.getLabel(o['property'])) +
                    '</label>' +
                    '<input type="number" id="' +
                      (o['cssId'] || o['property']) +
@@ -497,8 +497,8 @@
 
     var dispatch =
           o['dispatch'] ||
-            (d.events(o['property']).length === 1 ?
-              d.events(o['property'])[0] :
+            (d.getEvents(o['property']).length === 1 ?
+              d.getEvents(o['property'])[0] :
               null),
         selected,
         values,
