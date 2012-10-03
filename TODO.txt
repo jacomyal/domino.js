@@ -1,0 +1,17 @@
+TODO:
+- Give a scope as 3rd "dispatchEvent()" parameter
+- Finish implementing scopes management
+- Chose definitely if setters/getters can have other parameters
+
+TEST:
+- Unit test AJAX
+- Services:
+  - Custom success
+  - Custom error
+  - Setter
+- Hacks:
+  - Events
+  - Update properties
+- Deep type checking
+- Complex events patterns
+- 
