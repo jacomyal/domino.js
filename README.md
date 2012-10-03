@@ -3,9 +3,15 @@ domino.js - README
 
 There is a lot of functions given to *domino.js* through the initial configuration and the modules. One particularity of *domino.js* is that these methods are called in a specific scope, that contains safe accesses to different properties, and tools to display logs.
 
-Also, for some type of functions, some other parameters or values can be added in the scope - and TODO
+Also, for some type of functions, some other parameters or values can be added in the scope - and some parameters can be added or modified directly in the scope - something like:
 
-## Default scope :
+```js
+this.anyProperty = 42;
+```
+
+### Default scope methods:
+
+Here is the default methods that any of the functions you give to *domino.js* will find in its scope.
  
  - **get** *(property, args...)*
    * Returns the current value of the specified property. The additional parameters are given to the getter, if this one has been customly defined.
@@ -22,87 +28,119 @@ Also, for some type of functions, some other parameters or values can be added i
  - **die** *(message)*
    * Throws a "message" error, with the `domino.js` instance name as prefix.
 
- - **events** *(property)*
+ - **getEvents** *(property)*
    * Returns the array of events that the `domino.js` instance listen to update the specified property.
 
- - **label** *(property)*
+ - **getLabel** *(property)*
    * Returns the label of the specified property.
 
-## Methods given to domino :
+### Additional methods:
 
- - **Hacks** :
-   * Parameters given through the scope : *(none)*
-   * Function parameters :
+Also, some functions you will give to *domino.js* will have access to some more methods, that can update properties or call AJAX services. Here is the list of thoses methods:
+ 
+ - **set** *(property, value, args...)*
+   * Update the property's value, and returns `true` if the property has effectively been updated, `false` else.
+
+ - **call** *(serviceId, options)*
+   * Calls the specified service. Check the **Services** documentation to see which options you can use.
+
+ - **addModule** *(class, options)*
+   * Instanciate the specified module, plugs all the event connections, and returns the module instance.
+
+ - **update** *(\{Array|Object\})*
+   * If the given parameter is an `Object`, then each pair *key/value* will set the *value* the the property *key*. If the parameter is an `Array`, it must contain objects matching *{property: String, value: *, parameters: ?Array}* (it's the only way to use update with additional parameters to the setters). After having updated the properties, this method will also dispatch the related events.
+
+**Important**: All the methods described (the default and the additional ones) are also available in the object returned by the *domino.js* constructor itself. Also, the default scope is always given as the **first** parameter to the modules constructors.
+
+### Methods given to domino:
+
+Here is the list of every types of functions you can give to *domino.js*, with the related specifications (what you can modify directly in the scope, which parameters are given, which additional methods are available):
+
+ - **Hacks**:
+   * Additional methods in the scope:
+     + *call*
+   * Parameters given through the scope: *(none)*
+   * Function parameters:
      + `Object` event: The event that triggered the hack
-   * Accepted scope alterations :
-     + `Array<String>` this.dispatch will be dispatched
-     + `Array<Object>` this.properties will be updated
-   * Returns : *(not evaluated)*
+   * Accepted scope modifications:
+     + `Array<String>` this.events will be dispatched
+     + `*` this[property] will update *property*
+   * Returns: *(not evaluated)*
 
- - **Triggers (in modules)** :
-   * Parameters given through the scope : *(none)*
-   * Function parameters :
+ - **Triggers (in modules)**:
+   * Additional methods in the scope: *(none)*
+   * Parameters given through the scope: *(none)*
+   * Function parameters:
      + `Object` The dispatched event
-   * Accepted scope alterations : *(none)*
-   * Returns : *(not evaluated)*
+   * Accepted scope modifications: *(none)*
+   * Returns: *(not evaluated)*
 
- - **Service "success"** :
-   * Parameters given through the scope : *(none)*
-   * Function parameters :
+ - **Service "success"**:
+   * Additional methods in the scope:
+     + *call*
+   * Parameters given through the scope: *(none)*
+   * Function parameters:
      + `Object` data: The data received from AJAX
-   * Accepted scope alterations :
-     + `Array<String>` this.dispatch will be dispatched
-     + `Array<Object>` this.properties will be updated
-   * Returns : *(not evaluated)*
+   * Accepted scope modifications:
+     + `Array<String>` this.events will be dispatched
+     + `*` this[property] will update *property*
+   * Returns: *(not evaluated)*
 
- - **Service "error"** :
-   * Parameters given through the scope : *(none)*
-   * Function parameters :
+ - **Service "error"**:
+   * Additional methods in the scope:
+     + *call*
+   * Parameters given through the scope: *(none)*
+   * Function parameters:
      + `String` mes: The error message
      + `Object` xhr: The related XHR object
-   * Accepted scope alterations :
-     + `Array<String>` this.dispatch will be dispatched
-     + `Array<Object>` this.properties will be updated
-   * Returns : *(not evaluated)*
+   * Accepted scope modifications:
+     + `Array<String>` this.events will be dispatched
+     + `*` this[property] will update *property*
+   * Returns: *(not evaluated)*
 
- - **Service "url"** :
-   * Parameters given through the scope : *(none)*
-   * Function parameters : *(none)*
-   * Accepted scope alterations : *(none)*
-   * Returns :
+ - **Service "url"**:
+   * Additional methods in the scope: *(none)*
+   * Parameters given through the scope: *(none)*
+   * Function parameters: *(none)*
+   * Accepted scope modifications: *(none)*
+   * Returns:
      + `String` The final URL
 
- - **Service "data"** :
-   * Parameters given through the scope : *(none)*
-   * Function parameters :
+ - **Service "data"**:
+   * Additional methods in the scope: *(none)*
+   * Parameters given through the scope: *(none)*
+   * Function parameters:
      + `?*` If specified, the `data` attribute given in the overridding parameters
-   * Accepted scope alterations : *(none)*
-   * Returns :
+   * Accepted scope modifications: *(none)*
+   * Returns:
      + `*` The data given to AJAX
 
- - **Shortcuts** :
-   * Parameters given through the scope : *(none)*
-   * Function parameters : *(none)*
-   * Accepted scope alterations : *(none)*
-   * Returns :
+ - **Shortcuts**:
+   * Additional methods in the scope: *(none)*
+   * Parameters given through the scope: *(none)*
+   * Function parameters: *(none)*
+   * Accepted scope modifications: *(none)*
+   * Returns:
      + `*` Anything you want, that's the point of the shortcuts
 
- - **Custom setters** :
-   * Parameters given through the scope :
+ - **Custom setters**:
+   * Additional methods in the scope: *(none)*
+   * Parameters given through the scope:
      + `*` this[property] contains the current value of the property
-   * Function parameters :
+   * Function parameters:
      + `*` The new value, given to `.set(property, newValue)`
      + `*` Eventually other parameters, if you are using custom setters
-   * Accepted scope alterations :
+   * Accepted scope modifications:
      + `*` this[property] contains the new value of the property
-   * Returns :
+   * Returns:
      + `?Boolean` If you return a boolean value, the property will be updated and the related events dispatched only if the returned boolean is `true`
 
- - **Custom getters** :
-   * Parameters given through the scope :
+ - **Custom getters**:
+   * Additional methods in the scope: *(none)*
+   * Parameters given through the scope:
      + `*` this[property] contains the current value of the property
-   * Function parameters :
+   * Function parameters:
      + `*` Eventually parameters, if you are using custom getters
-   * Accepted scope alterations : *(none)*
-   * Returns :
+   * Accepted scope modifications: *(none)*
+   * Returns:
      + `*` The value you want to see returned through `.get(property)`
