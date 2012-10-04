@@ -1,6 +1,7 @@
 TODO:
 - Give a scope as 3rd "dispatchEvent()" parameter
 - Finish implementing scopes management
+- Documentation (TODOs are specified in README.md)
 - Chose definitely if setters/getters can have other parameters
 
 TEST:

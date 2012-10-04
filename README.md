@@ -1,6 +1,22 @@
 domino.js - README
 ==================
 
+*domino.js* is a JavaScript library to manage interactions in dashboards. It has been especially designed for iteractive processes, to obtain quickly **maintainable** proofs of concepts.
+
+## Properties:
+
+// TODO
+
+## Modules:
+
+// TODO
+
+## Hacks:
+
+// TODO
+
+## Scopes management:
+
 There is a lot of functions given to *domino.js* through the initial configuration and the modules. One particularity of *domino.js* is that these methods are called in a specific scope, that contains safe accesses to different properties, and tools to display logs.
 
 Also, for some type of functions, some other parameters or values can be added in the scope - and some parameters can be added or modified directly in the scope - something like:
