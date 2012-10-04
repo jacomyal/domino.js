@@ -220,6 +220,19 @@
                     this.stringA = valuesA[0];
                   }
                 }
+              },
+              {
+                triggers: 'stringAUpdated',
+                method: function() {
+                  var valuesA = this.get('valuesA'),
+                      stringA = this.get('stringA');
+
+                  // Check if 'stringA' value is still in 'valuesA':
+                  if (valuesA.indexOf(stringA)<0) {
+                    this.dump('Be carefull, you have selected an invalid value!');
+                    this.stringA = valuesA[0];
+                  }
+                }
               }
             ]
           });

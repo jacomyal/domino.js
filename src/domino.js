@@ -614,9 +614,9 @@
         if (_getters[property] !== undefined) {
           var data = {};
           data[property] = _get(property);
-          triggers.properties[property](
-            _self.getEvent('domino.initialUpdate', _getScope())
-          );
+          _execute(triggers.properties[property], {
+            parameters: [_self.getEvent('domino.initialUpdate', _getScope())]
+          });
         }
       }
 
@@ -714,6 +714,7 @@
         if (_setters[property] === undefined)
             _warn('The property is not referenced.');
           else if (_set.apply(self, [property, update[property]])) {
+            console.log(property);
             for (i in _propertyListeners[property])
               _execute(_propertyListeners[property][i], {
                 parameters: [_self.getEvent(
@@ -788,9 +789,15 @@
         for (k in p) {
           log.push(k);
 
-          if (_setters[k] && _set(k, p[k]))
+          if (_setters[k] && _set.apply([k, p[k]])) {
+            for (i in _propertyListeners[k])
+              _execute(_propertyListeners[k][i], {
+                parameters: [_self.getEvent(k, _getScope())]
+              });
+
             for (i in _descending[k] || [])
               dispatch[_descending[k][i]] = 1;
+          }
         }
       else
         _warn('The properties must be stored in an array or an object.');
