@@ -64,7 +64,7 @@
           };
 
       if (o.write || o.full) {
-        scope.set = _set;
+        /// scope.set = _set;
         scope.call = _call;
       }
 
@@ -78,7 +78,7 @@
 
     // Set protected property names:
     var _protectedNames = {
-      dispatch: 1
+      events: 1
     };
     (function() {
       var k;
@@ -191,7 +191,7 @@
         }
 
       _setters[id] = _setters[id] || function(v) {
-        if (v === _properties[id])
+        if (_type.isAtom(_types[id]) && v === _properties[id])
           return false;
 
         if (_types[id] && !_type.check(_types[id], v))
@@ -223,7 +223,7 @@
       if (o['value'] !== undefined || _types[id])
         o['value'] !== undefined ?
             _set(id, o['value']) :
-            _warn(
+            _dump(
               'Property "' + id + '": ' +
                 'Initial value is missing'
             );
@@ -371,6 +371,8 @@
         );
 
       _services[o['id']] = function(params) {
+        _dump('Calling service "' + o['id'] + '".');
+
         var p = params || {},
             ajaxObj = {
               contentType: p['contentType'] || o['contentType'],
@@ -389,7 +391,9 @@
                 if (_type.get(error) === 'function')
                   error.call(_getScope({ write: true }), mes, xhr);
                 else
-                  _die('Loading failed with message "' + mes + '".');
+                  _dump(
+                    'Loading failed with message "' + mes + '" and status.'
+                  );
               }
             };
 
@@ -435,9 +439,10 @@
 
         // Success management:
         ajaxObj.success = function(data) {
-          var i, a, pushEvents, event,
+          var i, a, pushEvents, event, property,
               pathArray, d,
               dispatch = {},
+              update = {},
               path = p['path'] || o['path'],
               setter = p['setter'] || o['setter'],
               success = p['success'] || o['success'];
@@ -501,9 +506,46 @@
             }
 
           // Check success:
-          if (_type.get(success) === 'function')
-            success.call(_getScope({ write: true }), data, p);
+          if (_type.get(success) === 'function') {
+            var obj = _execute(success, {
+              parameters: [data, p],
+              scope: {
+                write: true
+              }
+            });
 
+            a = _utils.array(obj.events);
+            for (k in a)
+              dispatch[a[k]] = 1;
+
+            for (k in obj.properties)
+              if (update[k] === undefined)
+                update[k] = obj.properties[k];
+              else
+                _warn(
+                  'The property "' + k + '" is not a method nor a property.'
+                );
+          }
+
+          // Check if hacks have left some properties to update:
+          for (property in update) {
+            if (_setters[property] === undefined)
+                _warn('The property is not referenced.');
+              else if (_set(property, update[property])) {
+                for (i in _propertyListeners[property])
+                  _execute(_propertyListeners[property][i], {
+                    parameters: [_self.getEvent(
+                      property,
+                      _getScope()
+                    )]
+                  });
+
+                for (i in _descending[property] || [])
+                  dispatch[_descending[property][i]] = 1;
+              }
+          }
+
+          // Check events to dispatch:
           a = [];
           for (event in dispatch) {
             _self.dispatchEvent(event, _getScope());
@@ -595,11 +637,10 @@
       triggers = module.triggers || {};
 
       // Ascending communication:
-      for (events in triggers.events || {})
-        for (event in _utils.array(events)) {
-          _eventListeners[event] = _eventListeners[event] || [];
-          _eventListeners[event].push(triggers.events[event]);
-        }
+      for (event in triggers.events || {}) {
+        _eventListeners[event] = _eventListeners[event] || [];
+        _eventListeners[event].push(triggers.events[event]);
+      }
 
       for (property in triggers.properties || {}) {
         for (i in _descending[property] || []) {
@@ -657,10 +698,16 @@
       o['loop'] = (o['loop'] || 0) + 1;
 
       var eventsArray = _utils.array(events);
+
+      // Log:
+      for (i in eventsArray)
+        log.push(eventsArray[i].type);
+      _dump('Iteration ' + o['loop'] + ' (main loop) :', log);
+
+      // Effective loop:
       for (i in eventsArray) {
         event = eventsArray[i];
         data = event.data || {};
-        log.push(event.type);
 
         // Check properties to update:
         if (data || o['force']) {
@@ -684,14 +731,18 @@
         }
 
         // Check hacks to trigger:
-        for (k in _eventListeners[event.type])
+        for (k in _eventListeners[event.type]) {
           _execute(_eventListeners[event.type][k], {
             parameters: [event]
           });
+        }
 
         for (j in _hackMethods[event.type] || []) {
           var obj = _execute(_hackMethods[event.type][j], {
-            parameters: [event]
+            parameters: [event],
+            scope: {
+              write: true
+            }
           });
 
           a = _utils.array(obj.events);
@@ -702,7 +753,9 @@
             if (update[k] === undefined)
               update[k] = obj.properties[k];
             else
-              _warn('The property "' + k + '" is not a method nor a property.');
+              _warn(
+                'The property "' + k + '" is not a method nor a property.'
+              );
         }
 
         for (j in _hackDispatch[event.type] || [])
@@ -713,8 +766,7 @@
       for (property in update) {
         if (_setters[property] === undefined)
             _warn('The property is not referenced.');
-          else if (_set.apply(self, [property, update[property]])) {
-            console.log(property);
+          else if (_set(property, update[property])) {
             for (i in _propertyListeners[property])
               _execute(_propertyListeners[property][i], {
                 parameters: [_self.getEvent(
@@ -727,8 +779,6 @@
               dispatch[_descending[property][i]] = 1;
           }
       }
-
-      _dump('Iteration ' + o['loop'] + ' (main loop) :', log);
 
       a = [];
       for (event in dispatch) {
@@ -789,7 +839,7 @@
         for (k in p) {
           log.push(k);
 
-          if (_setters[k] && _set.apply([k, p[k]])) {
+          if (_setters[k] && _set(k, p[k])) {
             for (i in _propertyListeners[k])
               _execute(_propertyListeners[k][i], {
                 parameters: [_self.getEvent(k, _getScope())]
@@ -860,7 +910,7 @@
           updated = _type.get(res['returned']) !== 'boolean' || res['returned'];
 
           if (updated)
-            _properties[property] = res['values'][property];
+            _properties[property] = res['properties'][property];
 
           return updated;
         } else
@@ -1031,6 +1081,8 @@
     ajax: function(o, fn) {
       if (typeof o === 'string')
         o = { url: o, ok: fn };
+      else if (this.type.get(o) !== 'object')
+        __die__('[domino.global] Invalid parameter given to AJAX');
 
       var type = o.type || 'GET',
           url = o.url || '',
@@ -1078,8 +1130,13 @@
               }
             }
             o.success && o.success(d, xhr);
-          } else
-            o.error && o.error(xhr.responseText, xhr);
+          } else {
+
+            var message = +xhr.status ?
+              xhr.responseText :
+              'Aborted: ' + xhr.responseText;
+            o.error && o.error(message, xhr);
+          }
         }
       };
 
@@ -1102,11 +1159,13 @@
       return xhr;
     },
     type: (function() {
-      var classes = (
+      var atoms = ['number', 'string', 'boolean'],
+          classes = (
             'Boolean Number String Function Array Date RegExp Object'
           ).split(' '),
           class2type = {},
           types = ['*'];
+
 
       // Fill types
       for (var k in classes) {
@@ -1155,6 +1214,9 @@
             return true;
           } else
             return false;
+        },
+        isAtom: function(type) {
+          return this.get(type) === 'string' && ~atoms.indexOf(type);
         },
         isValid: function(type) {
           var a, k, i;
