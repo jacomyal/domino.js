@@ -303,6 +303,11 @@
           'A hack requires at least one trigger to be added'
         );
 
+      if (o['method'] === undefined && o['dispatch'] === undefined)
+        _die(
+          'A hack requires at least a method or a "dispatch" value to be added'
+        );
+
       a = _utils.array(o['triggers']);
       for (i in a) {
         // Method to execute:
