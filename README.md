@@ -1,11 +1,15 @@
 domino.js - README
 ==================
 
-*domino.js* is a JavaScript library to manage interactions in dashboards. It has been especially designed for iteractive processes, to obtain quickly **maintainable** proofs of concepts.
+***domino.js* is a JavaScript library to manage interactions in dashboards**. It has been especially designed for iteractive processes, to obtain quickly **maintainable** proofs of concepts.
 
-The modele is pretty simple: First, you define your **properties**, and associate input and output events to each of them. Then, you instanciate your **modules**, through *domino.js*'s modules factory. Finally, when a module will dispatch an event, it will automatically update the related properties, and the modules that are listening to these properties' output events. So you never have to connect two modules by yourself.
+The concept is pretty simple: First, you define your **properties** (that describe your data as well as all the minor counts/flags that define the state of your interface), and associate input and output events to each of them. Then, you instanciate your **modules** (that basically define all the graphic components that display or make possible to modify the properties), through *domino.js*'s modules factory, that will take care of all the connecting part.
 
-It might be easier with an example. In the following one, we just declare a *boolean* property, named "flag", and bind two modules on it - one to update it, and one to know when it is updated:
+Finally, when a module will dispatch an event, it will automatically update the related properties, and the modules that are listening to these properties' output events. **So you never have to connect two modules by yourself.**
+
+But the most important feature of *domino.js* is probably the possibility to add arbitrarily **hacks**. A hack is just a function bound to one or more events. This function will be executed in its own scope, and can update properties, call AJAX services dispatch other events, and a lot more. So basically, **it gives a strict and clear place to write all those sh\*tty features that were not considered in your original design.**
+
+It might be easier with **examples**. In the following one, we just declare a *boolean* property, named "flag", and bind two modules on it - one to update it, and one to know when it is updated:
 
 ```js
 // First, let's instanciate domino.js:
@@ -27,6 +31,9 @@ function emettorModule() {
 
   // We add a method to update easily the value:
   this.updateFlag = function(newFlagValue) {
+    // The method "dispatchEvent" from "domino.module" will trigger the update
+    // in the domino.js instance. So, it will update the value, and then check
+    // if anything is bound the any of the output events, and trigger:
     this.dispatchEvent('updateFlag', {
       flag: !!newFlagValue
     });
@@ -53,9 +60,7 @@ emettor.updateFlag(true);  // log: "New flag value: true"
 emettor.updateFlag(false); // log: "New flag value: false"
 ```
 
-But the most important feature of *domino.js* is the possibility to add arbitrarily **hacks**. Basically, you will bind a function to events. This function will be executed in its own scope, and can update properties, call AJAX services, and a lot more.
-
-The following example is basically the same than the previous one. But instead of a *boolean*, our property is a *string*, and we do not want it to exceed 5 characters. So, we add a hack bound on the output event of our property, and that will check the length of our string, and troncate it if it is too long:
+Now, the following example is basically the same than the previous one. But instead of a *boolean*, our property is a *string*, and we do not want it to exceed 5 characters. So, we add a **hack** bound on the output event of our property, and that will check the length of our string, and troncate it if it is too long:
 
 ```js
 // As previously, let's first instanciate domino.js:
@@ -145,7 +150,10 @@ Here is a more complete example on how to declare string:
   id: 'stringLessThan5Chars',
   label: 'String less than 5 chars',
   triggers: 'updateStringLessThan5Chars',
-  dispatch: ['stringLessThan5CharsUpdate', 'stringUpdated'],
+  // In this example, we associate two output events to the property. It is
+  // often useful - for example if you have to reinitialize some data or call a
+  // service when one on ten different properties is updated:
+  dispatch: ['stringLessThan5CharsUpdate', 'aStringIsUpdated'],
   type: 'string',
   setter: function(val) {
     // First, we check the length of the new value:
@@ -155,7 +163,7 @@ Here is a more complete example on how to declare string:
 
     // If the value has not change, returning false will cancel the update of
     // this property, ie the output events ('stringLessThan5CharsUpdate' and
-    // 'stringUpdated') will not be dispatched.
+    // 'aStringIsUpdated') will not be dispatched.
     if(val === this.get('stringLessThan5Chars'))
       return false;
 
@@ -169,13 +177,71 @@ Here is a more complete example on how to declare string:
 // [...]
 ```
 
-It basically makes the same thing than in the second example, but without the use of an hack. Also
+It basically makes the same thing than in the second example, but without the use of an hack.
 
 ## Modules:
 
-// TODO
+Most of the time, the **modules** represent each graphic components (*buttons* to dispatch events, *checkboxes* to represent `boolean` properties, etc...). Exactly as it is for the properties, designing your modules atomically is one of the best ways to keep your code *maintainable*.
+
+Any module must extend the `domino.module` basic class. This class has just the methods to listen to and dispatch events, and empty objects that you will fill with your **triggers**. You can bind a trigger on an *event* or directly to a *property* (it will then be triggered any time the property is effectively updated).
+
+Here is a quick and pratical example using jQuery, of a module corresponding to an HTML *checkbox*, and representing the boolean property "flag" from the first example:
+
+Here is a practical module on how to write a module that represents and make possible to update the booleab property "flag" from the first example
+
+```js
+function Checkbox() {
+  domino.module.call(this);
+
+  var self = this,
+      html = $('<fieldset>' +
+                 '<input type="checkbox" id="flag" />' +
+                 '<label for="flag">Flag</label>' +
+               '</fieldset>');
+
+  // When the checkbox is clicked, it will update the "flag" in domino, and
+  // dispatch output events:
+  html.find('input').change(function() {
+    var data = {};
+    data['flag'] = $(this).is(':checked');
+
+    // Dispatch the event
+    self.dispatchEvent('updateFlag', data);
+  });
+
+  // When the "flag" is updated, we update the state of the checkbox:
+  // ("self.triggers.properties['flag']" could have be used as well)
+  self.triggers.events['flagUpdated'] = function(event) {
+    html.find('input').attr(
+      'checked',
+      !!event.data.get('flag') ?
+        'checked' :
+        null
+    );
+  };
+
+  this.html = html;
+};
+```
+
+Once this module class is declared, if you want to add an instance to a DOM element, you just have to write:
+
+```js
+// with "d" our domino.js instance, and "dom" the DOM parent:
+var myCheckbox = d.addModule(Checkbox);
+myCheckbox.html.appendTo(dom);
+```
+
+And that's it, the module is here and connected. And you can even create two instances or more, and there will not be any conflict, and they will all stay synchronized, of course.
 
 ## Hacks:
+
+**Hacks** are useful to implement all those features that you can not predict in the definition of your projects - they actually are real *hacks*. Here are some examples of the kind of "features" that can be a disaster for your code, but are easily implementable with *domino.js:
+
+ - Restrict the max count of selected elements in a list to a specified number.
+ - Hide some available values from a *select* module when another is updated.
+ - Reset some properties when a *button* is clicked, and some other when another *button* is activated.
+ - etc...
 
 // TODO
 
@@ -297,7 +363,7 @@ Here is the list of every types of functions you can give to *domino.js*, with t
      + `?*` If specified, the `data` attribute given in the overridding parameters
    * Accepted scope modifications: *(none)*
    * Returns:
-     + `*` The data given to AJAX
+     + `*` The data send through the AJAX call
 
  - **Shortcuts**:
    * Additional methods in the scope: *(none)*
