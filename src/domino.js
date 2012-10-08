@@ -1,6 +1,8 @@
 (function(window) {
   'use strict';
 
+  var _startTime = new Date();
+
   // Check domino.js existance:
   if (window.domino) {
     throw new Error('domino already exists');
@@ -54,18 +56,27 @@
     function _getScope(options) {
       var o = options || {},
           scope = {
+            // Methods
             get: _get,
             getEvents: _getEvents,
             getLabel: _getLabel,
             dump: _dump,
             warn: _warn,
             die: _die,
-            expand: _expand
+            expand: _expand,
+
+            // Stored data:
+            events: [],
+            services: []
           };
 
       if (o.write || o.full) {
-        /// scope.set = _set;
-        scope.call = _call;
+        scope.call = function(service, params) {
+          this.services.push({
+            service: service,
+            params: params
+          });
+        };
       }
 
       if (o.full) {
@@ -78,7 +89,9 @@
 
     // Set protected property names:
     var _protectedNames = {
-      events: 1
+      events: 1,
+      services: 1,
+      hacks: 1
     };
     (function() {
       var k;
@@ -386,14 +399,73 @@
                       o['url'],
               error: function(mes, xhr) {
                 _self.dispatchEvent('domino.ajaxFailed');
-                var error = p['error'] || o['error'];
+                var error = p['error'] || o['error'],
+                    services = [],
+                    update = {},
+                    dispatch = {},
+                    a, k, property;
 
-                if (_type.get(error) === 'function')
+                if (_type.get(error) === 'function') {
                   error.call(_getScope({ write: true }), mes, xhr);
-                else
+                  var obj = _execute(error, {
+                    parameters: [mes, xhr, p],
+                    scope: {
+                      write: true
+                    }
+                  });
+
+                  a = _utils.array(obj.events);
+                  for (k in a)
+                    dispatch[a[k]] = 1;
+
+                  for (k in obj.properties)
+                    if (update[k] === undefined)
+                      update[k] = obj.properties[k];
+                    else
+                      _warn(
+                        'The property ' +
+                        '"' + k + '"' +
+                        ' is not a method nor a property.'
+                      );
+
+                  services = services.concat(obj.services || []);
+                } else
                   _dump(
                     'Loading failed with message "' + mes + '" and status.'
                   );
+
+                // Check if hacks have left some properties to update:
+                for (property in update) {
+                  if (_setters[property] === undefined)
+                      _warn('The property is not referenced.');
+                    else if (_set(property, update[property])) {
+                      for (i in _propertyListeners[property])
+                        _execute(_propertyListeners[property][i], {
+                          parameters: [_self.getEvent(
+                            property,
+                            _getScope()
+                          )]
+                        });
+
+                      for (i in _descending[property] || [])
+                        dispatch[_descending[property][i]] = 1;
+                    }
+                }
+
+                // Check services to call:
+                for (k in services || [])
+                  _call(services[k].service, services[k].params);
+
+                // Check events to dispatch:
+                a = [];
+                for (event in dispatch) {
+                  _self.dispatchEvent(event, _getScope());
+                  a.push(_self.getEvent(event, _getScope()));
+                }
+
+                // Reloop:
+                if (a.length)
+                  _mainLoop(a);
               }
             };
 
@@ -441,6 +513,7 @@
         ajaxObj.success = function(data) {
           var i, a, pushEvents, event, property,
               pathArray, d,
+              services = [],
               dispatch = {},
               update = {},
               path = p['path'] || o['path'],
@@ -525,6 +598,8 @@
                 _warn(
                   'The property "' + k + '" is not a method nor a property.'
                 );
+
+            services = services.concat(obj.services || []);
           }
 
           // Check if hacks have left some properties to update:
@@ -544,6 +619,10 @@
                   dispatch[_descending[property][i]] = 1;
               }
           }
+
+          // Check services to call:
+          for (k in services || [])
+            _call(services[k].service, services[k].params);
 
           // Check events to dispatch:
           a = [];
@@ -633,7 +712,7 @@
         _die('First parameter must be a function.');
 
       // Instanciate the module:
-      klass.apply(module, (params || []).concat(_getScope({ write: true })));
+      klass.apply(module, (params || []).concat(_getScope()));
       triggers = module.triggers || {};
 
       // Ascending communication:
@@ -690,6 +769,7 @@
      */
     function _mainLoop(events, options) {
       var a, i, j, k, event, data, pushEvents, property,
+          services = [],
           log = [],
           o = options || {},
           dispatch = {},
@@ -756,6 +836,8 @@
               _warn(
                 'The property "' + k + '" is not a method nor a property.'
               );
+
+          services = services.concat(obj.services || []);
         }
 
         for (j in _hackDispatch[event.type] || [])
@@ -779,6 +861,10 @@
               dispatch[_descending[property][i]] = 1;
           }
       }
+
+      // CHeck services to call:
+      for (k in services || [])
+        _call(services[k].service, services[k].params);
 
       a = [];
       for (event in dispatch) {
@@ -914,7 +1000,7 @@
 
           return updated;
         } else
-          return _setters[property].call(_getScope({ write: true }), value);
+          return _setters[property].call(_getScope(), value);
       }
 
       _warn('Property "' + property + '" not referenced.');
@@ -948,7 +1034,8 @@
       res = {
         'returned': returned,
         'properties': {},
-        'events': {}
+        'events': {},
+        'services': []
       };
 
       // Check new vars:
@@ -966,6 +1053,9 @@
       for (k in o['inputValues'])
         res['properties'][k] = scope[k];
 
+      for (k in scope['services'])
+        res['services'][k] = scope['services'][k];
+
       return res;
     }
 
@@ -978,7 +1068,11 @@
     }
 
     function _warn(s) {
-      var a = ['[' + _self.name + '] WARNING - '];
+      var a = ['[' + _self.name + ']'];
+
+      if (!__settings__['strict'])
+        a.push('WARNING');
+
       for (var k in arguments)
         a.push(arguments[k]);
 
@@ -986,7 +1080,8 @@
     };
 
     function _die(s) {
-      var a = ['[' + _self.name + '] '];
+      var a = ['[' + _self.name + ']'];
+
       for (var k in arguments)
         a.push(arguments[k]);
 
@@ -994,7 +1089,8 @@
     };
 
     function _dump() {
-      var a = ['[' + _self.name + '] '];
+      var a = ['[' + _self.name + ']'];
+
       for (var k in arguments)
         a.push(arguments[k]);
 
@@ -1058,7 +1154,14 @@
     if (!__settings__['verbose'])
       return;
 
-    console.log.apply(console, arguments);
+    var a = [];
+    for (var k in arguments)
+      a.push(arguments[k]);
+
+    if (__settings__['displayTime'])
+      a.unshift(('00000000' + (new Date().getTime() - _startTime)).substr(-8));
+
+    console.log.apply(console, a);
   }
 
   // Utils:
@@ -1134,7 +1237,10 @@
 
             var message = +xhr.status ?
               xhr.responseText :
-              'Aborted: ' + xhr.responseText;
+              xhr.responseText.length ?
+                'Aborted: ' + xhr.responseText :
+                'Aborted';
+
             o.error && o.error(message, xhr);
           }
         }
@@ -1244,7 +1350,8 @@
   var __settings__ = {
     strict: false,
     verbose: false,
-    shortcutPrefix: ':'
+    shortcutPrefix: ':',
+    displayTime: false
   };
 
   domino.settings = function(a1, a2) {
