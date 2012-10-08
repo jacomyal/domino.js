@@ -3,6 +3,121 @@ domino.js - README
 
 *domino.js* is a JavaScript library to manage interactions in dashboards. It has been especially designed for iteractive processes, to obtain quickly **maintainable** proofs of concepts.
 
+The modele is pretty simple: First, you define your **properties**, and associate input and output events to each of them. Then, you instanciate your **modules**, through *domino.js*'s modules factory. Finally, when a module will dispatch an event, it will automatically update the related properties, and the modules that are listening to these properties' output events. So you never have to connect two modules by yourself.
+
+It might be easier with an example. In the following one, we just declare a *boolean* property, named "flag", and bind two modules on it - one to update it, and one to know when it is updated:
+
+```js
+// First, let's instanciate domino.js:
+var d = new domino({
+  properties: [
+    // We only declare one property, named "flag", that will contain a
+    // boolean value:
+    {
+      id: 'flag',
+      dispatch: 'flagUpdated',
+      triggers: 'updateFlag'
+    }
+  ]
+});
+
+// Here is the module that will modify the value:
+function emettorModule() {
+  domino.module.call(this);
+
+  // We add a method to update easily the value:
+  this.updateFlag = function(newFlagValue) {
+    this.dispatchEvent('updateFlag', {
+      flag: !!newFlagValue
+    });
+  }
+}
+
+// Here is the module that receive the events when the flag is updated.
+function receptorModule() {
+  domino.module.call(this);
+
+  // We add a trigger on the "flagUpdated" event, that will just display the
+  // new value
+  this.triggers.events['flagUpdated'] = function(event) {
+    console.log('New flag value: '+event.data.get('flag'));
+  };
+}
+
+// Finally, we have to instanciate our modules:
+var emettor = d.addModule(emettorModule),
+    receptor = d.addModule(receptorModule);
+
+// Now, let's test it:
+emettor.updateFlag(true);  // log: "New flag value: true"
+emettor.updateFlag(false); // log: "New flag value: false"
+```
+
+But the most important feature of *domino.js* is the possibility to add arbitrarily **hacks**. Basically, you will bind a function to events. This function will be executed in its own scope, and can update properties, call AJAX services, and a lot more.
+
+The following example is basically the same than the previous one. But instead of a *boolean*, our property is a *string*, and we do not want it to exceed 5 characters. So, we add a hack bound on the output event of our property, and that will check the length of our string, and troncate it if it is too long:
+
+```js
+// As previously, let's first instanciate domino.js:
+var d = new domino({
+  properties: [
+    // We only declare one property, named "string", that will contain a string
+    // value:
+    {
+      id: 'string',
+      dispatch: 'stringUpdated',
+      triggers: 'updateString'
+    }
+  ],
+  hacks: [
+    {
+      triggers: 'stringUpdated',
+      method: function() {
+        var str = this.get('string');
+
+        if (str.length > 5) {
+          console.log('The string has been troncated!');
+          this.string = str.substr(0,5);
+        }
+      }
+    }
+  ]
+});
+
+// Here is the module that will dispatch
+function emettorModule() {
+  domino.module.call(this);
+
+  // We add a method to update easily the value:
+  this.updateString = function(newStringValue) {
+    this.dispatchEvent('updateString', {
+      string: newStringValue
+    });
+  }
+}
+
+// Here is the module that receive the events when the string is updated.
+function receptorModule() {
+  domino.module.call(this);
+
+  // We add a trigger on the "stringUpdated" event, that will just display the
+  // new value
+  this.triggers.events['stringUpdated'] = function(event) {
+    console.log('New string value: '+event.data.get('string'));
+  };
+}
+
+// Finally, we have to instanciate our modules:
+var emettor = d.addModule(emettorModule),
+    receptor = d.addModule(receptorModule);
+
+// Now, let's test it:
+emettor.updateString('abc');       // log: "New string value: abc"
+emettor.updateString('abcdefghi'); // log: "New string value: abcdefghi"
+                                   //      "The string has been troncated!"
+                                   //      "New string value: abcde"
+```
+
 ## Properties:
 
 // TODO
@@ -160,3 +275,7 @@ Here is the list of every types of functions you can give to *domino.js*, with t
    * Accepted scope modifications: *(none)*
    * Returns:
      + `*` The value you want to see returned through `.get(property)`
+
+## Utils:
+
+// TODO
