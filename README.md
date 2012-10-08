@@ -120,13 +120,66 @@ emettor.updateString('abcdefghi'); // log: "New string value: abcdefghi"
 
 ## Properties:
 
-// TODO
+The minimal declaration of a property is just a unique string **id**. Here is the exhaustive list of all the other parameters you can add to describe your property:
+
+ - `{?string}` **label**:
+   * The label of the property (the ID by default)
+ - `{?(string|object)}` **type**:
+   * Indicated the type of the property. Use "?" to specify a nullable property, and "|" for multiple valid types.
+ - `{?*}` **value**:
+   * The initial value of the property (obviously, it has to match the type).
+ - `{?function}` **setter**:
+   * Overrides the default property setter.
+ - `{?function}` **getter**:
+   * Overrides the default property getter.
+ - `{?(string|array)}` **triggers**:
+   * The list of events that can modify the property. Can be an array or the list of events separated by spaces.
+ - `{?(string|array)}` **dispatch**:
+   * The list of events that must be triggered after modification of the property. Can be an array or the list of events separated by spaces.
+
+Here is a more complete example on how to declare string:
+
+```js
+// [...] inside the properties declaration:
+{
+  id: 'stringLessThan5Chars',
+  label: 'String less than 5 chars',
+  triggers: 'updateStringLessThan5Chars',
+  dispatch: ['stringLessThan5CharsUpdate', 'stringUpdated'],
+  type: 'string',
+  setter: function(val) {
+    // First, we check the length of the new value:
+    val = val.length>5 ?
+      val.substr(0,5) :
+      val;
+
+    // If the value has not change, returning false will cancel the update of
+    // this property, ie the output events ('stringLessThan5CharsUpdate' and
+    // 'stringUpdated') will not be dispatched.
+    if(val === this.get('stringLessThan5Chars'))
+      return false;
+
+    this.stringLessThan5Chars = val;
+    return true;
+  },
+  // Here, since the setter will be used to set the initial value, the initial
+  // value will be "abcde" and not "abcdefghi":
+  value: 'abcdefghi'
+}
+// [...]
+```
+
+It basically makes the same thing than in the second example, but without the use of an hack. Also
 
 ## Modules:
 
 // TODO
 
 ## Hacks:
+
+// TODO
+
+## Main loop: Inside *domino.js*:
 
 // TODO
 
@@ -277,5 +330,9 @@ Here is the list of every types of functions you can give to *domino.js*, with t
      + `*` The value you want to see returned through `.get(property)`
 
 ## Utils:
+
+// TODO
+
+## Logs and global settings:
 
 // TODO
