@@ -237,13 +237,19 @@
             ]
           });
 
-      // Here is the select module to set "stringA":
+      // Here is the module to set "stringA":
+      d3.addModule(domino.modules.TextInput, [{
+        values: 'valuesA',
+        property: 'stringA'
+      }]).html.appendTo(dom3_1);
+
+      // Here is the module to set "stringA", but constrained by "valuesA":
       d3.addModule(domino.modules.Select, [{
         values: 'valuesA',
         property: 'stringA'
       }]).html.appendTo(dom3_1);
 
-      // And here is the input module to set the values:
+      // And here is the input module to set the values of "valuesA:
       d3.addModule(domino.modules.ArrayInput, [{
         property: 'valuesA'
       }]).html.appendTo(dom3_1);
