@@ -70,7 +70,7 @@
             services: []
           };
 
-      if (o.write || o.full) {
+      if (o.call || o.full) {
         scope.call = function(service, params) {
           this.services.push({
             service: service,
@@ -406,11 +406,10 @@
                     a, k, property;
 
                 if (_type.get(error) === 'function') {
-                  error.call(_getScope({ write: true }), mes, xhr);
                   var obj = _execute(error, {
                     parameters: [mes, xhr, p],
                     scope: {
-                      write: true
+                      call: true
                     }
                   });
 
@@ -535,7 +534,7 @@
               undefined;
           else if (_type.get(path) === 'string')
             _warn(
-              'Path "' + path + '" does not match regExp /^(?:\\w+\\.)*\\w+$/'
+              'Path "' + path + '" does not match RegExp /^(?:\\w+\\.)*\\w+$/'
             );
 
           if (pathArray)
@@ -543,11 +542,7 @@
               d = d[pathArray[i]];
               if (d === undefined) {
                 _warn(
-                  'Wrong path "' +
-                    path +
-                  '" for service "' +
-                    o['id'] +
-                  '".'
+                  'Wrong path "' + path + '" for service "' + o['id'] + '".'
                 );
                 continue;
               }
@@ -583,7 +578,7 @@
             var obj = _execute(success, {
               parameters: [data, p],
               scope: {
-                write: true
+                call: true
               }
             });
 
@@ -821,7 +816,7 @@
           var obj = _execute(_hackMethods[event.type][j], {
             parameters: [event],
             scope: {
-              write: true
+              call: true
             }
           });
 
@@ -862,7 +857,7 @@
           }
       }
 
-      // CHeck services to call:
+      // Check services to call:
       for (k in services || [])
         _call(services[k].service, services[k].params);
 
@@ -1110,7 +1105,7 @@
 
       // Check shortcuts:
       if (_type.get(_shortcuts[a]) === 'function')
-        return _shortcuts[a].call(_getScope({ write: true }));
+        return _shortcuts[a].call(_getScope());
 
       // Check properties:
       if (_type.get(_getters[a]) === 'function')
