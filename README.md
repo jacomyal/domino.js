@@ -243,11 +243,54 @@ And that's it, the module is here and connected. And you can even create two ins
  - Reset some properties when a *button* is clicked, and some other when another *button* is activated.
  - etc...
 
-// TODO
+Let's consider the following practical case: You have an array of elements (property `list`) that depends on three different flags (properties `flag1`, `flag2` and `flag3`). More precisely, let's assume you have a method `refreshList` that takes the values of `flag1`, `flag2` and `flag3` as parameters and returns the new list.
+
+```js
+var d = new domino({
+  properties: [
+    {
+      id: 'flag1',
+      triggers: 'updateFlag1',
+      dispatch: ['flag1Updated', 'flagUpdated']
+    },
+    {
+      id: 'flag2',
+      triggers: 'updateFlag2',
+      dispatch: ['flag2Updated', 'flagUpdated']
+    },
+    {
+      id: 'flag3',
+      triggers: 'updateFlag3',
+      dispatch: ['flag3Updated', 'flagUpdated']
+    },
+    {
+      id: 'list',
+      dispatch: 'listUpdated'
+    }
+  ],
+  hacks: [
+    {
+      triggers: 'flagUpdated',
+      method: function() {
+        // Here you can refresh the list:
+        this.list = refreshList(
+          this.get('flag1'),
+          this.get('flag2'),
+          this.get('flag3')
+        );
+      }
+    }
+  ]
+});
+```
+
+And that's it: Any time one flag is updated, the list will automatically be refreshed, and the event "listUpdated" dispatched.
+
+*The different methods you can call from the hacks' methods are described in the section **Scopes management**.*
 
 ## Main loop: Inside *domino.js*:
 
-// TODO
+The core function in *domino.js* manages the events chain. Basically // TODO
 
 ## Scopes management:
 
