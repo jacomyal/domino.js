@@ -400,7 +400,7 @@
                       o['data'].call(_getScope(), p['data']) :
                       (p['data'] || o['data']),
               url: _type.get(o['url']) === 'function' ?
-                      o['url'].call(_getScope()) :
+                      o['url'].call(_getScope(), p['data']) :
                       o['url'],
               error: function(mes, xhr) {
                 _self.dispatchEvent('domino.ajaxFailed');
