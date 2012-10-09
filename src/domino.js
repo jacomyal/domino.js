@@ -204,7 +204,10 @@
         }
 
       _setters[id] = _setters[id] || function(v) {
-        if (_type.isAtom(_types[id]) && _type.compare(v, _properties[id], _types[id]))
+        if (
+          _type.isAtom(_types[id]) &&
+          _type.compare(v, _properties[id], _types[id])
+        )
           return false;
 
         if (_types[id] && !_type.check(_types[id], v))
@@ -480,6 +483,14 @@
             oldURL = null,
             matches;
 
+        // Check that URL is still a string:
+        if (_type.get(ajaxObj['url']) !== 'string')
+          _die(
+            'The URL is no more a string (typed "' +
+            _type.get(ajaxObj['url']) +
+            '")'
+          );
+
         // Manage shortcuts in URL:
         while (
           (matches = ajaxObj['url'].match(regexContains)) &&
@@ -515,6 +526,8 @@
 
         // Success management:
         ajaxObj.success = function(data) {
+          _dump('Service "' + o['id'] + '" successfull.');
+
           var i, a, pushEvents, event, property,
               pathArray, d,
               services = [],
