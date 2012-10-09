@@ -204,7 +204,7 @@
         }
 
       _setters[id] = _setters[id] || function(v) {
-        if (_type.isAtom(_types[id]) && v === _properties[id])
+        if (_type.isAtom(_types[id]) && _type.compare(v, _properties[id], _types[id]))
           return false;
 
         if (_types[id] && !_type.check(_types[id], v))
@@ -1265,7 +1265,7 @@
       return xhr;
     },
     type: (function() {
-      var atoms = ['number', 'string', 'boolean'],
+      var atoms = ['number', 'string', 'boolean', 'null', 'undefined'],
           classes = (
             'Boolean Number String Function Array Date RegExp Object'
           ).split(' '),
@@ -1322,7 +1322,44 @@
             return false;
         },
         isAtom: function(type) {
-          return this.get(type) === 'string' && ~atoms.indexOf(type);
+          var a, i;
+          if (this.get(type) === 'string') {
+            a = type.replace(/^\?/, '').split(/\|/);
+            for (i in a)
+              if (atoms.indexOf(a[i]) < 0)
+                return false;
+            return true;
+          } else if (this.get(type) === 'object') {
+            for (i in type)
+              if (!this.isAtom(type[i]))
+                return false;
+            return true;
+          }
+
+          return false;
+        },
+        compare: function(v1, v2, type) {
+          var t1 = this.get(v1),
+              t2 = this.get(v2),
+              a, i;
+
+          if (
+            !this.isAtom(type) ||
+            !this.check(type, v1) ||
+            !this.check(type, v2)
+          )
+            return false;
+
+          if (this.get(type) === 'string') {
+            return v1 === v2;
+          } else if (this.get(type) === 'object') {
+            for (i in type)
+              if (!this.compare(v1[i], v2[i], type[i]))
+                return false;
+            return true;
+          }
+
+          return false;
         },
         isValid: function(type) {
           var a, k, i;
