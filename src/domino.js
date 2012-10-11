@@ -70,7 +70,7 @@
             services: []
           };
 
-      if (o.call || o.full) {
+      if (o.call) {
         scope.call = function(service, params) {
           this.services.push({
             service: service,
@@ -82,6 +82,7 @@
       if (o.full) {
         scope.addModule = _addModule;
         scope.update = _update;
+        scope.call = _call;
       }
 
       return scope;
@@ -400,10 +401,10 @@
               dataType: p['dataType'] || o['dataType'],
               type: (p['type'] || o['type'] || 'GET').toString().toUpperCase(),
               data: _type.get(o['data']) === 'function' ?
-                      o['data'].call(_getScope(), p['data']) :
+                      o['data'].call(_getScope(), p) :
                       (p['data'] || o['data']),
               url: _type.get(o['url']) === 'function' ?
-                      o['url'].call(_getScope(), p['data']) :
+                      o['url'].call(_getScope(), p) :
                       o['url'],
               error: function(mes, xhr) {
                 _self.dispatchEvent('domino.ajaxFailed');
@@ -648,6 +649,65 @@
           if (a.length)
             _mainLoop(a);
         };
+
+        // Check if there is anything to do before launching the call:
+        var before = p['before'] || o['before'];
+        if (before != null && _type.get(before) === 'function') {
+          var a, property, event,
+              update = {},
+              services = [],
+              dispatch = {},
+              obj = _execute(before, {
+                parameters: [p]
+              });
+
+          a = _utils.array(obj.events);
+          for (k in a)
+            dispatch[a[k]] = 1;
+
+          for (k in obj.properties)
+            if (update[k] === undefined)
+              update[k] = obj.properties[k];
+            else
+              _warn(
+                'The property "' + k + '" is not a method nor a property.'
+              );
+
+          services = services.concat(obj.services || []);
+
+          // Check if hacks have left some properties to update:
+          for (property in update) {
+            if (_setters[property] === undefined)
+                _warn('The property is not referenced.');
+              else if (_set(property, update[property])) {
+                for (i in _propertyListeners[property])
+                  _execute(_propertyListeners[property][i], {
+                    parameters: [_self.getEvent(
+                      property,
+                      _getScope()
+                    )]
+                  });
+
+                for (i in _descending[property] || [])
+                  dispatch[_descending[property][i]] = 1;
+              }
+          }
+
+          // Check services to call:
+          for (k in services || [])
+            _call(services[k].service, services[k].params);
+
+          // Check events to dispatch:
+          a = [];
+          for (event in dispatch) {
+            _self.dispatchEvent(event, _getScope());
+            a.push(_self.getEvent(event, _getScope()));
+          }
+
+          // Reloop:
+          if (a.length)
+            _mainLoop(a);
+        }
 
         // Abort:
         if (p['abort'] && _currentCalls[o['id']])
