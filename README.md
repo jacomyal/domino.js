@@ -1,6 +1,27 @@
 domino.js - README
 ==================
 
+*domino.js* is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by [Alexis Jacomy](http://github.com/jacomyal) at [Linkfluence](http://github.com/linkfluence).
+
+### How to use it
+
+To use it, clone the depository:
+
+```
+git clone git@github.com:jacomyal/domino.js.git
+```
+
+To get a minified version:
+
+ - First, download the [Google Closure Compiler](https://developers.google.com/closure/compiler/) and copy it to `build/compiler.jar`.
+ - Then, use `make` and you will find the file `domino.min.js` in the `build` directory.
+
+### Contributing
+
+You can contribute by submitting [issues tickets](http://github.com/jacomyal/domino.js/issues) and proposing [pull requests](http://github.com/jacomyal/domino.js/pulls).
+
+## Introduction:
+
 ***domino.js* is a JavaScript library to manage interactions in dashboards**. It has been especially designed for iteractive processes, to obtain quickly **maintainable** proofs of concepts.
 
 The concept is pretty simple: First, you define your **properties** (that describe your data as well as all the minor counts/flags that define the state of your interface), and associate input and output events to each of them. Then, you instanciate your **modules** (that basically define all the graphic components that display or make possible to modify the properties), through *domino.js*'s modules factory, that will take care of all the connecting part.
@@ -290,7 +311,30 @@ And that's it: Any time one flag is updated, the list will automatically be refr
 
 ## Main loop: Inside *domino.js*:
 
-The core function in *domino.js* manages the events chain. Basically // TODO
+The core function in *domino.js* manages the events chain.
+
+Basically, when an event is dispatched from a module, it will trigger this loop. Then, the related properties will be updated, any module or hack listening to this event will be triggered - causing eventually new updates. After all these actions, new events are to be triggered. **So the loop we be called again**, but with all those new events instead of the one from the module, etc.
+
+This same loop is also called as an output for services success and error method, and the global `update` method (accessible only through the domino.js instance itself).
+
+Here is an example: With a simple `EventDispatcher` class to manage the events chain synchronously, here is the kind of case that can appen:
+
+```
+(module) -> updateProperty1 -> event1 -> hack1
+                                      -> hack2
+                            -> event2 -> hack3
+                                      -> hack4
+```
+
+Here, a module updates the property `A` which dispatches events `event1` and `event2`. Hacks `hack1` and `hack2` are triggered on `event1`, and hacks `hack3` and `hack4` are triggered on `event2`.
+
+The problem here is that `hack1` and `hack2` will be triggered **before** event2. It might not seem that much an issue here, but in more complexe chains, some hacks would be overridden by hacks you designed to be "earlier".
+
+**Hopefully, *domino.js*' main loop resolves this issue** by executing the previous events chain as following:
+
+```
+(module) -> updateProperty1 -> event1, event2 -> hack1, hack2, hack3, hack4
+```
 
 ## Scopes management:
 
