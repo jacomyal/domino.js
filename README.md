@@ -480,12 +480,33 @@ Here is the list of every types of functions you can give to *domino.js*, with t
      + `*` Eventually parameters, if you are using custom getters
    * Accepted scope modifications: *(none)*
    * Returns:
+
+## Logs and global settings:
+
+The global method `domino.settings` is used to manage global *domino.js* settings. It works like most *jQuery* methods:
+
+ - **`domino.settings(setting)`**: Will return the `setting` value is it exists, `undefined` else.
+ - **`domino.settings(setting, value)`**: Will set `value` in `setting` and return the global *domino* object.
+ - **`domino.settings(obj)`**: Will set for each `{key, value}` in `obj` the value `value` in the setting `key`, and return the global *domino* object.
+
+Here is the list of currently recognized global settings:
+
+ - **strict**: If `true`, warnings are considered as errors (default: `false`).
+ - **verbose**: If `true`, dumps will be sent in `console.log` (default: `false`).
+ - **shortcutPrefix**: Determines the shortcuts prefix (default: `":"`).
+ - **displayTime**: If `true`, dumps will be prefixed by the time since *domino.js* initialization, in milliseconds (default: `false`).
+
+Also, *domino.js* provides its own functions to log, warn or throw errors:
+
+ - **`die(args...)`** will concatenate the arguments casts as strings and throw the result as an error.
+ - **`dump(args...)`** will call `console.log(args...)` if the global setting `verbose` is true.
+ - **`warn(args...)`** will call `die(args...)` if the global setting `strict` is true, `dump(args...)` else.
+
+Finally, all the logs/warns/errors will be prefixed by the instance name if specified (the string `"domino"` else).
      + `*` The value you want to see returned through `.get(property)`
 
 ## Utils:
 
-// TODO
+*domino.js* provides its own helpers to manipulate some "Closure like" types in the `domino.utils.type` object:
 
-## Logs and global settings:
-
-// TODO
+ - **get(param)**: Returns the string type TODO
