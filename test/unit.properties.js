@@ -109,3 +109,18 @@ test('test 9', function() {
   o.m.s.dispatch({a: 1});
   deepEqual(o.m.s.historic.length, 2, 'Updating the object property with the same value actually triggers the events.');
 });
+test('test 10', function() {
+  var o = init([{
+    id: 's',
+    type: 'string',
+    value: '',
+    triggers: 'updateS',
+    dispatch: 'sUpdated',
+    setter: function(v) {
+      this.s = v.toLowerCase();
+    }
+  }]);
+
+  o.m.s.dispatch('AbCdE');
+  deepEqual(o.m.s.historic[o.m.s.historic.length-1], 'abcde', 'Setters overriding works well.');
+});
