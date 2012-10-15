@@ -1,11 +1,14 @@
 TODO:
 - Give a scope as 3rd "dispatchEvent()" parameter
-- Finish implementing scopes management
 - Documentation (TODOs are specified in README.md)
-- Chose definitely if setters/getters can have other parameters
+- Refactor repetitions (especially functions execution)
+- Send more errors (properties not referenced, events not recognized, etc...)
+- Develop default modules for Bootstrap UI components
+- Find a solution to make safer the Object properties manipulation
 
 TEST:
 - Unit test AJAX
+- Domino must work well with $.ajax overriding jQuery.ajax
 - Services:
   - Custom success
   - Custom error
@@ -15,4 +18,3 @@ TEST:
   - Update properties
 - Deep type checking
 - Complex events patterns
-- 
