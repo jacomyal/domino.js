@@ -439,7 +439,8 @@
                   services = services.concat(obj.services || []);
                 } else
                   _dump(
-                    'Loading failed with message "' + mes + '" and status.'
+                    'Loading failed with message "' + mes + '" ' +
+                    'and status ' + xhr.status + '.'
                   );
 
                 // Check if hacks have left some properties to update:
@@ -670,7 +671,7 @@
               update[k] = obj.properties[k];
             else
               _warn(
-                'The property "' + k + '" is not a method nor a property.'
+                'The key "' + k + '" is not a method nor a property.'
               );
 
           services = services.concat(obj.services || []);
