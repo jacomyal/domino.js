@@ -21,7 +21,7 @@
     // Misc:
     var _self = this,
         _utils = domino.utils,
-        _type = _utils.type;
+        _struct = domino.struct;
 
     // Properties management:
     var _types = {},
@@ -70,8 +70,8 @@
             services: []
           };
 
-      if (o.call) {
-        scope.call = function(service, params) {
+      if (o.request) {
+        scope.request = function(service, params) {
           this.services.push({
             service: service,
             params: params
@@ -81,8 +81,8 @@
 
       if (o.full) {
         scope.addModule = _addModule;
+        scope.request = _request;
         scope.update = _update;
-        scope.call = _call;
       }
 
       return scope;
@@ -107,16 +107,16 @@
     var _o = {};
     this.name = 'domino';
 
-    if (_type.get(arguments[0]) === 'string')
+    if (_struct.get(arguments[0]) === 'string')
       this.name = arguments[0];
     else if (
       arguments[0] !== undefined &&
-      _type.get(arguments[0]) === 'object'
+      _struct.get(arguments[0]) === 'object'
     )
       _o = arguments[0];
     else if (
       arguments[1] !== undefined &&
-      _type.get(arguments[1]) === 'object'
+      _struct.get(arguments[1]) === 'object'
     )
       _o = arguments[1];
 
@@ -186,7 +186,7 @@
 
       // Type:
       if (o['type'] !== undefined)
-        if (!_type.isValid(o['type']))
+        if (!_struct.isValid(o['type']))
           _warn(
             'Property "' + id + '": Type not valid'
           );
@@ -195,7 +195,7 @@
 
       // Setter:
       if (o['setter'] !== undefined)
-        if (_type.get(o['setter']) !== 'function')
+        if (_struct.get(o['setter']) !== 'function')
           _warn(
             'Property "' + id + '": Setter is not a function'
           );
@@ -206,12 +206,12 @@
 
       _setters[id] = _setters[id] || function(v) {
         if (
-          _type.isAtom(_types[id]) &&
-          _type.compare(v, _properties[id], _types[id])
+          _struct.deepScalar(_types[id]) &&
+          _struct.compare(v, _properties[id], _types[id])
         )
           return false;
 
-        if (_types[id] && !_type.check(_types[id], v))
+        if (_types[id] && !_struct.check(_types[id], v))
           _warn(
             'Property "' + id + '": Wrong type error'
           );
@@ -223,7 +223,7 @@
 
       // Getter:
       if (o['getter'] !== undefined)
-        if (_type.get(o['getter']) !== 'function')
+        if (_struct.get(o['getter']) !== 'function')
           _warn(
             'Property "' + id + '": Getter is not a function'
           );
@@ -247,7 +247,7 @@
 
       // Triggers (modules-to-domino events):
       if (o['triggers'] !== undefined) {
-        !_type.check('array|string', o['triggers']) &&
+        !_struct.check('array|string', o['triggers']) &&
           _warn(
             'Property "' + id + '": ' +
               'Events ("triggers") must be specified in an array or ' +
@@ -263,7 +263,7 @@
 
       // Dispatched events (domino-to-modules event):
       if (o['dispatch'] !== undefined)
-        !_type.check('array|string', o['dispatch']) ?
+        !_struct.check('array|string', o['dispatch']) ?
           _warn(
             'Property "' + id + '": ' +
               'Events ("dispatch") must be specified in an array or ' +
@@ -377,12 +377,12 @@
       var o = options || {};
 
       // Errors:
-      if (o['id'] === undefined || _type.get(o['id']) !== 'string')
+      if (o['id'] === undefined || _struct.get(o['id']) !== 'string')
         _die(
           'The service id is not indicated.'
         );
 
-      if (!_type.check('function|string', o['url']))
+      if (!_struct.check('function|string', o['url']))
         _die(
           'The service URL is not valid.'
         );
@@ -400,10 +400,10 @@
               contentType: p['contentType'] || o['contentType'],
               dataType: p['dataType'] || o['dataType'],
               type: (p['type'] || o['type'] || 'GET').toString().toUpperCase(),
-              data: _type.get(o['data']) === 'function' ?
+              data: _struct.get(o['data']) === 'function' ?
                       o['data'].call(_getScope(), p) :
                       (p['data'] || o['data']),
-              url: _type.get(o['url']) === 'function' ?
+              url: _struct.get(o['url']) === 'function' ?
                       o['url'].call(_getScope(), p) :
                       o['url'],
               error: function(mes, xhr) {
@@ -414,11 +414,11 @@
                     dispatch = {},
                     a, k, property;
 
-                if (_type.get(error) === 'function') {
+                if (_struct.get(error) === 'function') {
                   var obj = _execute(error, {
                     parameters: [mes, xhr, p],
                     scope: {
-                      call: true
+                      request: true
                     }
                   });
 
@@ -463,7 +463,7 @@
 
                 // Check services to call:
                 for (k in services || [])
-                  _call(services[k].service, services[k].params);
+                  _request(services[k].service, services[k].params);
 
                 // Check events to dispatch:
                 a = [];
@@ -486,10 +486,10 @@
             matches;
 
         // Check that URL is still a string:
-        if (_type.get(ajaxObj['url']) !== 'string')
+        if (_struct.get(ajaxObj['url']) !== 'string')
           _die(
             'The URL is no more a string (typed "' +
-            _type.get(ajaxObj['url']) +
+            _struct.get(ajaxObj['url']) +
             '")'
           );
 
@@ -509,16 +509,16 @@
         // Manage shortcuts in params:
         // (NOT DEEP - only first level)
         doTest = true;
-        if (_type.get(ajaxObj['data']) === 'string')
+        if (_struct.get(ajaxObj['data']) === 'string')
           if (ajaxObj['data'].match(regexFull))
             ajaxObj['data'] = _expand(ajaxObj['data'], p['params']);
 
-        if (_type.get(ajaxObj['data']) === 'object')
+        if (_struct.get(ajaxObj['data']) === 'object')
           while (doTest) {
             doTest = false;
             for (k in ajaxObj['data'])
               if (
-                _type.get(ajaxObj['data'][k]) === 'string' &&
+                _struct.get(ajaxObj['data'][k]) === 'string' &&
                 ajaxObj['data'][k].match(regexFull)
               ) {
                 ajaxObj['data'][k] = _expand(ajaxObj['data'][k], p['params']);
@@ -540,19 +540,19 @@
               success = p['success'] || o['success'];
 
           // Expand different string params:
-          if (_type.get(setter) === 'string')
+          if (_struct.get(setter) === 'string')
             setter = _expand(setter, p['params']);
-          if (_type.get(path) === 'string')
+          if (_struct.get(path) === 'string')
             path = _expand(path, p['params']);
 
           // Check path:
           d = data;
 
           if ((path || '').match(/^(?:\w+\.)*\w+$/))
-            pathArray = _type.get(path, 'string') ?
+            pathArray = _struct.get(path, 'string') ?
               path.split('.') :
               undefined;
-          else if (_type.get(path) === 'string')
+          else if (_struct.get(path) === 'string')
             _warn(
               'Path "' + path + '" does not match RegExp /^(?:\\w+\\.)*\\w+$/'
             );
@@ -594,11 +594,11 @@
             }
 
           // Check success:
-          if (_type.get(success) === 'function') {
+          if (_struct.get(success) === 'function') {
             var obj = _execute(success, {
               parameters: [data, p],
               scope: {
-                call: true
+                request: true
               }
             });
 
@@ -637,7 +637,7 @@
 
           // Check services to call:
           for (k in services || [])
-            _call(services[k].service, services[k].params);
+            _request(services[k].service, services[k].params);
 
           // Check events to dispatch:
           a = [];
@@ -653,7 +653,7 @@
 
         // Check if there is anything to do before launching the call:
         var before = p['before'] || o['before'];
-        if (before != null && _type.get(before) === 'function') {
+        if (before != null && _struct.get(before) === 'function') {
           var a, property, event,
               update = {},
               services = [],
@@ -696,7 +696,7 @@
 
           // Check services to call:
           for (k in services || [])
-            _call(services[k].service, services[k].params);
+            _request(services[k].service, services[k].params);
 
           // Check events to dispatch:
           a = [];
@@ -782,7 +782,7 @@
       if (klass === undefined)
         _die('Module class not specified.');
 
-      if (_type.get(klass) !== 'function')
+      if (_struct.get(klass) !== 'function')
         _die('First parameter must be a function.');
 
       // Instanciate the module:
@@ -895,7 +895,7 @@
           var obj = _execute(_hackMethods[event.type][j], {
             parameters: [event],
             scope: {
-              call: true
+              request: true
             }
           });
 
@@ -938,7 +938,7 @@
 
       // Check services to call:
       for (k in services || [])
-        _call(services[k].service, services[k].params);
+        _request(services[k].service, services[k].params);
 
       a = [];
       for (event in dispatch) {
@@ -971,7 +971,7 @@
       if (p == null)
         _warn('Nothing to update.');
 
-      if (_type.get(p) === 'array')
+      if (_struct.get(p) === 'array')
         for (k in p) {
           log.push(p[k]['property']);
 
@@ -995,7 +995,7 @@
               dispatch[_descending[p[k]['property']][i]] = 1;
           }
         }
-      else if (_type.get(p) === 'object')
+      else if (_struct.get(p) === 'object')
         for (k in p) {
           log.push(k);
 
@@ -1067,7 +1067,7 @@
             parameters: arg,
             inputValues: inputs
           });
-          updated = _type.get(res['returned']) !== 'boolean' || res['returned'];
+          updated = _struct.get(res['returned']) !== 'boolean' || res['returned'];
 
           if (updated)
             _properties[property] = res['properties'][property];
@@ -1081,7 +1081,7 @@
       return false;
     }
 
-    function _call(service, params) {
+    function _request(service, params) {
       if (_services[service])
         _services[service](params);
       else
@@ -1095,7 +1095,7 @@
           o = options || {},
           scope = _getScope(o.scope);
 
-      if (_type.get(closure) !== 'function')
+      if (_struct.get(closure) !== 'function')
         _die('The first parameter must be a function');
 
       for (k in o['inputValues'] || {})
@@ -1113,7 +1113,7 @@
       };
 
       // Check new vars:
-      if (scope['events'] != null && !_type.check('array', scope['events']))
+      if (scope['events'] != null && !_struct.check('array', scope['events']))
         _warn('Events must be stored in an array.');
       else
         res['events'] = scope['events'];
@@ -1183,11 +1183,11 @@
       a = a[1];
 
       // Check shortcuts:
-      if (_type.get(_shortcuts[a]) === 'function')
+      if (_struct.get(_shortcuts[a]) === 'function')
         return _shortcuts[a].call(_getScope());
 
       // Check properties:
-      if (_type.get(_getters[a]) === 'function')
+      if (_struct.get(_getters[a]) === 'function')
         return _get(a);
 
       // Check other custom objects:
@@ -1242,9 +1242,9 @@
   domino.utils = {
     array: function(v, sep) {
       var a = (
-            domino.utils.type.get(v) === 'string' ?
+            domino.struct.get(v) === 'string' ?
               v.split(sep || ' ') :
-              domino.utils.type.get(v) === 'array' ?
+              domino.struct.get(v) === 'array' ?
                 v :
                 [v]
           ),
@@ -1337,125 +1337,127 @@
 
       xhr.send(d);
       return xhr;
-    },
-    type: (function() {
-      var atoms = ['number', 'string', 'boolean', 'null', 'undefined'],
-          classes = (
-            'Boolean Number String Function Array Date RegExp Object'
-          ).split(' '),
-          class2type = {},
-          types = ['*'];
-
-
-      // Fill types
-      for (var k in classes) {
-        var name = classes[k];
-        types.push(name.toLowerCase());
-        class2type['[object ' + name + ']'] = name.toLowerCase();
-      }
-
-      return {
-        get: function(obj) {
-          return obj == null ?
-            String(obj) :
-            class2type[Object.prototype.toString.call(obj)] || 'object';
-        },
-        check: function(type, obj) {
-          var a, i,
-              typeOf = this.get(obj);
-
-          if (this.get(type) === 'string') {
-            a = type.replace(/^\?/, '').split(/\|/);
-            for (i in a)
-              if (types.indexOf(a[i]) < 0)
-                __warn__('[domino.global] Invalid type');
-
-            if (obj == null)
-              return !!type.match(/^\?/, '');
-            else
-              type = type.replace(/^\?/, '');
-
-            var splitted = type.split(/\|/);
-
-            return !!(~splitted.indexOf('*') || ~splitted.indexOf(typeOf));
-          } else if (this.get(type) === 'object') {
-            if (typeOf !== 'object')
-              return false;
-            var k;
-
-            for (k in type)
-              if (!this.check(type[k], obj[k]))
-                return false;
-
-            for (k in obj)
-              if (type[k] === undefined)
-                return false;
-
-            return true;
-          } else
-            return false;
-        },
-        isAtom: function(type) {
-          var a, i;
-          if (this.get(type) === 'string') {
-            a = type.replace(/^\?/, '').split(/\|/);
-            for (i in a)
-              if (atoms.indexOf(a[i]) < 0)
-                return false;
-            return true;
-          } else if (this.get(type) === 'object') {
-            for (i in type)
-              if (!this.isAtom(type[i]))
-                return false;
-            return true;
-          }
-
-          return false;
-        },
-        compare: function(v1, v2, type) {
-          var t1 = this.get(v1),
-              t2 = this.get(v2),
-              a, i;
-
-          if (
-            !this.isAtom(type) ||
-            !this.check(type, v1) ||
-            !this.check(type, v2)
-          )
-            return false;
-
-          if (this.get(type) === 'string') {
-            return v1 === v2;
-          } else if (this.get(type) === 'object') {
-            for (i in type)
-              if (!this.compare(v1[i], v2[i], type[i]))
-                return false;
-            return true;
-          }
-
-          return false;
-        },
-        isValid: function(type) {
-          var a, k, i;
-          if (this.get(type) === 'string') {
-            a = type.replace(/^\?/, '').split(/\|/);
-            for (i in a)
-              if (types.indexOf(a[i]) < 0)
-                return false;
-            return true;
-          } else if (this.get(type) === 'object') {
-            for (k in type)
-              if (!this.isValid(type[k]))
-                return false;
-
-            return true;
-          } else
-            return false;
-        }
-      };
-    })()
+    }
   };
+
+  domino.struct = (function() {
+    var atoms = ['number', 'string', 'boolean', 'null', 'undefined'],
+        classes = (
+          'Boolean Number String Function Array Date RegExp Object'
+        ).split(' '),
+        class2type = {},
+        types = ['*'];
+
+
+    // Fill types
+    for (var k in classes) {
+      var name = classes[k];
+      types.push(name.toLowerCase());
+      class2type['[object ' + name + ']'] = name.toLowerCase();
+    }
+
+    return {
+      get: function(obj) {
+        return obj == null ?
+          String(obj) :
+          class2type[Object.prototype.toString.call(obj)] || 'object';
+      },
+      check: function(type, obj) {
+        var a, i,
+            typeOf = this.get(obj);
+
+        if (this.get(type) === 'string') {
+          a = type.replace(/^\?/, '').split(/\|/);
+          for (i in a)
+            if (types.indexOf(a[i]) < 0)
+              __warn__('[domino.global] Invalid type');
+
+          if (obj == null)
+            return !!type.match(/^\?/, '');
+          else
+            type = type.replace(/^\?/, '');
+
+          var splitted = type.split(/\|/);
+
+          return !!(~splitted.indexOf('*') || ~splitted.indexOf(typeOf));
+        } else if (this.get(type) === 'object') {
+          if (typeOf !== 'object')
+            return false;
+          var k;
+
+          for (k in type)
+            if (!this.check(type[k], obj[k]))
+              return false;
+
+          for (k in obj)
+            if (type[k] === undefined)
+              return false;
+
+          return true;
+        } else
+          return false;
+      },
+      deepScalar: function(type) {
+        var a, i;
+        if (this.get(type) === 'string') {
+          a = type.replace(/^\?/, '').split(/\|/);
+          for (i in a)
+            if (atoms.indexOf(a[i]) < 0)
+              return false;
+          return true;
+        } else if (this.get(type) === 'object') {
+          for (i in type)
+            if (!this.deepScalar(type[i]))
+              return false;
+          return true;
+        }
+
+        return false;
+      },
+      compare: function(v1, v2, type) {
+        var t1 = this.get(v1),
+            t2 = this.get(v2),
+            a, i;
+
+        if (
+          !this.deepScalar(type) ||
+          !this.check(type, v1) ||
+          !this.check(type, v2)
+        )
+          return false;
+
+        if (this.get(type) === 'string') {
+          return v1 === v2;
+        } else if (this.get(type) === 'object') {
+          for (i in type)
+            if (!this.compare(v1[i], v2[i], type[i]))
+              return false;
+          return true;
+        }
+
+        return false;
+      },
+      isValid: function(type) {
+        var a, k, i;
+        if (this.get(type) === 'string') {
+          a = type.replace(/^\?/, '').split(/\|/);
+          for (i in a)
+            if (types.indexOf(a[i]) < 0)
+              return false;
+          return true;
+        } else if (this.get(type) === 'object') {
+          for (k in type)
+            if (!this.isValid(type[k]))
+              return false;
+
+          return true;
+        } else
+          return false;
+      }
+    };
+  })();
   var utils = domino.utils;
+  var struct = domino.struct;
 
   // Global settings:
   var __settings__ = {

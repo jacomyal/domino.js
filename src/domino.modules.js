@@ -507,7 +507,7 @@
     o['cssClass'] && html.addClass(o['cssClass']);
     o['cssId'] && html.attr('id', o['cssId']);
 
-    if (o['values'] && domino.utils.type.get(o['values']) === 'array') {
+    if (o['values'] && domino.struct.get(o['values']) === 'array') {
       values = o['values'];
       html.append(values.map(function(v) {
         return typeof v === 'string' ?

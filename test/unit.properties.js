@@ -13,7 +13,6 @@ function mod(property, d) {
   this.historic = [];
 
   this.triggers.properties[property.id] = function(event) {
-    console.log(this, event);
     self.historic.push(this.get(property.id));
   }
 
@@ -21,7 +20,6 @@ function mod(property, d) {
     var a = d.getEvents(property.id),
         o = {};
 
-    console.log(event, a[0]);
     o[property.id] = value;
     this.dispatchEvent(event || a[0], o);
   }
