@@ -378,7 +378,7 @@ Also, some functions you will give to *domino.js* will have access to some more 
  - **set** *(property, value, args...)*
    * Update the property's value, and returns `true` if the property has effectively been updated, `false` else.
 
- - **call** *(serviceId, options)*
+ - **request** *(serviceId, options)*
    * Calls the specified service. Check the **Services** documentation to see which options you can use.
 
  - **addModule** *(class, options)*
@@ -395,7 +395,7 @@ Here is the list of every types of functions you can give to *domino.js*, with t
 
  - **Hacks**:
    * Additional methods in the scope:
-     + *call*
+     + *request*
    * Parameters given through the scope: *(none)*
    * Function parameters:
      + `Object` event: The event that triggered the hack
@@ -414,7 +414,7 @@ Here is the list of every types of functions you can give to *domino.js*, with t
 
  - **Service "success"**:
    * Additional methods in the scope:
-     + *call*
+     + *request*
    * Parameters given through the scope: *(none)*
    * Function parameters:
      + `Object` data: The data received from AJAX
@@ -425,7 +425,7 @@ Here is the list of every types of functions you can give to *domino.js*, with t
 
  - **Service "error"**:
    * Additional methods in the scope:
-     + *call*
+     + *request*
    * Parameters given through the scope: *(none)*
    * Function parameters:
      + `String` mes: The error message
@@ -507,6 +507,54 @@ Finally, all the logs/warns/errors will be prefixed by the instance name if spec
 
 ## Utils:
 
-*domino.js* provides its own helpers to manipulate some "Closure like" types in the `domino.utils.type` object:
+*domino.js* provides its own helpers to manipulate some "Closure like" types in the `domino.struct` object.
 
- - **get(param)**: Returns the string type TODO
+Those types are:
+
+ - Basic types:
+   * 'boolean', 'number', 'string', 'function', 'array', 'date', 'regexp', 'object', 'null', 'undefined', '*'
+ - Optional types: **'?{type}'**
+   * Example: `'?object'`, `'?array'`, etc...
+ - Multi-types: **'{type1}|{type2}'**
+   * Example: `'string|number'`, `'?array|object'`, etc...
+ - Complex types: **{ key1: {type1}, key2: {type2} }**
+   * Examples:
+     + `{ a: 'number', b: 'number', total: '?number' }`
+     + `{ obj1: { k1: 'number', k2: 'number' }, obj2: 'object', list: '?array' }`
+
+Except for `'undefined'` and `'null'`, all the previously described types are valid to characterize a property.
+
+Here the list of the available functions to manipulate those types:
+
+ - **get(value)**: Returns the string type of the value:
+   * `domino.struct.get(null);      // 'null'`
+   * `domino.struct.get(undefined); // 'undefined'`
+   * `domino.struct.get(42);        // 'number'`
+   * `domino.struct.get('toto');    // 'string'`
+   * `domino.struct.get({a: 1});    // 'object'`
+   * `domino.struct.get([1,2,3]);   // 'array'`
+ - **check(type, value)**: Check if the value matches the specified type:
+   * `domino.struct.check({a: 'number'}, {a: 1}); // true`
+   * `domino.struct.check('object', {a: 1});      // true`
+   * `domino.struct.check('?object', {a: 1});     // true`
+   * `domino.struct.check('*', {a: 1});           // true`
+   * `domino.struct.check({a: '?number'}, {});    // true`
+   * `domino.struct.check('*', {a: 1});           // true`
+   * `domino.struct.check({a: 'number'}, {});     // false`
+ - **isValid(type)**: Indicates whether the type is a valid property type:
+   * `domino.struct.isValid({a: 'number'});   // true`
+   * `domino.struct.isValid('object');        // true`
+   * `domino.struct.isValid('?object');       // true`
+   * `domino.struct.isValid('?object|array'); // true`
+   * `domino.struct.isValid('?object|');      // false`
+   * `domino.struct.isValid('undefined');     // false`
+   * `domino.struct.isValid('null');          // false`
+ - **deepScalar(type)**: Indicates whether the type is deeply composed of scalar types. This helper is particularly useful to know if it is possible to easily compare two values of the type (without any reference issue):
+   * `domino.struct.deepScalar('number');        // true`
+   * `domino.struct.deepScalar('?number');       // true`
+   * `domino.struct.deepScalar('string|number'); // true`
+   * `domino.struct.deepScalar({a: 'number'});   // true`
+   * `domino.struct.deepScalar('object');        // false`
+   * `domino.struct.deepScalar('?object');       // false`
+   * `domino.struct.deepScalar('object|number'); // false`
+
