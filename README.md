@@ -328,7 +328,7 @@ Here is an example: With a simple `EventDispatcher` class to manage the events c
 
 Here, a module updates the property `A` which dispatches events `event1` and `event2`. Hacks `hack1` and `hack2` are triggered on `event1`, and hacks `hack3` and `hack4` are triggered on `event2`.
 
-The problem here is that `hack1` and `hack2` will be triggered **before** event2. It might not seem that much an issue here, but in more complexe chains, some hacks would be overridden by hacks you designed to be "earlier".
+The problem here is that `hack1` and `hack2` will be triggered **before** event2. It might not seem that much an issue here, but in more complexe chains, some hacks would be overridden by hacks you designed to happen "earlier".
 
 **Hopefully, *domino.js*' main loop resolves this issue** by executing the previous events chain as following:
 
@@ -505,11 +505,11 @@ Also, *domino.js* provides its own functions to log, warn or throw errors:
 Finally, all the logs/warns/errors will be prefixed by the instance name if specified (the string `"domino"` else).
      + `*` The value you want to see returned through `.get(property)`
 
-## Utils:
+## Structures:
 
-*domino.js* provides its own helpers to manipulate some "Closure like" types in the `domino.struct` object.
+*domino.js* provides its own helpers to manipulate some "Closure like" types in the `domino.struct` object. Since they can be more complexe than simple string types, they are called **structures**.
 
-Those types are:
+Those structures are:
 
  - Basic types:
    * 'boolean', 'number', 'string', 'function', 'array', 'date', 'regexp', 'object', 'null', 'undefined', '*'
@@ -517,23 +517,23 @@ Those types are:
    * Example: `'?object'`, `'?array'`, etc...
  - Multi-types: **'{type1}|{type2}'**
    * Example: `'string|number'`, `'?array|object'`, etc...
- - Complex types: **{ key1: {type1}, key2: {type2} }**
+ - Complexe structures: **{ key1: {type1}, key2: {type2} }**
    * Examples:
      + `{ a: 'number', b: 'number', total: '?number' }`
      + `{ obj1: { k1: 'number', k2: 'number' }, obj2: 'object', list: '?array' }`
 
-Except for `'undefined'` and `'null'`, all the previously described types are valid to characterize a property.
+Except for `'undefined'` and `'null'`, all the previously described structures are valid to characterize a property.
 
-Here the list of the available functions to manipulate those types:
+Here the list of the available functions to manipulate those structures:
 
- - **get(value)**: Returns the string type of the value:
+ - **get(value)**: Returns the string structure of the value:
    * `domino.struct.get(null);      // 'null'`
    * `domino.struct.get(undefined); // 'undefined'`
    * `domino.struct.get(42);        // 'number'`
    * `domino.struct.get('toto');    // 'string'`
    * `domino.struct.get({a: 1});    // 'object'`
    * `domino.struct.get([1,2,3]);   // 'array'`
- - **check(type, value)**: Check if the value matches the specified type:
+ - **check(struct, value)**: Check if the value matches the specified structure:
    * `domino.struct.check({a: 'number'}, {a: 1}); // true`
    * `domino.struct.check('object', {a: 1});      // true`
    * `domino.struct.check('?object', {a: 1});     // true`
@@ -541,7 +541,7 @@ Here the list of the available functions to manipulate those types:
    * `domino.struct.check({a: '?number'}, {});    // true`
    * `domino.struct.check('*', {a: 1});           // true`
    * `domino.struct.check({a: 'number'}, {});     // false`
- - **isValid(type)**: Indicates whether the type is a valid property type:
+ - **isValid(struct)**: Indicates whether the structure is a valid property structure:
    * `domino.struct.isValid({a: 'number'});   // true`
    * `domino.struct.isValid('object');        // true`
    * `domino.struct.isValid('?object');       // true`
@@ -549,7 +549,7 @@ Here the list of the available functions to manipulate those types:
    * `domino.struct.isValid('?object|');      // false`
    * `domino.struct.isValid('undefined');     // false`
    * `domino.struct.isValid('null');          // false`
- - **deepScalar(type)**: Indicates whether the type is deeply composed of scalar types. This helper is particularly useful to know if it is possible to easily compare two values of the type (without any reference issue):
+ - **deepScalar(struct)**: Indicates whether the structure is deeply composed of scalar types. This helper is particularly useful to know if it is possible to easily compare two values of the structure (without any reference issue):
    * `domino.struct.deepScalar('number');        // true`
    * `domino.struct.deepScalar('?number');       // true`
    * `domino.struct.deepScalar('string|number'); // true`
