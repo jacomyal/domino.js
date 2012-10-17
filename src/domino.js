@@ -1154,6 +1154,34 @@
 
       return res;
     },
+    clone: function(item) {
+      if (!item) {
+        return item;
+      }
+
+      var result, k;
+
+      if (struct.get(result) === 'undefined') {
+        if (struct.get(item) === 'array') {
+          result = [];
+          for (var k in item)
+            result[k] = this.clone(item[k]);
+        } else if (struct.get(item) === 'object') {
+          if (!item.prototype) {
+            result = {};
+            for (var i in item) {
+              result[i] = this.clone(item[i]);
+            }
+          } else {
+            result = item;
+          }
+        } else {
+          result = item;
+        }
+      }
+
+      return result;
+    },
     ajax: function(o, fn) {
       if (typeof o === 'string')
         o = { url: o, ok: fn };
