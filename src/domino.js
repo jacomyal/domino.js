@@ -238,11 +238,11 @@
       // Initial value:
       if (o['value'] !== undefined || _types[id])
         o['value'] !== undefined ?
-            _set(id, o['value']) :
-            _dump(
-              'Property "' + id + '": ' +
-                'Initial value is missing'
-            );
+          _set(id, o['value']) :
+          _dump(
+            'Property "' + id + '": ' +
+              'Initial value is missing'
+          );
 
       // Triggers (modules-to-domino events):
       if (o['triggers'] !== undefined) {
@@ -856,14 +856,14 @@
           log = [];
           for (i in eventsArray)
             log.push(eventsArray[i].type);
-          _dump(' -> Events: ' + log);
+          _dump(' -> Events: ', log);
         }
 
         if (servicesArray.length) {
           log = [];
           for (i in servicesArray)
             log.push(servicesArray[i].service);
-          _dump(' -> Services: ' + log);
+          _dump(' -> Services: ', log);
         }
 
         log = [];
@@ -871,7 +871,7 @@
           log.push(i);
 
         if (log.length)
-          _dump(' -> Update: ' + log);
+          _dump(' -> Update: ', log);
       }
 
 
