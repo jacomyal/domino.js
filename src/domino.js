@@ -406,42 +406,16 @@
               error: function(mes, xhr) {
                 _self.dispatchEvent('domino.ajaxFailed');
                 var error = p['error'] || o['error'],
-                    events = [],
-                    services = [],
-                    update = {},
-                    dispatch = {},
-                    reiterate = false,
                     a, k, property;
 
                 if (_struct.get(error) === 'function') {
-                  var obj = _execute(error, {
+                  _execute(error, {
                     parameters: [mes, xhr, p],
+                    loop: true,
                     scope: {
                       request: true
                     }
                   });
-
-                  a = _utils.array(obj.events);
-                  for (k in a) {
-                    reiterate = true;
-                    dispatch[a[k]] = 1;
-                  }
-
-                  for (k in obj.properties)
-                    if (update[k] === undefined) {
-                      update[k] = obj.properties[k];
-                      reiterate = true;
-                    } else
-                      _warn(
-                        'The property ' +
-                        '"' + k + '"' +
-                        ' is not a method nor a property.'
-                      );
-
-                  if ((obj.services || []).length) {
-                    reiterate = true;
-                    services = services.concat(obj.services);
-                  }
                 } else
                   _dump(
                     'Loading failed with message "' + mes + '" ' +
@@ -453,14 +427,6 @@
                   _self.dispatchEvent(event, _getScope());
                   events.push(_self.getEvent(event, _getScope()));
                 }
-
-                // Reloop:
-                if (reiterate)
-                  _mainLoop({
-                    events: events,
-                    update: update,
-                    services: services
-                  });
               }
             };
 
@@ -587,22 +553,26 @@
               }
             });
 
-            a = _utils.array(obj.events);
-            for (k in a)
+            a = _utils.array(obj['events']);
+            for (k in a) {
+              reiterate = true;
               dispatch[a[k]] = 1;
+            }
 
-            for (k in obj.properties)
+            for (k in obj['update'])
               if (update[k] === undefined) {
-                update[k] = obj.properties[k];
+                update[k] = obj['update'][k];
                 reiterate = true;
               } else
                 _warn(
-                  'The property "' + k + '" is not a method nor a property.'
+                  'The key ' +
+                  '"' + k + '"' +
+                  ' is nor a method neither a property.'
                 );
 
-            if ((obj.services || []).length) {
+            if ((obj['services'] || []).length) {
               reiterate = true;
-              services = services.concat(obj.services);
+              services = services.concat(obj['services']);
             }
           }
 
@@ -613,7 +583,7 @@
             events.push(_self.getEvent(event, _getScope()));
           }
 
-          // Reloop:
+          // Start looping:
           if (reiterate)
             _mainLoop({
               events: events,
@@ -625,50 +595,10 @@
         // Check if there is anything to do before launching the call:
         var before = p['before'] || o['before'];
         if (before != null && _struct.get(before) === 'function') {
-          var a, property, event,
-              update = {},
-              events = [],
-              services = [],
-              dispatch = {},
-              reiterate = false,
-              obj = _execute(before, {
-                parameters: [p]
-              });
-
-          a = _utils.array(obj.events);
-          for (k in a) {
-            dispatch[a[k]] = 1;
-            reiterate = true;
-          }
-
-          for (k in obj.properties)
-            if (update[k] === undefined) {
-              update[k] = obj.properties[k];
-              reiterate = true;
-            } else
-              _warn(
-                'The key "' + k + '" is not a method nor a property.'
-              );
-
-          if ((obj.services || []).length) {
-            reiterate = true;
-            services = services.concat(obj.services);
-          }
-
-          // Check events to dispatch:
-          a = [];
-          for (event in dispatch) {
-            _self.dispatchEvent(event, _getScope());
-            a.push(_self.getEvent(event, _getScope()));
-          }
-
-          // Reloop:
-          if (reiterate)
-            _mainLoop({
-              events: events,
-              update: update,
-              services: services
-            });
+          _execute(before, {
+            parameters: [p],
+            loop: true
+          });
         }
 
         // Abort:
@@ -801,7 +731,6 @@
      * @param   {?object} options    The optional parameters.
      */
     function _update(properties, options) {
-      // Reloop:
       _mainLoop({
         update: properties
       });
@@ -943,23 +872,23 @@
             }
           });
 
-          a = _utils.array(obj.events);
+          a = _utils.array(obj['events']);
           for (k in a)
             dispatch[a[k]] = 1;
 
-          for (k in obj.properties) {
+          for (k in obj['update']) {
             if (update[k] === undefined) {
               reiterate = true;
-              update[k] = obj.properties[k];
+              update[k] = obj['update'][k];
             } else
               _warn(
                 'The property "' + k + '" is not a method nor a property.'
               );
           }
 
-          if ((obj.services || []).length) {
+          if ((obj['services'] || []).length) {
             reiterate = true;
-            services = services.concat(obj.services);
+            services = services.concat(obj['services']);
           }
         }
 
@@ -1018,13 +947,13 @@
             parameters: arg,
             inputValues: inputs
           });
-          
+
           updated =
             _struct.get(res['returned']) !== 'boolean' ||
             res['returned'];
 
           if (updated)
-            _properties[property] = res['properties'][property];
+            _properties[property] = res['update'][property];
 
           return updated;
         } else
@@ -1045,7 +974,7 @@
     }
 
     function _execute(closure, options) {
-      var k, res, returned,
+      var k, obj, returned,
           o = options || {},
           scope = _getScope(o.scope);
 
@@ -1059,10 +988,10 @@
       returned = closure.apply(scope, o['parameters'] || []);
 
       // Initialize result object:
-      res = {
+      obj = {
         'returned': returned,
-        'properties': {},
-        'events': {},
+        'update': {},
+        'events': [],
         'services': []
       };
 
@@ -1070,21 +999,37 @@
       if (scope['events'] != null && !_struct.check('array', scope['events']))
         _warn('Events must be stored in an array.');
       else
-        res['events'] = scope['events'];
+        obj['events'] = scope['events'];
 
       for (k in scope)
         if (_setters[k] !== undefined) {
-          res['properties'][k] = scope[k];
+          obj['update'][k] = scope[k];
         } else if (_protectedNames[k] === undefined)
           _warn('The key "' + k + '" is not a method nor a property.');
 
       for (k in o['inputValues'])
-        res['properties'][k] = scope[k];
+        obj['update'][k] = scope[k];
 
       for (k in scope['services'])
-        res['services'][k] = scope['services'][k];
+        obj['services'][k] = scope['services'][k];
 
-      return res;
+      // Check if the main loop has to be started directly from here:
+      if (o['loop']) {
+        var iterate =
+          (obj['services'] || []).length ||
+          (obj['events'] || []).length;
+
+        if (!iterate)
+          for (k in obj['update']) {
+            iterate = true;
+            continue;
+          }
+
+        if (iterate)
+          _mainLoop(obj);
+      } else {
+        return obj;
+      }
     }
 
     function _getLabel(id) {
