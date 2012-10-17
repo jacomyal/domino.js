@@ -57,13 +57,13 @@
       var o = options || {},
           scope = {
             // Methods
-            get: _get,
             getEvents: _getEvents,
             getLabel: _getLabel,
+            expand: _expand,
             dump: _dump,
             warn: _warn,
             die: _die,
-            expand: _expand,
+            get: _get,
 
             // Stored data:
             events: [],
@@ -146,7 +146,6 @@
      * @param   {?Object} options An object containing some more precise
      *                            indications about the hack.
      *
-     * @private
      * @return {domino} Returns the domino instance itself.
      *
      * Here is the list of options that are interpreted:
@@ -281,7 +280,6 @@
      * @param   {?Object} options An object containing some more precise
      *                            indications about the hack.
      *
-     * @private
      * @return {domino} Returns the domino instance itself.
      *
      * Here is the list of options that are interpreted:
@@ -338,7 +336,6 @@
      * @param   {?Object} options An object containing some more precise
      *                            indications about the service.
      *
-     * @private
      * @return {domino} Returns the domino instance itself.
      *
      * Here is the list of options that are interpreted:
@@ -409,9 +406,11 @@
               error: function(mes, xhr) {
                 _self.dispatchEvent('domino.ajaxFailed');
                 var error = p['error'] || o['error'],
+                    events = [],
                     services = [],
                     update = {},
                     dispatch = {},
+                    reiterate = false,
                     a, k, property;
 
                 if (_struct.get(error) === 'function') {
@@ -423,58 +422,45 @@
                   });
 
                   a = _utils.array(obj.events);
-                  for (k in a)
+                  for (k in a) {
+                    reiterate = true;
                     dispatch[a[k]] = 1;
+                  }
 
                   for (k in obj.properties)
-                    if (update[k] === undefined)
+                    if (update[k] === undefined) {
                       update[k] = obj.properties[k];
-                    else
+                      reiterate = true;
+                    } else
                       _warn(
                         'The property ' +
                         '"' + k + '"' +
                         ' is not a method nor a property.'
                       );
 
-                  services = services.concat(obj.services || []);
+                  if ((obj.services || []).length) {
+                    reiterate = true;
+                    services = services.concat(obj.services);
+                  }
                 } else
                   _dump(
                     'Loading failed with message "' + mes + '" ' +
                     'and status ' + xhr.status + '.'
                   );
 
-                // Check if hacks have left some properties to update:
-                for (property in update) {
-                  if (_setters[property] === undefined)
-                      _warn('The property is not referenced.');
-                    else if (_set(property, update[property])) {
-                      for (i in _propertyListeners[property])
-                        _execute(_propertyListeners[property][i], {
-                          parameters: [_self.getEvent(
-                            property,
-                            _getScope()
-                          )]
-                        });
-
-                      for (i in _descending[property] || [])
-                        dispatch[_descending[property][i]] = 1;
-                    }
-                }
-
-                // Check services to call:
-                for (k in services || [])
-                  _request(services[k].service, services[k].params);
-
                 // Check events to dispatch:
-                a = [];
                 for (event in dispatch) {
                   _self.dispatchEvent(event, _getScope());
-                  a.push(_self.getEvent(event, _getScope()));
+                  events.push(_self.getEvent(event, _getScope()));
                 }
 
                 // Reloop:
-                if (a.length)
-                  _mainLoop(a);
+                if (reiterate)
+                  _mainLoop({
+                    events: events,
+                    update: update,
+                    services: services
+                  });
               }
             };
 
@@ -532,9 +518,11 @@
 
           var i, a, pushEvents, event, property,
               pathArray, d,
-              services = [],
               dispatch = {},
+              services = [],
+              events = [],
               update = {},
+              reiterate = false,
               path = p['path'] || o['path'],
               setter = p['setter'] || o['setter'],
               success = p['success'] || o['success'];
@@ -570,28 +558,25 @@
 
           // Events to dispatch (service config):
           a = _utils.array(o['events']);
-          for (i in a)
+          for (i in a) {
             dispatch[a[i]] = 1;
+            reiterate = true;
+          }
 
           // Events to dispatch (call config):
           a = _utils.array(p['events']);
-          for (i in a)
+          for (i in a) {
             dispatch[a[i]] = 1;
+            reiterate = true;
+          }
 
           // Check setter:
-          if (setter && _setters[setter])
-            if (_set(setter, d)) {
-              for (k in _descending[setter] || [])
-                dispatch[_descending[setter][k]] = 1;
-
-              for (k in _propertyListeners[setter])
-                _execute(_propertyListeners[setter][k], {
-                  parameters: [_self.getEvent(
-                    setter,
-                    _getScope()
-                  )]
-                });
+          if (setter && _setters[setter]) {
+            if (d !== undefined) {
+              update[setter] = d;
+              reiterate = true;
             }
+          }
 
           // Check success:
           if (_struct.get(success) === 'function') {
@@ -607,48 +592,34 @@
               dispatch[a[k]] = 1;
 
             for (k in obj.properties)
-              if (update[k] === undefined)
+              if (update[k] === undefined) {
                 update[k] = obj.properties[k];
-              else
+                reiterate = true;
+              } else
                 _warn(
                   'The property "' + k + '" is not a method nor a property.'
                 );
 
-            services = services.concat(obj.services || []);
+            if ((obj.services || []).length) {
+              reiterate = true;
+              services = services.concat(obj.services);
+            }
           }
-
-          // Check if hacks have left some properties to update:
-          for (property in update) {
-            if (_setters[property] === undefined)
-                _warn('The property is not referenced.');
-              else if (_set(property, update[property])) {
-                for (i in _propertyListeners[property])
-                  _execute(_propertyListeners[property][i], {
-                    parameters: [_self.getEvent(
-                      property,
-                      _getScope()
-                    )]
-                  });
-
-                for (i in _descending[property] || [])
-                  dispatch[_descending[property][i]] = 1;
-              }
-          }
-
-          // Check services to call:
-          for (k in services || [])
-            _request(services[k].service, services[k].params);
 
           // Check events to dispatch:
-          a = [];
+          events = [];
           for (event in dispatch) {
             _self.dispatchEvent(event, _getScope());
-            a.push(_self.getEvent(event, _getScope()));
+            events.push(_self.getEvent(event, _getScope()));
           }
 
           // Reloop:
-          if (a.length)
-            _mainLoop(a);
+          if (reiterate)
+            _mainLoop({
+              events: events,
+              update: update,
+              services: services
+            });
         };
 
         // Check if there is anything to do before launching the call:
@@ -656,47 +627,33 @@
         if (before != null && _struct.get(before) === 'function') {
           var a, property, event,
               update = {},
+              events = [],
               services = [],
               dispatch = {},
+              reiterate = false,
               obj = _execute(before, {
                 parameters: [p]
               });
 
           a = _utils.array(obj.events);
-          for (k in a)
+          for (k in a) {
             dispatch[a[k]] = 1;
+            reiterate = true;
+          }
 
           for (k in obj.properties)
-            if (update[k] === undefined)
+            if (update[k] === undefined) {
               update[k] = obj.properties[k];
-            else
+              reiterate = true;
+            } else
               _warn(
                 'The key "' + k + '" is not a method nor a property.'
               );
 
-          services = services.concat(obj.services || []);
-
-          // Check if hacks have left some properties to update:
-          for (property in update) {
-            if (_setters[property] === undefined)
-                _warn('The property is not referenced.');
-              else if (_set(property, update[property])) {
-                for (i in _propertyListeners[property])
-                  _execute(_propertyListeners[property][i], {
-                    parameters: [_self.getEvent(
-                      property,
-                      _getScope()
-                    )]
-                  });
-
-                for (i in _descending[property] || [])
-                  dispatch[_descending[property][i]] = 1;
-              }
+          if ((obj.services || []).length) {
+            reiterate = true;
+            services = services.concat(obj.services);
           }
-
-          // Check services to call:
-          for (k in services || [])
-            _request(services[k].service, services[k].params);
 
           // Check events to dispatch:
           a = [];
@@ -706,8 +663,12 @@
           }
 
           // Reloop:
-          if (a.length)
-            _mainLoop(a);
+          if (reiterate)
+            _mainLoop({
+              events: events,
+              update: update,
+              services: services
+            });
         }
 
         // Abort:
@@ -732,7 +693,6 @@
      * @param   {string}   id     The string to use to call the shortcut.
      * @param   {function} method The method to call.
      *
-     * @private
      * @return {domino} Returns the domino instance itself.
      */
     function addShortcut(id, method) {
@@ -765,7 +725,6 @@
      *                             indications about the service (currently not
      *                             used).
      *
-     * @private
      * @return {*} Returns the module just created.
      */
     function _addModule(klass, params, options) {
@@ -825,7 +784,7 @@
         bind[event] = 1;
 
       for (event in bind)
-        module.addEventListener(event, _mainLoop);
+        module.addEventListener(event, _triggerMainLoop);
 
       // Finalize:
       _modules.push(module);
@@ -833,64 +792,149 @@
     }
 
     /**
+     * A method that can update any of the properties - designed to be used
+     * especially from the hacks, eventually from the services success methods.
+     * For each property actually updated, the related events will be
+     * dispatched through the _mainLoop method.
+     *
+     * @param   {object}  properties The properties to update.
+     * @param   {?object} options    The optional parameters.
+     */
+    function _update(properties, options) {
+      // Reloop:
+      _mainLoop({
+        update: properties
+      });
+
+      return this;
+    }
+
+    function _triggerMainLoop(event) {
+      _mainLoop({
+        events: [event]
+      });
+    }
+
+    /**
      * The main loop, that is triggered either by modules, hacks or event by
      * itself, and that will update properties and dispatch events to the
      * modules, trigger hacks (and so eventually load services, for example).
      *
-     * @param   {array|object}   events  The event or an array of events.
-     * @param   {?object}        options The optional parameters.
-     * @private
+     * @param   {?object} options The parameters.
+     *
+     * Here is the list of options that are interpreted:
+     *
+     *   {?object}  update   The properties to update
+     *   {?array}   events   The events to trigger
+     *   {?array}   services The services to call
+     *   {?number}  loop     The depth of the loop
+     *   {?boolean} force    If true, all updated properties will dispatch the
+     *                       outgoing events, event if the property has
+     *                       actually not been updated.
      */
-    function _mainLoop(events, options) {
-      var a, i, j, k, event, data, pushEvents, property,
+    function _mainLoop(options) {
+      var a, i, j, k, event, data, push, property, log,
+          reiterate = false,
+          events = [],
           services = [],
-          log = [],
           o = options || {},
           dispatch = {},
           update = {};
 
-      o['loop'] = (o['loop'] || 0) + 1;
+      o['loop'] = (+o['loop'] || 0) + 1;
 
-      var eventsArray = _utils.array(events);
+      var eventsArray = _utils.array(o['events']),
+          servicesArray = _utils.array(o['services']),
+          updateObject = o['update'] || {};
+
 
       // Log:
-      for (i in eventsArray)
-        log.push(eventsArray[i].type);
-      _dump('Iteration ' + o['loop'] + ' (main loop) :', log);
+      if (__settings__['verbose']) {
+        _dump('Iteration ' + o['loop'] + ' (main loop)');
 
-      // Effective loop:
+        if (eventsArray.length) {
+          log = [];
+          for (i in eventsArray)
+            log.push(eventsArray[i].type);
+          _dump(' -> Events: ' + log);
+        }
+
+        if (servicesArray.length) {
+          log = [];
+          for (i in servicesArray)
+            log.push(servicesArray[i].service);
+          _dump(' -> Services: ' + log);
+        }
+
+        log = [];
+        for (i in updateObject)
+          log.push(i);
+
+        if (log.length)
+          _dump(' -> Update: ' + log);
+      }
+
+
+      // Check properties to update:
+      for (property in updateObject) {
+        if (_setters[property] === undefined)
+            _warn('The property "' + property + '" is not referenced.');
+        else {
+          push =
+            _set(property, updateObject[property]) ||
+            !!o['force'];
+
+          if (push) {
+            for (i in _propertyListeners[property])
+              _execute(_propertyListeners[property][i], {
+                parameters: [_self.getEvent(
+                  property,
+                  _getScope()
+                )]
+              });
+
+            for (i in _descending[property] || [])
+              dispatch[_descending[property][i]] = 1;
+          }
+        }
+      }
+
+
+      // Check services to call:
+      for (i in servicesArray || [])
+        _request(servicesArray[i].service, servicesArray[i].params);
+
+      for (event in dispatch) {
+        _self.dispatchEvent(event, _getScope());
+        events.push(_self.getEvent(event, _getScope()));
+        reiterate = true;
+      }
+
+
+      // Check events to trigger:
       for (i in eventsArray) {
         event = eventsArray[i];
         data = event.data || {};
 
-        // Check properties to update:
+        // Properties:
         if (data || o['force']) {
           a = _ascending[event.type] || [];
           for (j in a) {
-            pushEvents = !!o['force'];
-
-            if (data[a[j]] !== undefined)
-              pushEvents = _set(a[j], data[a[j]]) || pushEvents;
-
-            if (pushEvents) {
-              for (k in _propertyListeners[a[j]])
-                _execute(_propertyListeners[a[j]][k], {
-                  parameters: [_self.getEvent(a[j], _getScope())]
-                });
-
-              for (k in _descending[a[j]] || [])
-                dispatch[_descending[a[j]][k]] = 1;
+            if (data[a[j]] !== undefined) {
+              reiterate = true;
+              update[a[j]] = data[a[j]];
             }
           }
         }
 
-        // Check hacks to trigger:
+        // Modules triggers:
         for (k in _eventListeners[event.type]) {
           _execute(_eventListeners[event.type][k], {
             parameters: [event]
           });
         }
 
+        // Hacks:
         for (j in _hackMethods[event.type] || []) {
           var obj = _execute(_hackMethods[event.type][j], {
             parameters: [event],
@@ -903,128 +947,35 @@
           for (k in a)
             dispatch[a[k]] = 1;
 
-          for (k in obj.properties)
-            if (update[k] === undefined)
+          for (k in obj.properties) {
+            if (update[k] === undefined) {
+              reiterate = true;
               update[k] = obj.properties[k];
-            else
+            } else
               _warn(
                 'The property "' + k + '" is not a method nor a property.'
               );
+          }
 
-          services = services.concat(obj.services || []);
+          if ((obj.services || []).length) {
+            reiterate = true;
+            services = services.concat(obj.services);
+          }
         }
 
         for (j in _hackDispatch[event.type] || [])
           dispatch[_hackDispatch[event.type][j]] = 1;
       }
 
-      // Check if hacks have left some properties to update:
-      for (property in update) {
-        if (_setters[property] === undefined)
-            _warn('The property is not referenced.');
-          else if (_set(property, update[property])) {
-            for (i in _propertyListeners[property])
-              _execute(_propertyListeners[property][i], {
-                parameters: [_self.getEvent(
-                  property,
-                  _getScope()
-                )]
-              });
-
-            for (i in _descending[property] || [])
-              dispatch[_descending[property][i]] = 1;
-          }
-      }
-
-      // Check services to call:
-      for (k in services || [])
-        _request(services[k].service, services[k].params);
-
-      a = [];
-      for (event in dispatch) {
-        _self.dispatchEvent(event, _getScope());
-        a.push(_self.getEvent(event, _getScope()));
-      }
 
       // Reloop:
-      if (a.length)
-        _mainLoop(a, o);
-    }
-
-    /**
-     * A method that can update any of the properties - designed to be used
-     * especially from the hacks, eventually from the services success methods.
-     * For each property actually updated, the related events will be
-     * dispatched through the _mainLoop method.
-     *
-     * @param   {object|array}   properties The properties to update.
-     * @param   {?object}        options    The optional parameters.
-     * @private
-     */
-    function _update(properties, options) {
-      var i, k, a, event,
-          log = [],
-          p = properties,
-          dispatch = {},
-          o = options || {};
-
-      if (p == null)
-        _warn('Nothing to update.');
-
-      if (_struct.get(p) === 'array')
-        for (k in p) {
-          log.push(p[k]['property']);
-
-          if (_setters[p[k]['property']] === undefined)
-            _warn('The property is not referenced.');
-          else if (_set.apply(
-            [
-              p[k]['property'],
-              p[k]['value']
-            ].concat(p[k]['parameters'] || [])
-          )) {
-            for (i in _propertyListeners[p[k]['property']])
-              _execute(_propertyListeners[p[k]['property']][i], {
-                parameters: [_self.getEvent(
-                  p[k]['property'],
-                  _getScope()
-                )]
-              });
-
-            for (i in _descending[p[k]['property']] || [])
-              dispatch[_descending[p[k]['property']][i]] = 1;
-          }
-        }
-      else if (_struct.get(p) === 'object')
-        for (k in p) {
-          log.push(k);
-
-          if (_setters[k] && _set(k, p[k])) {
-            for (i in _propertyListeners[k])
-              _execute(_propertyListeners[k][i], {
-                parameters: [_self.getEvent(k, _getScope())]
-              });
-
-            for (i in _descending[k] || [])
-              dispatch[_descending[k][i]] = 1;
-          }
-        }
-      else
-        _warn('The properties must be stored in an array or an object.');
-
-      _dump('Updating properties :', log);
-
-      a = [];
-      for (event in dispatch) {
-        _self.dispatchEvent(event, _getScope());
-        a.push(_self.getEvent(event, _getScope()));
-      }
-
-      // Reloop:
-      if (a.length)
-        _mainLoop(a, p);
-
-      return this;
+      if (reiterate)
+        _mainLoop({
+          events: events,
+          update: update,
+          services: services,
+          loop: o['loop']
+        });
     }
 
     function _get(property) {
@@ -1067,7 +1018,10 @@
             parameters: arg,
             inputValues: inputs
           });
-          updated = _struct.get(res['returned']) !== 'boolean' || res['returned'];
+          
+          updated =
+            _struct.get(res['returned']) !== 'boolean' ||
+            res['returned'];
 
           if (updated)
             _properties[property] = res['properties'][property];
