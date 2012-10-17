@@ -435,6 +435,18 @@ Here is the list of every types of functions you can give to *domino.js*, with t
      + `*` this[property] will update *property*
    * Returns: *(not evaluated)*
 
+ - **Service "before"**:
+   * Additional methods in the scope:
+     + *request*
+   * Parameters given through the scope: *(none)*
+   * Function parameters:
+     + `String` mes: The error message
+     + `Object` xhr: The related XHR object
+   * Accepted scope modifications:
+     + `Array<String>` this.events will be dispatched
+     + `*` this[property] will update *property*
+   * Returns: *(not evaluated)*
+
  - **Service "url"**:
    * Additional methods in the scope: *(none)*
    * Parameters given through the scope: *(none)*
