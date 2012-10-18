@@ -134,10 +134,10 @@
      * Generates a "view" of the instance of domino, ie a new object containing
      * references to some methods of the instance. This makes the data and
      * methods manipulation way safer.
-     * 
+     *
      * @param  {?object} options The options that determine which scope to
      *                           return.
-     * 
+     *
      * @return {object} Returns the scope.
      *
      * Here is the list of options that are interpreted:
@@ -412,8 +412,9 @@
      *                                  used in the first depth of the object.
      *   {?function}       error+       A function to execute if AJAX failed.
      *                                  Will be called in the "full" scope.
-     *   {?function}       before+      A function to execute before AJAX failed.
-     *                                  Will be called in the "full" scope.
+     *   {?function}       before+      A function to execute before calling
+     *                                  AJAX. Will be called in the "full"
+     *                                  scope.
      *   {?function}       success+     A function to execute if AJAX
      *                                  successed. Will be called in the
      *                                  "full" scope.
@@ -424,6 +425,7 @@
      *                                  specified.
      *   {?(string|array)} path+*       Indicates the path of the data to give
      *                                  to the setter, if specified.
+     *                                  (Example: "a.b.c")
      *   {?(string|array)} events++     The events to dispatch in case of
      *                                  success
      *
@@ -789,9 +791,8 @@
      * dispatched through the _mainLoop method.
      *
      * @param   {object}  properties The properties to update.
-     * @param   {?object} options    The optional parameters.
      */
-    function _update(properties, options) {
+    function _update(properties) {
       _mainLoop({
         update: properties
       });
@@ -799,6 +800,10 @@
       return this;
     }
 
+    /**
+     * Starts the main loop with a single event as input.
+     * @param  {object} event The event.
+     */
     function _triggerMainLoop(event) {
       _mainLoop({
         events: [event]
@@ -810,14 +815,14 @@
      * itself, and that will update properties and dispatch events to the
      * modules, trigger hacks (and so eventually load services, for example).
      *
-     * @param   {?object} options The parameters.
+     * @param   {?object} options The options.
      *
      * Here is the list of options that are interpreted:
      *
-     *   {?object}  update   The properties to update
-     *   {?array}   events   The events to trigger
-     *   {?array}   services The services to call
-     *   {?number}  loop     The depth of the loop
+     *   {?object}  update   The properties to update.
+     *   {?array}   events   The events to trigger.
+     *   {?array}   services The services to call.
+     *   {?number}  loop     The depth of the loop.
      *   {?boolean} force    If true, all updated properties will dispatch the
      *                       outgoing events, event if the property has
      *                       actually not been updated.
@@ -836,7 +841,6 @@
       var eventsArray = _utils.array(o['events']),
           servicesArray = _utils.array(o['services']),
           updateObject = o['update'] || {};
-
 
       // Log:
       if (__settings__['verbose']) {
@@ -864,7 +868,6 @@
           _dump(' -> Update: ', log);
       }
 
-
       // Check properties to update:
       for (property in updateObject) {
         if (_setters[property] === undefined)
@@ -889,7 +892,6 @@
         }
       }
 
-
       // Check services to call:
       for (i in servicesArray || [])
         _request(servicesArray[i].service, servicesArray[i].params);
@@ -899,7 +901,6 @@
         events.push(_self.getEvent(event, _getScope()));
         reiterate = true;
       }
-
 
       // Check events to trigger:
       for (i in eventsArray) {
@@ -956,7 +957,6 @@
         for (j in _hackDispatch[event.type] || [])
           dispatch[_hackDispatch[event.type][j]] = 1;
       }
-
 
       // Reloop:
       if (reiterate)
@@ -1071,18 +1071,29 @@
      *
      *   {?boolean}      abort       Indicates if the last call of the
      *                               specified service has to be aborted.
-     *   {?function}     before      An optional function that will be
-     *                               triggered.
+     *   {?function}     before      Overrides the original service "before"
+     *                               value.
      *   {?string}       contentType The contentType of the AJAX call.
-     *   {?*}            data        TODO
+     *   {?*}            data        If the original service "data" attribute
+     *                               is an object, then it will override it.
+     *                               But if it is a function, then it will be
+     *                               called with this "data" value as first
+     *                               parameter.
      *   {?string}       dataType    The dataType of the AJAX call.
-     *   {?function}     error       TODO
-     *   {?array|string} events      TODO
-     *   {?object}       params      TODO
-     *   {?string}       path        TODO
-     *   {?string}       setter      TODO
-     *   {?function}     success     TODO
-     *   {?string}       type        TODO
+     *   {?function}     error       Overrides the original service "error"
+     *                               value.
+     *   {?array|string} events      Adds more events to dispatch when the
+     *                               "success" is called.
+     *   {?object}       params      The pairs (key/value) in this object will
+     *                               override the shortcuts.
+     *   {?string}       path        Overrides the original service "path"
+     *                               value.
+     *   {?string}       setter      Overrides the original service "setter"
+     *                               value.
+     *   {?function}     success     Overrides the original service "success"
+     *                               value.
+     *   {?string}       type        Overrides the AJAX call type
+     *                               (GET|POST|DELETE).
      */
     function _request(service, options) {
       if (_services[service])
@@ -1093,19 +1104,39 @@
       return this;
     }
 
-    function _execute(closure, options) {
+    /**
+     * Executes safely a function, deals with the "scope question"
+     *
+     * @param  {function} f       The function to execute.
+     * @param  {?object}  options The options.
+     *
+     * @return {?object} Returns the formalized scopes alteration if loop is
+     *                   not true in the options.
+     *
+     * Here is the list of options that are recognized:
+     *
+     *   {?string}  scope       Indicates which scope to give to the function.
+     *   {?object}  inputValues Values to insert inside the scope before
+     *                          execution.
+     *   {?array}   parameters  The array of the parameters to give as input to
+     *                          the function to execute.
+     *   {?boolean} loop        If true, the _mainLoop() will directly be
+     *                          triggered after execution. Else, the scope will
+     *                          be formalized and returned.
+     */
+    function _execute(f, options) {
       var k, obj, returned,
           o = options || {},
-          scope = _getScope(o.scope);
+          scope = _getScope(o['scope']);
 
-      if (_struct.get(closure) !== 'function')
+      if (_struct.get(f) !== 'function')
         _die('The first parameter must be a function');
 
       for (k in o['inputValues'] || {})
         scope[k] = o['inputValues'][k];
 
       // Execute the function on the related scope:
-      returned = closure.apply(scope, o['parameters'] || []);
+      returned = f.apply(scope, o['parameters'] || []);
 
       // Initialize result object:
       obj = {
@@ -1152,15 +1183,71 @@
       }
     }
 
+    /**
+     * Returns the label of the specified property.
+     *
+     * @param  {string} id The property.
+     *
+     * @return {string}    The label.
+     */
     function _getLabel(id) {
       return _labels[id];
     }
 
+    /**
+     * Returns the events that can alter the specified property (ie the input
+     * events).
+     *
+     * @param  {string} id The property.
+     *
+     * @return {array}     The events types.
+     */
     function _getEvents(id) {
       return _events[id];
     }
 
-    function _warn(s) {
+    /**
+     * Checks the shortcuts and eventually arbitrary objects if they have
+     * anything corresponding to the string, and returns the related value.
+     *
+     * @param  {string}    v    The string to expand.
+     * @param  {...object} args The arbitraty objects to check before the
+     *                          shortcuts.
+     *
+     * @return {*}         The expanded value.
+     */
+    function _expand(s) {
+      var l = arguments.length,
+          a = (s || '').toString().match(
+            new RegExp('^' + __settings__['shortcutPrefix'] + '(\\w+)$')
+          );
+
+      // Case where the string doesn't match:
+      if (!a || !a.length)
+        return s;
+      a = a[1];
+
+      // Check shortcuts:
+      if (_struct.get(_shortcuts[a]) === 'function')
+        return _shortcuts[a].call(_getScope());
+
+      // Check properties:
+      if (_struct.get(_getters[a]) === 'function')
+        return _get(a);
+
+      // Check other custom objects:
+      for (var i = 1; i < l; i++)
+        if ((arguments[i] || {})[a] !== undefined)
+          return arguments[i][a];
+
+      return s;
+    }
+
+    /**
+     * Log methods
+     */
+
+    function _warn() {
       var a = ['[' + _self.name + ']'];
 
       if (!__settings__['strict'])
@@ -1172,7 +1259,7 @@
       __warn__.apply(_self, a);
     };
 
-    function _die(s) {
+    function _die() {
       var a = ['[' + _self.name + ']'];
 
       for (var k in arguments)
@@ -1189,33 +1276,6 @@
 
       __dump__.apply(_self, a);
     };
-
-    function _expand(v) {
-      var l = arguments.length,
-          a = (v || '').toString().match(
-            new RegExp('^' + __settings__['shortcutPrefix'] + '(\\w+)$')
-          );
-
-      // Case where the string doesn't match:
-      if (!a || !a.length)
-        return v;
-      a = a[1];
-
-      // Check shortcuts:
-      if (_struct.get(_shortcuts[a]) === 'function')
-        return _shortcuts[a].call(_getScope());
-
-      // Check properties:
-      if (_struct.get(_getters[a]) === 'function')
-        return _get(a);
-
-      // Check other custom objects:
-      for (var i = 1; i < l; i++)
-        if ((arguments[i] || {})[a] !== undefined)
-          return arguments[i][a];
-
-      return v;
-    }
 
     // Return the full scope:
     return _getScope({ full: true });
@@ -1238,7 +1298,8 @@
   function __die__() {
     var m = '';
     for (var k in arguments)
-      m += arguments[k];
+      m += (!!m ? ' ' : '') +
+        arguments[k];
 
     throw (new Error(m));
   }
@@ -1387,6 +1448,7 @@
     }
   };
 
+  // Structures helpers:
   domino.struct = (function() {
     var atoms = ['number', 'string', 'boolean', 'null', 'undefined'],
         classes = (
