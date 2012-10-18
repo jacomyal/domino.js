@@ -354,7 +354,7 @@ Here is the default methods that any of the functions you give to *domino.js* wi
  - **expand** *(shortcutId)*
    * Execute the specified shortcut, and returns the result.
 
- - **dump** *(args...)*
+ - **log** *(args...)*
    * If domino global setting `verbose` is true, will display the arguments in the console, with the `domino.js` instance name as prefix.
 
  - **warn** *(message)*
@@ -502,17 +502,17 @@ The global method `domino.settings` is used to manage global *domino.js* setting
 Here is the list of currently recognized global settings:
 
  - **strict**: If `true`, warnings are considered as errors (default: `false`).
- - **verbose**: If `true`, dumps will be sent in `console.log` (default: `false`).
+ - **verbose**: If `true`, logs will be sent in `console.log` (default: `false`).
  - **shortcutPrefix**: Determines the shortcuts prefix (default: `":"`).
- - **displayTime**: If `true`, dumps will be prefixed by the time since *domino.js* initialization, in milliseconds (default: `false`).
+ - **displayTime**: If `true`, logs will be prefixed by the time since *domino.js* initialization, in milliseconds (default: `false`).
  - **clone**:
    + If `true`, getters return always clone of the values, and setters clone values before they actually update values, using the `domino.utils.clone()` method. It might decrease *domino.js* performances, but makes data manipulation safer. More precisely, when clone mode is activated, there is no properties update without the related events (default: `true`).
 
 Also, *domino.js* provides its own functions to log, warn or throw errors:
 
  - **`die(args...)`** will concatenate the arguments casts as strings and throw the result as an error.
- - **`dump(args...)`** will call `console.log(args...)` if the global setting `verbose` is true.
- - **`warn(args...)`** will call `die(args...)` if the global setting `strict` is true, `dump(args...)` otherwise.
+ - **`log(args...)`** will call `console.log(args...)` if the global setting `verbose` is true.
+ - **`warn(args...)`** will call `die(args...)` if the global setting `strict` is true, `log(args...)` otherwise.
 
 Finally, all the logs/warns/errors will be prefixed by the instance name if specified (the string `"domino"` otherwise).
 

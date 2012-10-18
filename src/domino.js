@@ -154,8 +154,8 @@
             getEvents: _getEvents,
             getLabel: _getLabel,
             expand: _expand,
-            dump: _dump,
             warn: _warn,
+            log: _log,
             die: _die,
             get: _get
           };
@@ -298,7 +298,7 @@
       if (o['value'] !== undefined || _types[id])
         o['value'] !== undefined ?
           _set(id, o['value']) :
-          _dump(
+          _log(
             'Property "' + id + '": ' +
               'Initial value is missing'
           );
@@ -453,7 +453,7 @@
         );
 
       _services[o['id']] = function(params) {
-        _dump('Calling service "' + o['id'] + '".');
+        _log('Calling service "' + o['id'] + '".');
 
         var p = params || {},
             ajaxObj = {
@@ -480,7 +480,7 @@
                     }
                   });
                 } else
-                  _dump(
+                  _log(
                     'Loading failed with message "' + mes + '" ' +
                     'and status ' + xhr.status + '.'
                   );
@@ -543,7 +543,7 @@
 
         // Success management:
         ajaxObj.success = function(data) {
-          _dump('Service "' + o['id'] + '" successfull.');
+          _log('Service "' + o['id'] + '" successfull.');
 
           var i, a, pushEvents, event, property,
               pathArray, d,
@@ -844,20 +844,20 @@
 
       // Log:
       if (__settings__['verbose']) {
-        _dump('Iteration ' + o['loop'] + ' (main loop)');
+        _log('Iteration ' + o['loop'] + ' (main loop)');
 
         if (eventsArray.length) {
           log = [];
           for (i in eventsArray)
             log.push(eventsArray[i].type);
-          _dump(' -> Events: ', log);
+          _log(' -> Events: ', log);
         }
 
         if (servicesArray.length) {
           log = [];
           for (i in servicesArray)
             log.push(servicesArray[i].service);
-          _dump(' -> Services: ', log);
+          _log(' -> Services: ', log);
         }
 
         log = [];
@@ -865,7 +865,7 @@
           log.push(i);
 
         if (log.length)
-          _dump(' -> Update: ', log);
+          _log(' -> Update: ', log);
       }
 
       // Check properties to update:
@@ -1268,13 +1268,13 @@
       __die__.apply(_self, a);
     };
 
-    function _dump() {
+    function _log() {
       var a = ['[' + _self.name + ']'];
 
       for (var k in arguments)
         a.push(arguments[k]);
 
-      __dump__.apply(_self, a);
+      __log__.apply(_self, a);
     };
 
     // Return the full scope:
@@ -1292,7 +1292,7 @@
     if (__settings__['strict'])
       __die__.apply(this, arguments);
     else
-      __dump__.apply(this, arguments);
+      __log__.apply(this, arguments);
   }
 
   function __die__() {
@@ -1304,7 +1304,7 @@
     throw (new Error(m));
   }
 
-  function __dump__() {
+  function __log__() {
     if (!__settings__['verbose'])
       return;
 
