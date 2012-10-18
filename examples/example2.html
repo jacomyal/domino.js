@@ -21,16 +21,40 @@
   <script type="text/javascript">
 
     (function() {
+      // Data:
+      window.data ={
+        NumberA: 42,
+        StringA: 'Hello World!',
+        ArrayA: ['foo', 'bar', 'baz']
+      };
+      
       // Replace domino ajax with jquery one
       domino.utils.ajax = $.ajax;
-      // Mock ajax calls
+
+      // Setup mockjaxes
       $.mockjax({
-        url: '/test1/*',
+        url: /\/get\/(.+)/,
         type: 'GET',
-        responseText: {
-          NumberA: 42,
-          StringA: 'Hello World!',
-          ArrayA: ['foo', 'bar', 'baz']
+        response: function(settings) {
+          var p = settings.url.match(this.url)[1],
+              o = {};
+
+          o[p] = data[p];
+          this.responseText = o;
+        }
+      });
+
+      $.mockjax({
+        url: /\/post\/(.+)/,
+        type: 'POST',
+        contentType: 'application/json',
+        response: function(settings) {
+          var p = settings.url.match(this.url)[1],
+              o = {};
+
+          data[p] = settings.data.value;
+          o[p] = data[p];
+          this.responseText = JSON.stringify(o);
         }
       });
     })();
@@ -86,15 +110,13 @@
             id: 'getValue',
             setter: ':property',
             path: ':property',
-            url: '/test1/:property'
+            url: '/get/:property'
           },
           {
             id: 'postValue',
-            setter: ':property',
             type: 'POST',
             contentType: 'application/json',
-            path: ':property',
-            url: '/test1/:property'
+            url: '/post/:property'
           }
         ],
         hacks: [
