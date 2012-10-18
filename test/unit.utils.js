@@ -4,8 +4,8 @@ domino.settings({
   strict: true
 });
 
-// domino.array():
-module('domino.array()');
+// domino.utils.array():
+module('domino.utils.array()');
 test('test 1', function() {
   deepEqual(domino.utils.array('a'), ['a'], 'String without space succeeds');
 });
@@ -28,8 +28,8 @@ test('test 7', function() {
   deepEqual(domino.utils.array(null), [], 'Null succeeds');
 });
 
-// domino.type.get():
-module('domino.type.get()');
+// domino.struct.get():
+module('domino.struct.get()');
 test('test 1', function() {
   deepEqual(domino.struct.get(true), 'boolean', 'Boolean succeeds');
 });
@@ -62,7 +62,7 @@ test('test 10', function() {
 });
 
 // domino.struct.isValid():
-module('domino.type.isValid()');
+module('domino.struct.isValid()');
 test('test 1', function() {
   deepEqual(domino.struct.isValid('boolean'), true, '"boolean" validity succeeds');
 });
@@ -286,7 +286,7 @@ test('test 43', function() {
   );
 });
 
-// domino.struct.check():
+// domino.struct.deepScalar():
 module('domino.struct.deepScalar()');
 test('test 1', function() {
   deepEqual(domino.struct.deepScalar('boolean'), true, '"boolean" succeeds');
@@ -344,4 +344,14 @@ test('test 18', function() {
 });
 test('test 19', function() {
   deepEqual(domino.struct.deepScalar('abcde'), false, '"abcde" succeeds');
+});
+
+// domino.utils.clone():
+module('domino.utils.clone()');
+test('test 1', function() {
+  var o1 = {a: 1},
+      o2 = domino.utils.clone(o1);
+
+  o2.a = 2;
+  notDeepEqual(o1, o2, 'Object succeeds');
 });

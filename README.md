@@ -434,8 +434,7 @@ Here is the list of every types of functions you can give to *domino.js*, with t
    * Returns: *(not evaluated)*
 
  - **Service "before"**:
-   * Additional methods in the scope:
-     + *request*
+   * Additional methods in the scope: *(none)*
    * Parameters given through the scope: *(none)*
    * Function parameters:
      + `String` mes: The error message
