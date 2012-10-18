@@ -1,6 +1,36 @@
+/**
+ * *domino.js* is a JavaScript cascading controller for quick interaction
+ * prototyping.
+ *
+ * Sources: http://github.com/jacomyal/domino.js
+ * Doc:     http://github.com/jacomyal/domino.js#readme
+ *
+ * License:
+ * --------
+ * Copyright © 2012 Linkfluence
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * The Software is provided "as is", without warranty of any kind, express or
+ * implied, including but not limited to the warranties of merchantability,
+ * fitness for a particular purpose and noninfringement. In no event shall the
+ * authors or copyright holders be liable for any claim, damages or other
+ * liability, whether in an action of contract, tort or otherwise, arising
+ * from, out of or in connection with the software or the use or other dealings
+ * in the Software.
+ */
 (function(window) {
   'use strict';
 
+  // This Date is used when displayTime is true, to compute the difference:
   var _startTime = new Date();
 
   // Check domino.js existance:
@@ -52,42 +82,6 @@
         _currentCalls = {},
         _shortcuts = {};
 
-    // Scopes:
-    function _getScope(options) {
-      var o = options || {},
-          scope = {
-            // Methods
-            getEvents: _getEvents,
-            getLabel: _getLabel,
-            expand: _expand,
-            dump: _dump,
-            warn: _warn,
-            die: _die,
-            get: _get,
-
-            // Stored data:
-            events: [],
-            services: []
-          };
-
-      if (o.request) {
-        scope.request = function(service, params) {
-          this.services.push({
-            service: service,
-            params: params
-          });
-        };
-      }
-
-      if (o.full) {
-        scope.addModule = _addModule;
-        scope.request = _request;
-        scope.update = _update;
-      }
-
-      return scope;
-    }
-
     // Set protected property names:
     var _protectedNames = {
       events: 1,
@@ -98,10 +92,9 @@
       var k;
       for (k in Object.prototype)
         _protectedNames[k] = 1;
-      for (k in _getScope({full: 1}))
+      for (k in _getScope({full: true}))
         _protectedNames[k] = 1;
     })();
-
 
     // Initialization:
     var _o = {};
@@ -125,18 +118,84 @@
     (function() {
       var i;
       for (i in _o.properties || [])
-        addProperty(_o.properties[i].id, _o.properties[i]);
+        _addProperty(_o.properties[i].id, _o.properties[i]);
 
       for (i in _o.hacks || [])
-        addHack(_o.hacks[i]);
+        _addHack(_o.hacks[i]);
 
       for (i in _o.services || [])
-        addService(_o.services[i]);
+        _addService(_o.services[i]);
 
       for (i in _o.shortcuts || [])
-        addShortcut(_o.shortcuts[i]['id'], _o.shortcuts[i]['method']);
+        _addShortcut(_o.shortcuts[i]['id'], _o.shortcuts[i]['method']);
     })();
 
+    /**
+     * Generates a "view" of the instance of domino, ie a new object containing
+     * references to some methods of the instance. This makes the data and
+     * methods manipulation way safer.
+     * 
+     * @param  {?object} options The options that determine which scope to
+     *                           return.
+     * 
+     * @return {object} Returns the scope.
+     *
+     * Here is the list of options that are interpreted:
+     *
+     *   {?boolean} full     If true, then the full scope will be returned.
+     *   {?boolean} interact If true, then the returned scope will have the
+     *                       possibility to interact, but will not have direct
+     *                       references to domino methods.
+     */
+    function _getScope(options) {
+      var o = options || {},
+          scope = {
+            // Methods
+            getEvents: _getEvents,
+            getLabel: _getLabel,
+            expand: _expand,
+            dump: _dump,
+            warn: _warn,
+            die: _die,
+            get: _get
+          };
+
+      // Here, we give to the scope direct possibility to activate domino
+      // features. This scope is basically the "public view" of the domino
+      // instance:
+      if (o.full) {
+        scope.update = _update;
+        scope.addModule = _addModule;
+        scope.request = _request;
+        scope.dispatchEvent = function(type, data) {
+          _mainLoop({
+            events: _self.getEvent(type, data)
+          });
+        };
+
+      // But here, request() and dispatchEvent() will be "fake" functions: They
+      // will store instruction that will be evaluated by domino after the
+      // execution of the function that will use the scope:
+      } else if (o.interact) {
+        scope.request = function(service, params) {
+          this.services = this.services || [];
+          this.services.push({
+            service: service,
+            params: params
+          });
+        }
+
+        scope.dispatchEvent = function(type, data) {
+          this.events = this.events || [];
+          this.events.push({
+            type: type,
+            data: data
+          });
+        };
+      }
+
+      return scope;
+    }
 
     /**
      * References a new property, generated the setter and getter if not
@@ -148,16 +207,16 @@
      *
      * @return {domino} Returns the domino instance itself.
      *
-     * Here is the list of options that are interpreted:
+     * Here is the list of options that are recognized:
      *
      *   {?string}          label    The label of the property (the ID by
      *                               default)
-     *   {?(string|object)} type     Indicated the type of the property. Use
-     *                               "?" to specify a nullable property, and
-     *                               "|" for multiple valid types.
+     *   {?(string|object)} type     Indicated the type of the property. It has
+     *                               to be a valid "structure".
      *   {?function}        setter   Overrides the default property setter.
      *   {?function}        getter   Overrides the default property getter.
-     *   {?*}               value    The initial value of the property.
+     *   {?*}               value    The initial value of the property. Will be
+     *                               set with the new setter if specified.
      *   {?(string|array)}  triggers The list of events that can modify the
      *                               property. Can be an array or the list of
      *                               events separated by spaces.
@@ -166,7 +225,7 @@
      *                               an array or the list of events separated
      *                               by spaces.
      */
-    function addProperty(id, options) {
+    function _addProperty(id, options) {
       var i,
           o = options || {};
 
@@ -295,7 +354,7 @@
      *                              trigger and before dispatching the
      *                              specified events.
      */
-    function addHack(options) {
+    function _addHack(options) {
       var a, i,
           o = options || {};
 
@@ -353,6 +412,8 @@
      *                                  used in the first depth of the object.
      *   {?function}       error+       A function to execute if AJAX failed.
      *                                  Will be called in the "full" scope.
+     *   {?function}       before+      A function to execute before AJAX failed.
+     *                                  Will be called in the "full" scope.
      *   {?function}       success+     A function to execute if AJAX
      *                                  successed. Will be called in the
      *                                  "full" scope.
@@ -370,7 +431,7 @@
      * The properties followed by ++ are cumulative when the service is called.
      * The properties followed by "*" accept shortcut values.
      */
-    function addService(options) {
+    function _addService(options) {
       var o = options || {};
 
       // Errors:
@@ -413,7 +474,7 @@
                     parameters: [mes, xhr, p],
                     loop: true,
                     scope: {
-                      request: true
+                      interact: true
                     }
                   });
                 } else
@@ -549,7 +610,7 @@
             var obj = _execute(success, {
               parameters: [data, p],
               scope: {
-                request: true
+                interact: true
               }
             });
 
@@ -625,7 +686,7 @@
      *
      * @return {domino} Returns the domino instance itself.
      */
-    function addShortcut(id, method) {
+    function _addShortcut(id, method) {
       // Check errors:
       if (id === undefined)
         _die('Shortcut ID not specified.');
@@ -868,7 +929,7 @@
           var obj = _execute(_hackMethods[event.type][j], {
             parameters: [event],
             scope: {
-              request: true
+              interact: true
             }
           });
 
@@ -907,6 +968,16 @@
         });
     }
 
+    /**
+     * Returns the value of a property.
+     *
+     * @param  {string} property The name of the property.
+     *
+     * @return {*} If clone mode is activated, returns a clone of the value.
+     *             Else, returns a reference to the value. Also, if the getter
+     *             is overridden, it will return a reference or a clone of what
+     *             the setter returns.
+     */
     function _get(property) {
       if (_getters[property]) {
         if (_overriddenGetters[property]) {
@@ -935,6 +1006,17 @@
         _warn('Property "' + property + '" not referenced.');
     }
 
+    /**
+     * Updates a property.
+     *
+     * @param {string} property The name of the property.
+     * @param {*}      value    The value of the property.
+     *
+     * @return {boolean} Returns false if domino.js knows that the new value is
+     *                   not different than the old one, and true else (useful
+     *                   to know if events have to be dispatched after).
+     *
+     */
     function _set(property, value) {
       if (_setters[property]) {
         if (_overriddenSetters[property]) {
@@ -964,16 +1046,47 @@
 
           return updated;
         } else
-          return _setters[property].call(_getScope(), value);
+          return _setters[property].call(
+            _getScope(),
+            __settings__['clone'] ?
+              _utils.clone(value) :
+              value
+          );
       }
 
       _warn('Property "' + property + '" not referenced.');
       return false;
     }
 
-    function _request(service, params) {
+    /**
+     * Calls a service declared in the domino instance.
+     *
+     * @param  {string}  service The name of the service.
+     * @param  {?object} options An object of options given to the declared
+     *                           service.
+     *
+     * @return {*} Returns itself.
+     *
+     * Here is the list of options that are recognized:
+     *
+     *   {?boolean}      abort       Indicates if the last call of the
+     *                               specified service has to be aborted.
+     *   {?function}     before      An optional function that will be
+     *                               triggered.
+     *   {?string}       contentType The contentType of the AJAX call.
+     *   {?*}            data        TODO
+     *   {?string}       dataType    The dataType of the AJAX call.
+     *   {?function}     error       TODO
+     *   {?array|string} events      TODO
+     *   {?object}       params      TODO
+     *   {?string}       path        TODO
+     *   {?string}       setter      TODO
+     *   {?function}     success     TODO
+     *   {?string}       type        TODO
+     */
+    function _request(service, options) {
       if (_services[service])
-        _services[service](params);
+        _services[service](options);
       else
         _warn('Service "' + service + '" not referenced.');
 
