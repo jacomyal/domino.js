@@ -506,6 +506,8 @@ Here is the list of currently recognized global settings:
  - **verbose**: If `true`, dumps will be sent in `console.log` (default: `false`).
  - **shortcutPrefix**: Determines the shortcuts prefix (default: `":"`).
  - **displayTime**: If `true`, dumps will be prefixed by the time since *domino.js* initialization, in milliseconds (default: `false`).
+ - **clone**:
+   + If `true`, getters return always clone of the values, and setters clone values before they actually update values, using the `domino.utils.clone()` method. It might decrease *domino.js* performances, but makes data manipulation safer. More precisely, when clone mode is activated, there is no properties update without the related events (default: `true`).
 
 Also, *domino.js* provides its own functions to log, warn or throw errors:
 
@@ -514,7 +516,6 @@ Also, *domino.js* provides its own functions to log, warn or throw errors:
  - **`warn(args...)`** will call `die(args...)` if the global setting `strict` is true, `dump(args...)` else.
 
 Finally, all the logs/warns/errors will be prefixed by the instance name if specified (the string `"domino"` else).
-     + `*` The value you want to see returned through `.get(property)`
 
 ## Structures:
 
