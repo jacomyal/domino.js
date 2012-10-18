@@ -924,9 +924,13 @@
             inputValues: inputs
           });
 
-          return res['returned'];
+          return __settings__['clone'] ?
+            _utils.clone(res['returned']) :
+            res['returned'];
         } else
-          return _getters[property]();
+          return __settings__['clone'] ?
+            _utils.clone(_getters[property]()) :
+            _getters[property]();
       } else
         _warn('Property "' + property + '" not referenced.');
     }
@@ -938,7 +942,10 @@
               arg = [],
               inputs = {};
 
-          inputs[property] = value;
+          if (__settings__['clone'])
+            value = _utils.clone(value);
+
+          inputs[property] = _get(property);
 
           for (var i = 1, l = arguments.length; i < l; i++)
             arg.push(arguments[i]);
@@ -1161,23 +1168,23 @@
 
       var result, k;
 
-      if (struct.get(result) === 'undefined') {
-        if (struct.get(item) === 'array') {
-          result = [];
-          for (var k in item)
-            result[k] = this.clone(item[k]);
-        } else if (struct.get(item) === 'object') {
-          if (!item.prototype) {
-            result = {};
-            for (var i in item) {
-              result[i] = this.clone(item[i]);
-            }
-          } else {
-            result = item;
+      if (struct.get(item) === 'array') {
+        result = [];
+        for (var k in item)
+          result[k] = this.clone(item[k]);
+      } else if (struct.get(item) === 'date') {
+        result = new Date(item.getTime());
+      } else if (struct.get(item) === 'object') {
+        if (!item.prototype) {
+          result = {};
+          for (var i in item) {
+            result[i] = this.clone(item[i]);
           }
         } else {
           result = item;
         }
+      } else {
+        result = item;
       }
 
       return result;
@@ -1185,7 +1192,7 @@
     ajax: function(o, fn) {
       if (typeof o === 'string')
         o = { url: o, ok: fn };
-      else if (this.type.get(o) !== 'object')
+      else if (struct.get(o) !== 'object')
         __die__('[domino.global] Invalid parameter given to AJAX');
 
       var type = o.type || 'GET',
@@ -1391,7 +1398,8 @@
     strict: false,
     verbose: false,
     shortcutPrefix: ':',
-    displayTime: false
+    displayTime: false,
+    clone: true
   };
 
   domino.settings = function(a1, a2) {
