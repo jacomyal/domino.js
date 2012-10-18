@@ -22,13 +22,13 @@ You can contribute by submitting [issues tickets](http://github.com/jacomyal/dom
 
 ## Introduction:
 
-***domino.js* is a JavaScript library to manage interactions in dashboards**. It has been especially designed for iteractive processes, to obtain quickly **maintainable** proofs of concepts.
+***domino.js* is a JavaScript library to manage interactions in dashboards**. It has been especially designed for iterative processes, to obtain quickly **maintainable** proofs of concepts.
 
 The concept is pretty simple: First, you define your **properties** (that describe your data as well as all the minor counts/flags that define the state of your interface), and associate input and output events to each of them. Then, you instanciate your **modules** (that basically define all the graphic components that display or make possible to modify the properties), through *domino.js*'s modules factory, that will take care of all the connecting part.
 
 Finally, when a module will dispatch an event, it will automatically update the related properties, and the modules that are listening to these properties' output events. **So you never have to connect two modules by yourself.**
 
-But the most important feature of *domino.js* is probably the possibility to add arbitrarily **hacks**. A hack is just a function bound to one or more events. This function will be executed in its own scope, and can update properties, call AJAX services dispatch other events, and a lot more. So basically, **it gives a strict and clear place to write all those sh\*tty features that were not considered in your original design.**
+But the most important feature of *domino.js* is probably the possibility to add arbitrarily **hacks**. A hack is just a function bound to one or more events. This function will be executed in its own scope, and can update properties, call AJAX services, dispatch other events, and a lot more. So basically, **it gives a strict and clear place to write all those sh\*tty features that were not considered in your original design.**
 
 It might be easier with **examples**. In the following one, we just declare a *boolean* property, named "flag", and bind two modules on it - one to update it, and one to know when it is updated:
 
@@ -81,7 +81,7 @@ emettor.updateFlag(true);  // log: "New flag value: true"
 emettor.updateFlag(false); // log: "New flag value: false"
 ```
 
-Now, the following example is basically the same than the previous one. But instead of a *boolean*, our property is a *string*, and we do not want it to exceed 5 characters. So, we add a **hack** bound on the output event of our property, and that will check the length of our string, and troncate it if it is too long:
+Now, the following example is basically the same than the previous one. But instead of a *boolean*, our property is a *string*, and we do not want it to exceed 5 characters. So, we add a **hack** bound on the output event of our property, and that will check the length of our string, and truncate it if it is too long:
 
 ```js
 // As previously, let's first instanciate domino.js:
@@ -102,7 +102,7 @@ var d = new domino({
         var str = this.get('string');
 
         if (str.length > 5) {
-          console.log('The string has been troncated!');
+          console.log('The string has been truncated!');
           this.string = str.substr(0,5);
         }
       }
@@ -140,7 +140,7 @@ var emettor = d.addModule(emettorModule),
 // Now, let's test it:
 emettor.updateString('abc');       // log: "New string value: abc"
 emettor.updateString('abcdefghi'); // log: "New string value: abcdefghi"
-                                   //      "The string has been troncated!"
+                                   //      "The string has been truncated!"
                                    //      "New string value: abcde"
 ```
 
@@ -182,7 +182,7 @@ Here is a more complete example on how to declare string:
       val.substr(0,5) :
       val;
 
-    // If the value has not change, returning false will cancel the update of
+    // If the value has not changed, returning false will cancel the update of
     // this property, ie the output events ('stringLessThan5CharsUpdate' and
     // 'aStringIsUpdated') will not be dispatched.
     if(val === this.get('stringLessThan5Chars'))
@@ -198,7 +198,7 @@ Here is a more complete example on how to declare string:
 // [...]
 ```
 
-It basically makes the same thing than in the second example, but without the use of an hack.
+It basically makes the same thing as in the second example, but without the use of a hack.
 
 ## Modules:
 
@@ -207,8 +207,6 @@ Most of the time, the **modules** represent each graphic components (*buttons* t
 Any module must extend the `domino.module` basic class. This class has just the methods to listen to and dispatch events, and empty objects that you will fill with your **triggers**. You can bind a trigger on an *event* or directly to a *property* (it will then be triggered any time the property is effectively updated).
 
 Here is a quick and pratical example using jQuery, of a module corresponding to an HTML *checkbox*, and representing the boolean property "flag" from the first example:
-
-Here is a practical module on how to write a module that represents and make possible to update the booleab property "flag" from the first example
 
 ```js
 function Checkbox() {
@@ -231,7 +229,7 @@ function Checkbox() {
   });
 
   // When the "flag" is updated, we update the state of the checkbox:
-  // ("self.triggers.properties['flag']" could have be used as well)
+  // ("self.triggers.properties['flag']" could have been used as well)
   self.triggers.events['flagUpdated'] = function(event) {
     html.find('input').attr(
       'checked',
@@ -257,7 +255,7 @@ And that's it, the module is here and connected. And you can even create two ins
 
 ## Hacks:
 
-**Hacks** are useful to implement all those features that you can not predict in the definition of your projects - they actually are real *hacks*. Here are some examples of the kind of "features" that can be a disaster for your code, but are easily implementable with *domino.js:
+**Hacks** are useful to implement all those features that you can not predict in the definition of your projects - they actually are real *hacks*. Here are some examples of the kind of "features" that can be a disaster for your code, but are easily implementable with *domino.js*:
 
  - Restrict the max count of selected elements in a list to a specified number.
  - Hide some available values from a *select* module when another is updated.
@@ -315,9 +313,9 @@ The core function in *domino.js* manages the events chain.
 
 Basically, when an event is dispatched from a module, it will trigger this loop. Then, the related properties will be updated, any module or hack listening to this event will be triggered - causing eventually new updates. After all these actions, new events are to be triggered. **So the loop we be called again**, but with all those new events instead of the one from the module, etc.
 
-This same loop is also called as an output for services success and error method, and the global `update` method (accessible only through the domino.js instance itself).
+This same loop is also called as an output for services success and error method, and the global `update` method (accessible only through the *domino.js* instance itself).
 
-Here is an example: With a simple `EventDispatcher` class to manage the events chain synchronously, here is the kind of case that can appen:
+Here is an example: With a simple `EventDispatcher` class to manage the events chain synchronously, here is the kind of case that can happen:
 
 ```
 (module) -> updateProperty1 -> event1 -> hack1
@@ -330,7 +328,7 @@ Here, a module updates the property `A` which dispatches events `event1` and `ev
 
 The problem here is that `hack1` and `hack2` will be triggered **before** event2. It might not seem that much an issue here, but in more complexe chains, some hacks would be overridden by hacks you designed to happen "earlier".
 
-**Hopefully, *domino.js*' main loop resolves this issue** by executing the previous events chain as following:
+**Hopefully, *domino.js*'s main loop resolves this issue** by executing the previous events chain as following:
 
 ```
 (module) -> updateProperty1 -> event1, event2 -> hack1, hack2, hack3, hack4
@@ -385,7 +383,7 @@ Also, some functions you will give to *domino.js* will have access to some more 
    * Instanciate the specified module, plugs all the event connections, and returns the module instance.
 
  - **update** *(\{Array|Object\})*
-   * If the given parameter is an `Object`, then each pair *key/value* will set the *value* the the property *key*. If the parameter is an `Array`, it must contain objects matching *{property: String, value: *, parameters: ?Array}* (it's the only way to use update with additional parameters to the setters). After having updated the properties, this method will also dispatch the related events.
+   * If the given parameter is an `Object`, then each *key/value* pair will set the *value* to the *key* property. If the parameter is an `Array`, it must contain objects matching *{property: String, value: *, parameters: ?Array}* (it's the only way to use update with additional parameters to the setters). After having updated the properties, this method will also dispatch the related events.
 
 **Important**: All the methods described (the default and the additional ones) are also available in the object returned by the *domino.js* constructor itself. Also, the default scope is always given as the **first** parameter to the modules constructors.
 
@@ -461,7 +459,7 @@ Here is the list of every types of functions you can give to *domino.js*, with t
      + `?*` If specified, the `data` attribute given in the overridding parameters
    * Accepted scope modifications: *(none)*
    * Returns:
-     + `*` The data send through the AJAX call
+     + `*` The data sent through the AJAX call
 
  - **Shortcuts**:
    * Additional methods in the scope: *(none)*
@@ -481,7 +479,7 @@ Here is the list of every types of functions you can give to *domino.js*, with t
    * Accepted scope modifications:
      + `*` this[property] contains the new value of the property
    * Returns:
-     + `?Boolean` If you return a boolean value, the property will be updated and the related events dispatched only if the returned boolean is `true`
+     + `?boolean` If you return a boolean value, the property will be updated and the related events dispatched only if the returned boolean is `true`
 
  - **Custom getters**:
    * Additional methods in the scope: *(none)*
@@ -491,12 +489,13 @@ Here is the list of every types of functions you can give to *domino.js*, with t
      + `*` Eventually parameters, if you are using custom getters
    * Accepted scope modifications: *(none)*
    * Returns:
+     + `*` The current value of the property
 
 ## Logs and global settings:
 
 The global method `domino.settings` is used to manage global *domino.js* settings. It works like most *jQuery* methods:
 
- - **`domino.settings(setting)`**: Will return the `setting` value is it exists, `undefined` else.
+ - **`domino.settings(setting)`**: Will return the `setting` value if it exists, `undefined` otherwise.
  - **`domino.settings(setting, value)`**: Will set `value` in `setting` and return the global *domino* object.
  - **`domino.settings(obj)`**: Will set for each `{key, value}` in `obj` the value `value` in the setting `key`, and return the global *domino* object.
 
@@ -513,13 +512,13 @@ Also, *domino.js* provides its own functions to log, warn or throw errors:
 
  - **`die(args...)`** will concatenate the arguments casts as strings and throw the result as an error.
  - **`dump(args...)`** will call `console.log(args...)` if the global setting `verbose` is true.
- - **`warn(args...)`** will call `die(args...)` if the global setting `strict` is true, `dump(args...)` else.
+ - **`warn(args...)`** will call `die(args...)` if the global setting `strict` is true, `dump(args...)` otherwise.
 
-Finally, all the logs/warns/errors will be prefixed by the instance name if specified (the string `"domino"` else).
+Finally, all the logs/warns/errors will be prefixed by the instance name if specified (the string `"domino"` otherwise).
 
 ## Structures:
 
-*domino.js* provides its own helpers to manipulate some "Closure like" types in the `domino.struct` object. Since they can be more complexe than simple string types, they are called **structures**.
+*domino.js* provides its own helpers to manipulate some "Closure like" types in the `domino.struct` object. Since they can be more complex than simple string types, they are called **structures**.
 
 Those structures are:
 
@@ -529,7 +528,7 @@ Those structures are:
    * Example: `'?object'`, `'?array'`, etc...
  - Multi-types: **'{type1}|{type2}'**
    * Example: `'string|number'`, `'?array|object'`, etc...
- - Complexe structures: **{ key1: {type1}, key2: {type2} }**
+ - Complex structures: **{ key1: {type1}, key2: {type2} }**
    * Examples:
      + `{ a: 'number', b: 'number', total: '?number' }`
      + `{ obj1: { k1: 'number', k2: 'number' }, obj2: 'object', list: '?array' }`

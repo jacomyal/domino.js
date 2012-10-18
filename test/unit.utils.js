@@ -355,3 +355,35 @@ test('test 1', function() {
   o2.a = 2;
   notDeepEqual(o1, o2, 'Object succeeds');
 });
+
+// domino.utils.ajax():
+module('domino.utils.ajax()');
+
+// Ajax management
+var dominoAjax = domino.utils.ajax;
+function dominoToJqueryAjax() {
+  domino.utils.ajax = $.ajax;
+}
+function dominoResetAjax() {
+  domino.utils.ajax = dominoAjax;
+}
+
+asyncTest('Simple ajax call', function() {
+  dominoToJqueryAjax();
+
+  $.mockjax({
+    url: '/toto/tutu',
+    responseText: 'Hello world'
+  });
+
+  domino.utils.ajax({
+    url: '/toto/tutu',
+    dataType: 'text',
+    success: function(data) {
+      equal(data, 'Hello world', 'Response Text matches');
+      start();
+    }
+  });
+
+  dominoResetAjax();
+});

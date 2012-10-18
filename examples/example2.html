@@ -1,0 +1,173 @@
+<html>
+<head>
+  <title>domino.js ajax example</title>
+  <style type="text/css">
+    div.line1 > *,
+    div.line2 > * {
+      padding: 5px;
+    }
+    fieldset {
+      display: inline;
+      border: none;
+    }
+  </style>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+  <script src="../test/jquery/jquery.mockjax.js"></script>
+  <!-- domino.js + modules -->
+  <script type="text/javascript" src="../src/domino.js"></script>
+  <script type="text/javascript" src="../src/domino.modules.js"></script>
+  
+  <!-- sample -->
+  <script type="text/javascript">
+
+    (function() {
+      // Replace domino ajax with jquery one
+      domino.utils.ajax = $.ajax;
+      // Mock ajax calls
+      $.mockjax({
+        url: '/test1/*',
+        type: 'GET',
+        responseText: {
+          NumberA: 42,
+          StringA: 'Hello World!',
+          ArrayA: ['foo', 'bar', 'baz']
+        }
+      });
+    })();
+
+    var d, dom, dom1, dom2;
+
+    $(document).ready(function() {
+
+      // Setup domino:
+      domino.settings({
+        verbose: true,
+        strict: true
+      });
+
+      /**
+       * TEST 1:
+       *********
+       */
+      dom = $('#test1');
+      dom1 = $('.line1', dom);
+      dom2 = $('.line2', dom);
+
+      d = new domino({
+        name: 'test_ajax',
+        properties: [
+          {
+            id: 'NumberA',
+            label: 'Number A',
+            value: 1,
+            type: 'number',
+            triggers: 'updateNumberA',
+            dispatch: 'numberAUpdated'
+          },
+          {
+            id: 'StringA',
+            label: 'String A',
+            value: 'a',
+            type: 'string',
+            triggers: 'updateStringA',
+            dispatch: 'stringAUpdated'
+          },
+          {
+            id: 'ArrayA',
+            label: 'Array A',
+            value: [ 1, 2, 3 ],
+            type: 'array',
+            triggers: 'updateArrayA',
+            dispatch: 'arrayAUpdated'
+          }
+        ],
+        services: [
+          {
+            id: 'getValue',
+            setter: ':property',
+            path: ':property',
+            url: '/test1/:property'
+          },
+          {
+            id: 'postValue',
+            setter: ':property',
+            type: 'POST',
+            contentType: 'application/json',
+            path: ':property',
+            url: '/test1/:property'
+          }
+        ],
+        hacks: [
+          {
+            triggers: 'reload',
+            method: function() {
+              this.request('getValue', { params: { property: 'NumberA' } });
+              this.request('getValue', { params: { property: 'StringA' } });
+              this.request('getValue', { params: { property: 'ArrayA' } });
+            }
+          },
+          {
+            triggers: 'upload',
+            method: function() {
+              this.request('postValue', {
+                data: { value: this.get('NumberA') },
+                params: { property: 'NumberA' }
+              });
+              this.request('postValue', {
+                data: { value: this.get('StringA') },
+                params: { property: 'StringA' }
+              });
+              this.request('postValue', {
+                data: { value: this.get('ArrayA') },
+                params: { property: 'ArrayA' }
+              });
+            }
+          }
+        ]
+      });
+
+      d.addModule(domino.modules.NumberInput, [{
+        property: 'NumberA'
+      }]).html.appendTo(dom1);
+
+      d.addModule(domino.modules.TextInput, [{
+        property: 'StringA'
+      }]).html.appendTo(dom1);
+
+      d.addModule(domino.modules.ArrayInput, [{
+        property: 'ArrayA'
+      }]).html.appendTo(dom1);
+
+      d.addModule(domino.modules.Button, [{
+        dispatch: 'reload',
+        htmlContent: 'Reload'
+      }]).html.appendTo(dom1);
+
+      d.addModule(domino.modules.Button, [{
+        dispatch: 'upload',
+        htmlContent: 'Upload'
+      }]).html.appendTo(dom1);
+
+
+      d.addModule(domino.modules.Text, [{
+        property: 'NumberA'
+      }]).html.appendTo(dom2);
+
+      d.addModule(domino.modules.Text, [{
+        property: 'StringA'
+      }]).html.appendTo(dom2);
+
+      d.addModule(domino.modules.Text, [{
+        property: 'ArrayA'
+      }]).html.appendTo(dom2);
+    });
+  </script>
+</head>
+<body>
+  <div class="testing" id="test1">
+    <h2>Test 1: Ajax</h2>
+    <div class="line1"></div>
+    <div class="line2"></div>
+  </div>
+</body>
+</html>
