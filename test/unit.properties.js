@@ -120,5 +120,21 @@ test('test 10', function() {
   }]);
 
   o.m.s.dispatch('AbCdE');
-  deepEqual(o.m.s.historic[o.m.s.historic.length-1], 'abcde', 'Setters overriding works well.');
+  deepEqual(o.m.s.historic[o.m.s.historic.length-1], 'abcde', 'Basic setters overriding works well.');
 });
+test('test 11', function() {
+  var o = init([{
+    id: 's',
+    type: 'string',
+    value: 'abc',
+    triggers: 'updateS',
+    dispatch: 'sUpdated',
+    setter: function(v) {
+      this.s = (this.s || '') + v;
+    }
+  }]);
+
+  o.m.s.dispatch('def');
+  deepEqual(o.m.s.historic[o.m.s.historic.length-1], 'abcdef', 'Setters overriding with current value reading works well.');
+});
+
