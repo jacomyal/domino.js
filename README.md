@@ -379,6 +379,9 @@ Also, some functions you will give to *domino.js* will have access to some more 
  - **request** *(serviceId, options)*
    * Calls the specified service. Check the **Services** documentation to see which options you can use.
 
+ - **dispatchEvent** *(eventType, data)*
+   * Dispatches the specified event. Warning: Despite it works like `domino.EventDispatcher.dispatchEvent`, it is not the same implementation, and the event will be considered by the *domino.js* instance after the complete execution of your function.
+
  - **addModule** *(class, options)*
    * Instanciate the specified module, plugs all the event connections, and returns the module instance.
 
@@ -394,11 +397,11 @@ Here is the list of every types of functions you can give to *domino.js*, with t
  - **Hacks**:
    * Additional methods in the scope:
      + *request*
+     + *dispatchEvent*
    * Parameters given through the scope: *(none)*
    * Function parameters:
      + `Object` event: The event that triggered the hack
    * Accepted scope modifications:
-     + `Array<String>` this.events will be dispatched
      + `*` this[property] will update *property*
    * Returns: *(not evaluated)*
 
@@ -413,34 +416,34 @@ Here is the list of every types of functions you can give to *domino.js*, with t
  - **Service "success"**:
    * Additional methods in the scope:
      + *request*
+     + *dispatchEvent*
    * Parameters given through the scope: *(none)*
    * Function parameters:
      + `Object` data: The data received from AJAX
    * Accepted scope modifications:
-     + `Array<String>` this.events will be dispatched
      + `*` this[property] will update *property*
    * Returns: *(not evaluated)*
 
  - **Service "error"**:
    * Additional methods in the scope:
      + *request*
+     + *dispatchEvent*
    * Parameters given through the scope: *(none)*
    * Function parameters:
      + `String` mes: The error message
      + `Object` xhr: The related XHR object
    * Accepted scope modifications:
-     + `Array<String>` this.events will be dispatched
      + `*` this[property] will update *property*
    * Returns: *(not evaluated)*
 
  - **Service "before"**:
-   * Additional methods in the scope: *(none)*
+   * Additional methods in the scope:
+     + *dispatchEvent*
    * Parameters given through the scope: *(none)*
    * Function parameters:
      + `String` mes: The error message
      + `Object` xhr: The related XHR object
    * Accepted scope modifications:
-     + `Array<String>` this.events will be dispatched
      + `*` this[property] will update *property*
    * Returns: *(not evaluated)*
 
@@ -495,9 +498,9 @@ Here is the list of every types of functions you can give to *domino.js*, with t
 
 The global method `domino.settings` is used to manage global *domino.js* settings. It works like most *jQuery* methods:
 
- - **`domino.settings(setting)`**: Will return the `setting` value if it exists, `undefined` otherwise.
- - **`domino.settings(setting, value)`**: Will set `value` in `setting` and return the global *domino* object.
- - **`domino.settings(obj)`**: Will set for each `{key, value}` in `obj` the value `value` in the setting `key`, and return the global *domino* object.
+ - `domino.settings(setting)`: Will return the `setting` value if it exists, `undefined` otherwise.
+ - `domino.settings(setting, value)`: Will set `value` in `setting` and return the global *domino* object.
+ - `domino.settings(obj)`: Will set for each `{key, value}` in `obj` the value `value` in the setting `key`, and return the global *domino* object.
 
 Here is the list of currently recognized global settings:
 
@@ -510,9 +513,9 @@ Here is the list of currently recognized global settings:
 
 Also, *domino.js* provides its own functions to log, warn or throw errors:
 
- - **`die(args...)`** will concatenate the arguments casts as strings and throw the result as an error.
- - **`log(args...)`** will call `console.log(args...)` if the global setting `verbose` is true.
- - **`warn(args...)`** will call `die(args...)` if the global setting `strict` is true, `log(args...)` otherwise.
+ - `die(args...)` will concatenate the arguments casts as strings and throw the result as an error.
+ - `log(args...)` will call `console.log(args...)` if the global setting `verbose` is true.
+ - `warn(args...)` will call `die(args...)` if the global setting `strict` is true, `log(args...)` otherwise.
 
 Finally, all the logs/warns/errors will be prefixed by the instance name if specified (the string `"domino"` otherwise).
 
