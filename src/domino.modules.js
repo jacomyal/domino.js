@@ -44,13 +44,13 @@
     o['cssClass'] && html.addClass(o['cssClass']);
     o['cssId'] && html.attr('id', o['cssId']);
 
-    function update(event) {
+    function update(domino) {
       html.html(
         '<span class="property">' +
           label +
         '</span>: ' +
         '<span class="value">' +
-          event.data.get(o['property']) +
+          domino.get(o['property']) +
         '</span>'
       );
     }
@@ -151,10 +151,10 @@
       dispatch && self.dispatchEvent(dispatch, data);
     });
 
-    function update(event) {
+    function update(domino) {
       html.find('input').attr(
         'checked',
-        !!event.data.get(o['property']) ?
+        !!domino.get(o['property']) ?
           'checked' :
           null
       );
@@ -228,9 +228,9 @@
       dispatch && self.dispatchEvent(dispatch, data);
     });
 
-    function update(event) {
+    function update(domino) {
       // Check the current state of the flag:
-      isOn = !!event.data.get(o['property']);
+      isOn = !!domino.get(o['property']);
       if (isOn) {
         o['cssClassOn'] && html.attr('class', o['cssClassOn']);
         o['htmlOn'] && html.html(o['htmlOn']);
@@ -305,8 +305,8 @@
       dispatch && self.dispatchEvent(dispatch, data);
     });
 
-    function update(event) {
-      html.find('input').val(event.data.get(o['property']));
+    function update(domino) {
+      html.find('input').val(domino.get(o['property']));
     }
 
     if (o['triggers'])
@@ -380,9 +380,9 @@
       dispatch && self.dispatchEvent(dispatch, data);
     });
 
-    function update(event) {
+    function update(domino) {
       html.find('input').val(
-        event.data.get(o['property']).join(', ' || o['sep'])
+        domino.get(o['property']).join(', ' || o['sep'])
       );
     }
 
@@ -451,8 +451,8 @@
       dispatch && self.dispatchEvent(dispatch, data);
     });
 
-    function update(event) {
-      html.find('input').val(+event.data.get(o['property']));
+    function update(domino) {
+      html.find('input').val(+domino.get(o['property']));
     }
 
     if (o['triggers'])
@@ -524,16 +524,16 @@
       dispatch && self.dispatchEvent(dispatch, data);
     });
 
-    function updateSelection(event) {
-      selected = event.data.get(o['property']);
+    function updateSelection(domino) {
+      selected = domino.get(o['property']);
       html.val(selected);
     }
 
-    function updateList(event) {
+    function updateList(domino) {
       if (typeof o['values'] !== 'string')
         return;
 
-      values = event.data.get(o['values']);
+      values = domino.get(o['values']);
       html.empty().append(values.map(function(v) {
         return typeof v === 'string' ?
           '<option value="' + v + '">' + v + '</option>' :

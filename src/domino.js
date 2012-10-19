@@ -761,7 +761,7 @@
           var data = {};
           data[property] = _get(property);
           _execute(triggers.properties[property], {
-            parameters: [_self.getEvent('domino.initialUpdate', _getScope())]
+            parameters: [_getScope()]
           });
         }
       }
@@ -880,10 +880,9 @@
           if (push) {
             for (i in _propertyListeners[property])
               _execute(_propertyListeners[property][i], {
-                parameters: [_self.getEvent(
-                  property,
-                  _getScope()
-                )]
+                parameters: [_getScope({
+                  interact: true
+                })]
               });
 
             for (i in _descending[property] || [])
@@ -921,7 +920,9 @@
         // Modules triggers:
         for (k in _eventListeners[event.type]) {
           _execute(_eventListeners[event.type][k], {
-            parameters: [event]
+            parameters: [_getScope({
+              interact: true
+            })]
           });
         }
 
