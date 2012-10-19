@@ -67,8 +67,8 @@ function receptorModule() {
 
   // We add a trigger on the "flagUpdated" event, that will just display the
   // new value
-  this.triggers.events['flagUpdated'] = function(event) {
-    console.log('New flag value: '+event.data.get('flag'));
+  this.triggers.events['flagUpdated'] = function(dominoInstance) {
+    console.log('New flag value: '+dominoInstance.get('flag'));
   };
 }
 
@@ -128,8 +128,8 @@ function receptorModule() {
 
   // We add a trigger on the "stringUpdated" event, that will just display the
   // new value
-  this.triggers.events['stringUpdated'] = function(event) {
-    console.log('New string value: '+event.data.get('string'));
+  this.triggers.events['stringUpdated'] = function(dominoInstance) {
+    console.log('New string value: '+dominoInstance.get('string'));
   };
 }
 
@@ -230,10 +230,10 @@ function Checkbox() {
 
   // When the "flag" is updated, we update the state of the checkbox:
   // ("self.triggers.properties['flag']" could have been used as well)
-  self.triggers.events['flagUpdated'] = function(event) {
+  self.triggers.events['flagUpdated'] = function(dominoInstance) {
     html.find('input').attr(
       'checked',
-      !!event.data.get('flag') ?
+      !dominoInstance.get('flag') ?
         'checked' :
         null
     );
