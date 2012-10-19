@@ -176,22 +176,24 @@
       // But here, request() and dispatchEvent() will be "fake" functions: They
       // will store instruction that will be evaluated by domino after the
       // execution of the function that will use the scope:
-      } else if (o.interact) {
-        scope.request = function(service, params) {
-          this.services = this.services || [];
-          this.services.push({
-            service: service,
-            params: params
-          });
-        }
+      } else {
+        if (o.request)
+          scope.request = function(service, params) {
+            this.services = this.services || [];
+            this.services.push({
+              service: service,
+              params: params
+            });
+          };
 
-        scope.dispatchEvent = function(type, data) {
-          this.events = this.events || [];
-          this.events.push({
-            type: type,
-            data: data
-          });
-        };
+        if (o.dispatchEvent)
+          scope.dispatchEvent = function(type, data) {
+            this.events = this.events || [];
+            this.events.push({
+              type: type,
+              data: data
+            });
+          };
       }
 
       return scope;
@@ -461,11 +463,11 @@
               dataType: p['dataType'] || o['dataType'],
               type: (p['type'] || o['type'] || 'GET').toString().toUpperCase(),
               data: _struct.get(o['data']) === 'function' ?
-                      o['data'].call(_getScope(), p) :
+                      o['data'].call(_getScope(), p['data']) :
                       (p['data'] || o['data']),
               url: _struct.get(o['url']) === 'function' ?
-                      o['url'].call(_getScope(), p) :
-                      o['url'],
+                     o['url'].call(_getScope(), p) :
+                     o['url'],
               error: function(mes, xhr) {
                 _self.dispatchEvent('domino.ajaxFailed');
                 var error = p['error'] || o['error'],
@@ -476,20 +478,16 @@
                     parameters: [mes, xhr, p],
                     loop: true,
                     scope: {
-                      interact: true
+                      request: true,
+                      dispatchEvent: true
                     }
                   });
                 } else
                   _log(
-                    'Loading failed with message "' + mes + '" ' +
+                    'Loading service "' + o['id'] + '" ' +
+                    'failed with message "' + mes + '" ' +
                     'and status ' + xhr.status + '.'
                   );
-
-                // Check events to dispatch:
-                for (event in dispatch) {
-                  _self.dispatchEvent(event, _getScope());
-                  events.push(_self.getEvent(event, _getScope()));
-                }
               }
             };
 
@@ -612,14 +610,15 @@
             var obj = _execute(success, {
               parameters: [data, p],
               scope: {
-                interact: true
+                request: true,
+                dispatchEvent: true
               }
             });
 
             a = _utils.array(obj['events']);
             for (k in a) {
               reiterate = true;
-              dispatch[a[k]] = 1;
+              dispatch[a[k].type] = 1;
             }
 
             for (k in obj['update'])
@@ -660,7 +659,10 @@
         if (before != null && _struct.get(before) === 'function') {
           _execute(before, {
             parameters: [p],
-            loop: true
+            loop: true,
+            scope: {
+              dispatchEvent: true
+            }
           });
         }
 
@@ -881,8 +883,11 @@
             for (i in _propertyListeners[property])
               _execute(_propertyListeners[property][i], {
                 parameters: [_getScope({
-                  interact: true
-                })]
+                  request: true,
+                  dispatchEvent: true
+                }), {
+                  property: property
+                }]
               });
 
             for (i in _descending[property] || [])
@@ -894,12 +899,6 @@
       // Check services to call:
       for (i in servicesArray || [])
         _request(servicesArray[i].service, servicesArray[i].params);
-
-      for (event in dispatch) {
-        _self.dispatchEvent(event, _getScope());
-        events.push(_self.getEvent(event, _getScope()));
-        reiterate = true;
-      }
 
       // Check events to trigger:
       for (i in eventsArray) {
@@ -921,8 +920,9 @@
         for (k in _eventListeners[event.type]) {
           _execute(_eventListeners[event.type][k], {
             parameters: [_getScope({
-              interact: true
-            })]
+              request: true,
+              dispatchEvent: true
+            }), event]
           });
         }
 
@@ -931,13 +931,14 @@
           var obj = _execute(_hackMethods[event.type][j], {
             parameters: [event],
             scope: {
-              interact: true
+              request: true,
+              dispatchEvent: true
             }
           });
 
           a = _utils.array(obj['events']);
           for (k in a)
-            dispatch[a[k]] = 1;
+            dispatch[a[k].type] = 1;
 
           for (k in obj['update']) {
             if (update[k] === undefined) {
@@ -957,6 +958,12 @@
 
         for (j in _hackDispatch[event.type] || [])
           dispatch[_hackDispatch[event.type][j]] = 1;
+      }
+
+      for (event in dispatch) {
+        _self.dispatchEvent(event, _getScope());
+        events.push(_self.getEvent(event, _getScope()));
+        reiterate = true;
       }
 
       // Reloop:
