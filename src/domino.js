@@ -458,6 +458,7 @@
         _log('Calling service "' + o['id'] + '".');
 
         var p = params || {},
+            shortcuts = p['shortcuts'] || {},
             ajaxObj = {
               contentType: p['contentType'] || o['contentType'],
               dataType: p['dataType'] || o['dataType'],
@@ -513,7 +514,7 @@
         ) {
           oldURL = ajaxObj['url'];
           for (i in matches) {
-            exp = _expand(matches[i], p['params']);
+            exp = _expand(matches[i], shortcuts);
             ajaxObj['url'] =
               ajaxObj['url'].replace(new RegExp(matches[i], 'g'), exp);
           }
@@ -524,7 +525,7 @@
         doTest = true;
         if (_struct.get(ajaxObj['data']) === 'string')
           if (ajaxObj['data'].match(regexFull))
-            ajaxObj['data'] = _expand(ajaxObj['data'], p['params']);
+            ajaxObj['data'] = _expand(ajaxObj['data'], shortcuts);
 
         if (_struct.get(ajaxObj['data']) === 'object')
           while (doTest) {
@@ -534,7 +535,7 @@
                 _struct.get(ajaxObj['data'][k]) === 'string' &&
                 ajaxObj['data'][k].match(regexFull)
               ) {
-                ajaxObj['data'][k] = _expand(ajaxObj['data'][k], p['params']);
+                ajaxObj['data'][k] = _expand(ajaxObj['data'][k], shortcuts);
                 doTest = true;
               }
           }
@@ -556,9 +557,9 @@
 
           // Expand different string params:
           if (_struct.get(setter) === 'string')
-            setter = _expand(setter, p['params']);
+            setter = _expand(setter, shortcuts);
           if (_struct.get(path) === 'string')
-            path = _expand(path, p['params']);
+            path = _expand(path, shortcuts);
 
           // Check path:
           d = data;
