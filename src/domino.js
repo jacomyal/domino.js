@@ -492,7 +492,7 @@
               }
             };
 
-        var i, exp, k, doTest,
+        var i, exp, k, doTest, val,
             pref = __settings__['shortcutPrefix'],
             regexContains = new RegExp(pref + '(\\w+)', 'g'),
             regexFull = new RegExp('^' + pref + '(\\w+)$'),
@@ -514,7 +514,7 @@
         ) {
           oldURL = ajaxObj['url'];
           for (i in matches) {
-            exp = _expand(matches[i], shortcuts);
+            exp = _expand(matches[i].match(regexFull)[1], shortcuts);
             ajaxObj['url'] =
               ajaxObj['url'].replace(new RegExp(matches[i], 'g'), exp);
           }
@@ -525,7 +525,8 @@
         doTest = true;
         if (_struct.get(ajaxObj['data']) === 'string')
           if (ajaxObj['data'].match(regexFull))
-            ajaxObj['data'] = _expand(ajaxObj['data'], shortcuts);
+            ajaxObj['data'] =
+              _expand(ajaxObj['data'].match(regexFull)[1], shortcuts);
 
         if (_struct.get(ajaxObj['data']) === 'object')
           while (doTest) {
@@ -535,7 +536,8 @@
                 _struct.get(ajaxObj['data'][k]) === 'string' &&
                 ajaxObj['data'][k].match(regexFull)
               ) {
-                ajaxObj['data'][k] = _expand(ajaxObj['data'][k], shortcuts);
+                ajaxObj['data'][k] =
+                  _expand(ajaxObj['data'][k].match(regexFull)[1], shortcuts);
                 doTest = true;
               }
           }
@@ -556,10 +558,17 @@
               success = p['success'] || o['success'];
 
           // Expand different string params:
-          if (_struct.get(setter) === 'string')
-            setter = _expand(setter, shortcuts);
-          if (_struct.get(path) === 'string')
-            path = _expand(path, shortcuts);
+          if (
+            _struct.get(setter) === 'string' &&
+            setter.match(regexFull)
+          )
+            setter = _expand(setter.match(regexFull)[1], shortcuts);
+            
+          if (
+            _struct.get(path) === 'string' &&
+            path.match(regexFull)
+          )
+            path = _expand(path.match(regexFull)[1], shortcuts);
 
           // Check path:
           d = data;
