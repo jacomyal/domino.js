@@ -12,7 +12,7 @@ test('test 1', function() {
     ]
   });
 
-  deepEqual(d.expand(':a'), 'ahah', 'The shortcut expanding works!');
+  deepEqual(d.expand('a'), 'ahah', 'The shortcut expanding works!');
 });
 test('test 2', function() {
   var d = new domino({
@@ -20,7 +20,7 @@ test('test 2', function() {
       {
         id: 'a',
         method: function() {
-          return 'ahah' + this.expand(':b');
+          return 'ahah' + this.expand('b');
         }
       },
       {
@@ -32,7 +32,7 @@ test('test 2', function() {
     ]
   });
 
-  deepEqual(d.expand(':a'), 'ahahohoh', 'The recursive shortcut expanding works!');
+  deepEqual(d.expand('a'), 'ahahohoh', 'The recursive shortcut expanding works!');
 });
 
 // Services:
