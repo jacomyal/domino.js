@@ -463,8 +463,8 @@
               dataType: p['dataType'] || o['dataType'],
               type: (p['type'] || o['type'] || 'GET').toString().toUpperCase(),
               data: _struct.get(o['data']) === 'function' ?
-                      o['data'].call(_getScope(), p['data']) :
-                      (p['data'] || o['data']),
+                      o['data'].call(_getScope(), p) :
+                      (p['data'] != undefined ? p['data'] : o['data']),
               url: _struct.get(o['url']) === 'function' ?
                      o['url'].call(_getScope(), p) :
                      o['url'],
@@ -1083,10 +1083,8 @@
      *                               value.
      *   {?string}       contentType The contentType of the AJAX call.
      *   {?*}            data        If the original service "data" attribute
-     *                               is an object, then it will override it.
-     *                               But if it is a function, then it will be
-     *                               called with this "data" value as first
-     *                               parameter.
+     *                               is not a function, then it will be
+     *                               overridden by this "data" value.
      *   {?string}       dataType    The dataType of the AJAX call.
      *   {?function}     error       Overrides the original service "error"
      *                               value.
@@ -1225,30 +1223,34 @@
      * @return {*}         The expanded value.
      */
     function _expand(s) {
-      var l = arguments.length,
+      var sc = s,
+          l = arguments.length,
           a = (s || '').toString().match(
             new RegExp('^' + __settings__['shortcutPrefix'] + '(\\w+)$')
           );
 
-      // Case where the string doesn't match:
-      if (!a || !a.length)
-        return s;
-      a = a[1];
+      if (a && a.length) {
+        _warn('Prefix in expand() calls is deprecated.');
+        sc = a[1];
+      }
 
       // Check shortcuts:
-      if (_struct.get(_shortcuts[a]) === 'function')
-        return _shortcuts[a].call(_getScope());
+      if (_struct.get(_shortcuts[sc]) === 'function')
+        return _shortcuts[sc].call(_getScope());
 
       // Check properties:
-      if (_struct.get(_getters[a]) === 'function')
-        return _get(a);
+      if (_struct.get(_getters[sc]) === 'function')
+        return _get(sc);
 
       // Check other custom objects:
       for (var i = 1; i < l; i++)
-        if ((arguments[i] || {})[a] !== undefined)
-          return arguments[i][a];
+        if ((arguments[i] || {})[sc] !== undefined)
+          return arguments[i][sc];
 
-      return s;
+      if (__settings__['strict'])
+        _die('The shortcut "', sc, '" has not been recognized.');
+      else
+        return sc;
     }
 
     /**
