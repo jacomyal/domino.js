@@ -19,10 +19,17 @@
   
   <!-- sample -->
   <script type="text/javascript">
+    // DISCLAIMER:
+    // ***********
+    // This sample is currently broken: The GET does not work when at least one
+    // POST has been sent earlier. The ticket (from mockjax) is here:
+    // 
+    //        https://github.com/appendto/jquery-mockjax/issues/76
 
+    // Here is our server (emulated with jquery.mockjax.js)
     (function() {
-      // Data:
-      window.data ={
+      // Our data model:
+      window.data = {
         NumberA: 42,
         StringA: 'Hello World!',
         ArrayA: ['foo', 'bar', 'baz']
@@ -59,6 +66,7 @@
       });
     })();
 
+    // ... and here is our interface management:
     var d, dom, dom1, dom2;
 
     $(document).ready(function() {
@@ -123,25 +131,25 @@
           {
             triggers: 'reload',
             method: function() {
-              this.request('getValue', { params: { property: 'NumberA' } });
-              this.request('getValue', { params: { property: 'StringA' } });
-              this.request('getValue', { params: { property: 'ArrayA' } });
+              this.request('getValue', { shortcuts: { property: 'NumberA' } });
+              this.request('getValue', { shortcuts: { property: 'StringA' } });
+              this.request('getValue', { shortcuts: { property: 'ArrayA' } });
             }
           },
           {
             triggers: 'upload',
             method: function() {
               this.request('postValue', {
-                data: { value: this.get('NumberA') },
-                params: { property: 'NumberA' }
+                value: this.get('NumberA'),
+                shortcuts: { property: 'NumberA' }
               });
               this.request('postValue', {
-                data: { value: this.get('StringA') },
-                params: { property: 'StringA' }
+                value: this.get('StringA'),
+                shortcuts: { property: 'StringA' }
               });
               this.request('postValue', {
-                data: { value: this.get('ArrayA') },
-                params: { property: 'ArrayA' }
+                value: this.get('ArrayA'),
+                shortcuts: { property: 'ArrayA' }
               });
             }
           }
