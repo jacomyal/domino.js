@@ -401,8 +401,14 @@
      *
      * Here is the list of options that are interpreted:
      *
-     *   {string}          id
-     *   {string|function} url
+     *   {string}          id           The unique id of the service, used to
+     *                                  specify which service to call.
+     *   {string|function} url          The URL of the service. If a string,
+     *                                  then any shortcut in it will be
+     *                                  resolved. If a function, will be
+     *                                  executed with the second argument given
+     *                                  to request, and the returned string
+     *                                  will also be resolved before the call.
      *   {?string}         contentType+ The AJAX query content-type
      *   {?string}         dataType+    The AJAX query data-type
      *   {?string}         type+        The AJAX call type (GET|POST|DELETE)
@@ -413,13 +419,10 @@
      *                                  will be parsed, and shortcuts can be
      *                                  used in the first depth of the object.
      *   {?function}       error+       A function to execute if AJAX failed.
-     *                                  Will be called in the "full" scope.
      *   {?function}       before+      A function to execute before calling
-     *                                  AJAX. Will be called in the "full"
-     *                                  scope.
+     *                                  AJAX.
      *   {?function}       success+     A function to execute if AJAX
-     *                                  successed. Will be called in the
-     *                                  "full" scope.
+     *                                  successed.
      *   {?string}         setter+*     The name of a property. If the setter
      *                                  exists, then it will be called with the
      *                                  received data as parameter, or the

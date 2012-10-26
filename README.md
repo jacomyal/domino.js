@@ -3,7 +3,7 @@ domino.js - README
 
 *domino.js* is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by [Alexis Jacomy](http://github.com/jacomyal) at [Linkfluence](http://github.com/linkfluence).
 
-### How to use it
+### How to use it:
 
 To use it, clone the depository:
 
@@ -16,7 +16,7 @@ To get a minified version:
  - First, download the [Google Closure Compiler](https://developers.google.com/closure/compiler/) and copy it to `build/compiler.jar`.
  - Then, use `make` and you will find the file `domino.min.js` in the `build` directory.
 
-### Contributing
+### Contributing:
 
 You can contribute by submitting [issues tickets](http://github.com/jacomyal/domino.js/issues) and proposing [pull requests](http://github.com/jacomyal/domino.js/pulls).
 
@@ -307,6 +307,188 @@ And that's it: Any time one flag is updated, the list will automatically be refr
 
 *The different methods you can call from the hacks' methods are described in the section **Scopes management**.*
 
+## Services:
+
+*domino.js* provides an helper to interact with Web services. Basically, referencing a service will create a shortcut to call in an easy way you Web service.
+
+Here is a basic example:
+
+```js
+var d = new domino({
+  properties: [
+    {
+      id: 'theProperty',
+      label: 'The Property',
+      value: 42,
+      type: 'number',
+      triggers: 'updateTheProperty',
+      dispatch: 'thePropertyUpdated'
+    }
+  ],
+  services: [
+    {
+      id: 'getTheProperty',
+      setter: 'theProperty',
+      url: '/path/to/get/the/property'
+    }
+  ]
+});
+```
+
+Then, executing `d.request('getTheProperty');` will make an GET call to the indicated URL, set the received data as `theProperty` value, and dispatch a `"thePropertyUpdated"` event.
+
+### Shortcuts:
+
+Also, to help manipulating services, it is possible to use **shortcuts** to avoid declare explicitely lots of things. Here is an example:
+
+```js
+var d = new domino({
+  properties: [
+    {
+      id: 'prop1',
+      label: 'Property 1',
+      value: 42,
+      type: 'number',
+      triggers: 'updateProp1',
+      dispatch: 'prop1Updated'
+    },
+    {
+      id: 'prop2',
+      label: 'Property 2',
+      value: 42,
+      type: 'number',
+      triggers: 'updateProp2',
+      dispatch: 'prop2Updated'
+    }
+  ],
+  services: [
+    {
+      id: 'propN',
+      setter: ':property',
+      url: '/path/to/get/:property'
+    }
+  ]
+});
+
+// Let's update prop1
+d.request('propN', {
+  shortcuts: {
+    property: 'prop1'
+  }
+});
+
+// Now, let's update prop2
+d.request('propN', {
+  shortcuts: {
+    property: 'prop2'
+  }
+});
+
+// Finally, the following line will throw an error, since :property can not be
+// resolved:
+d.request('propN');
+```
+
+There are three different ways to resolve a shortcut:
+
+ - Declare explicitely shortcuts when calling the service
+ - Name a property to get the current value when called
+ - Declare explicitely a shortcut in *domino.js*
+
+If the shortcut can not be resolved, then an error is thrown.
+
+Here is an example with shortcuts declared directly in *domino.js* instance:
+
+```js
+var d = new domino({
+  properties: [
+    {
+      id: 'prop',
+      label: 'Property',
+      value: 42,
+      type: 'number',
+      triggers: 'updateProp',
+      dispatch: 'propUpdated'
+    }
+  ],
+  services: [
+    {
+      id: 'prop',
+      setter: 'prop',
+      url: '/path/to/get/property?date=:date'
+    }
+  ],
+  shortcuts: [
+    {
+      id: 'date',
+      method: function(domino) {
+        return (new Date()).toString();
+      }
+    }
+  ]
+});
+```
+
+In this last example, when the service 'prop' is called, the shortcut ':date' will be resolved as the current date.
+
+### Service specifications:
+
+Here is the list of attributes to precise a service:
+
+ - `{string}` **id**:
+   * The unique id of the service, used to specify which service to call.
+ - `{string|function}` **url**:
+   * The URL of the service. If a string, then any shortcut in it will be resolved. If a function, will be executed with the second argument given to `request`, and the returned string will also be resolved before the call.
+ - `{?string}` **contentType**:
+   * The AJAX query content-type.
+ - `{?string}` **dataType**:
+   * The AJAX query data-type.
+ - `{?string}` **type**:
+   * The AJAX call type (GET|POST|DELETE).
+ - `{?(*|function)}` **data**:
+   * The data sent in the AJAX call. Can be either an object or a function executed when `request` is called. Then, the object will be parsed, and shortcuts can be used in the first depth of the object.
+ - `{?function}` **error**:
+   * A function to execute if AJAX failed.
+ - `{?function}` **before**:
+   * A function to execute before calling AJAX.
+ - `{?function}` **success**:
+   * A function to execute if AJAX successed.
+ - `{?string}` **setter**:
+   * The name of a property. If the setter exists, then it will be called with the received data as parameter, or the value corresponding to the path, if specified. Shortcuts will be resolved.
+ - `{?(string|array)}` **path**:
+   * Indicates the path of the data to give to the setter, if specified (Example: `"a.b.c"`). Shortcuts will be resolved.
+ - `{?(string|array)}` **events**:
+   * The events to dispatch in case of success.
+
+### Request specifications:
+
+Finally, here is a precise description of the second argument (an **object** or `undefined`) given to the `request` method:
+
+ - `{?boolean}` **abort**:
+   * Indicates if the last call of the specified service has to be aborted if not ended.
+ - `{?function}` **before**:
+   * Overrides the original service "before" value.
+ - `{?string}` **contentType**:
+   * The contentType of the AJAX call.
+ - `{?*}` **data**:
+   * If the original service "data" attribute is not a function, then it will be overridden by this "data" value.
+ - `{?string}` **dataType**:
+   * The dataType of the AJAX call.
+ - `{?function}` **error**:
+   * Overrides the original service "error" value.
+ - `{?array|string}` **events**:
+   * Adds more events to dispatch when the "success" is called.
+ - `{?object}` **params**:
+   * The pairs (key/value) in this object will override the shortcuts.
+ - `{?string}` **path**:
+   * Overrides the original service "path" value.
+ - `{?string}` **setter**:
+   * Overrides the original service "setter" value.
+ - `{?function}` **success**:
+   * Overrides the original service "success" value.
+ - `{?string}` **type**:
+   * Overrides the AJAX call type (GET|POST|DELETE).
+
 ## Main loop: Inside *domino.js*:
 
 The core function in *domino.js* manages the events chain.
@@ -571,4 +753,3 @@ Here the list of the available functions to manipulate those structures:
    * `domino.struct.deepScalar('object');        // false`
    * `domino.struct.deepScalar('?object');       // false`
    * `domino.struct.deepScalar('object|number'); // false`
-
