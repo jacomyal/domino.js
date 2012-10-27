@@ -177,23 +177,31 @@
       // will store instruction that will be evaluated by domino after the
       // execution of the function that will use the scope:
       } else {
-        if (o.request)
+        if (o.request) {
+          Object.defineProperty(scope, '_services', {
+            value: []
+          });
+
           scope.request = function(service, params) {
-            this.services = this.services || [];
-            this.services.push({
+            this._services.push({
               service: service,
               params: params
             });
           };
+        }
 
-        if (o.dispatchEvent)
+        if (o.dispatchEvent) {
+          Object.defineProperty(scope, '_events', {
+            value: []
+          });
+
           scope.dispatchEvent = function(type, data) {
-            this.events = this.events || [];
-            this.events.push({
+            this._events.push({
               type: type,
               data: data
             });
           };
+        }
       }
 
       return scope;
@@ -895,10 +903,7 @@
           if (push) {
             for (i in _propertyListeners[property])
               _execute(_propertyListeners[property][i], {
-                parameters: [_getScope({
-                  request: true,
-                  dispatchEvent: true
-                }), {
+                parameters: [_getScope(), {
                   property: property
                 }]
               });
@@ -932,10 +937,7 @@
         // Modules triggers:
         for (k in _eventListeners[event.type]) {
           _execute(_eventListeners[event.type][k], {
-            parameters: [_getScope({
-              request: true,
-              dispatchEvent: true
-            }), event]
+            parameters: [_getScope(), event]
           });
         }
 
@@ -1166,10 +1168,10 @@
       };
 
       // Check new vars:
-      if (scope['events'] != null && !_struct.check('array', scope['events']))
+      if (scope._events != null && !_struct.check('array', scope._events))
         _warn('Events must be stored in an array.');
       else
-        obj['events'] = scope['events'];
+        obj['events'] = scope._events;
 
       for (k in scope)
         if (_setters[k] !== undefined) {
@@ -1180,8 +1182,8 @@
       for (k in o['inputValues'])
         obj['update'][k] = scope[k];
 
-      for (k in scope['services'])
-        obj['services'][k] = scope['services'][k];
+      for (k in scope._services)
+        obj['services'][k] = scope._services[k];
 
       // Check if the main loop has to be started directly from here:
       if (o['loop']) {
