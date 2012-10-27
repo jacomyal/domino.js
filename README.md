@@ -305,7 +305,7 @@ var d = new domino({
 
 And that's it: Any time one flag is updated, the list will automatically be refreshed, and the event "listUpdated" dispatched.
 
-*The different methods you can call from the hacks' methods are described in the section **Scopes management**.*
+*The different methods you can call from the hacks are described in the **Scopes management** section.*
 
 ## Services:
 
@@ -495,7 +495,7 @@ The core function in *domino.js* manages the events chain.
 
 Basically, when an event is dispatched from a module, it will trigger this loop. Then, the related properties will be updated, any module or hack listening to this event will be triggered - causing eventually new updates. After all these actions, new events are to be triggered. **So the loop we be called again**, but with all those new events instead of the one from the module, etc.
 
-This same loop is also called as an output for services success and error method, and the global `update` method (accessible only through the *domino.js* instance itself).
+This same loop is also called as an output for services success and error function, and the global `update` method (accessible only through the *domino.js* instance itself).
 
 Here is an example: With a simple `EventDispatcher` class to manage the events chain synchronously, here is the kind of case that can happen:
 
@@ -572,7 +572,7 @@ Also, some functions you will give to *domino.js* will have access to some more 
 
 **Important**: All the methods described (the default and the additional ones) are also available in the object returned by the *domino.js* constructor itself. Also, the default scope is always given as the **first** parameter to the modules constructors.
 
-### Methods given to domino:
+### Functions given to domino:
 
 Here is the list of every types of functions you can give to *domino.js*, with the related specifications (what you can modify directly in the scope, which parameters are given, which additional methods are available):
 
@@ -723,33 +723,47 @@ Except for `'undefined'` and `'null'`, all the previously described structures a
 Here the list of the available functions to manipulate those structures:
 
  - **get(value)**: Returns the string structure of the value:
-   * `domino.struct.get(null);      // 'null'`
-   * `domino.struct.get(undefined); // 'undefined'`
-   * `domino.struct.get(42);        // 'number'`
-   * `domino.struct.get('toto');    // 'string'`
-   * `domino.struct.get({a: 1});    // 'object'`
-   * `domino.struct.get([1,2,3]);   // 'array'`
+
+```js
+domino.struct.get(null);      // 'null'
+domino.struct.get(undefined); // 'undefined'
+domino.struct.get(42);        // 'number'
+domino.struct.get('toto');    // 'string'
+domino.struct.get({a: 1});    // 'object'
+domino.struct.get([1,2,3]);   // 'array'
+```
+
  - **check(struct, value)**: Check if the value matches the specified structure:
-   * `domino.struct.check({a: 'number'}, {a: 1}); // true`
-   * `domino.struct.check('object', {a: 1});      // true`
-   * `domino.struct.check('?object', {a: 1});     // true`
-   * `domino.struct.check('*', {a: 1});           // true`
-   * `domino.struct.check({a: '?number'}, {});    // true`
-   * `domino.struct.check('*', {a: 1});           // true`
-   * `domino.struct.check({a: 'number'}, {});     // false`
+
+```js
+domino.struct.check({a: 'number'}, {a: 1}); // true
+domino.struct.check('object', {a: 1});      // true
+domino.struct.check('?object', {a: 1});     // true
+domino.struct.check('*', {a: 1});           // true
+domino.struct.check({a: '?number'}, {});    // true
+domino.struct.check('*', {a: 1});           // true
+domino.struct.check({a: 'number'}, {});     // false
+```
+
  - **isValid(struct)**: Indicates whether the structure is a valid property structure:
-   * `domino.struct.isValid({a: 'number'});   // true`
-   * `domino.struct.isValid('object');        // true`
-   * `domino.struct.isValid('?object');       // true`
-   * `domino.struct.isValid('?object|array'); // true`
-   * `domino.struct.isValid('?object|');      // false`
-   * `domino.struct.isValid('undefined');     // false`
-   * `domino.struct.isValid('null');          // false`
+
+```js
+domino.struct.isValid({a: 'number'});   // true
+domino.struct.isValid('object');        // true
+domino.struct.isValid('?object');       // true
+domino.struct.isValid('?object|array'); // true
+domino.struct.isValid('?object|');      // false
+domino.struct.isValid('undefined');     // false
+domino.struct.isValid('null');          // false
+```
+
  - **deepScalar(struct)**: Indicates whether the structure is deeply composed of scalar types. This helper is particularly useful to know if it is possible to easily compare two values of the structure (without any reference issue):
-   * `domino.struct.deepScalar('number');        // true`
-   * `domino.struct.deepScalar('?number');       // true`
-   * `domino.struct.deepScalar('string|number'); // true`
-   * `domino.struct.deepScalar({a: 'number'});   // true`
-   * `domino.struct.deepScalar('object');        // false`
-   * `domino.struct.deepScalar('?object');       // false`
-   * `domino.struct.deepScalar('object|number'); // false`
+
+```js
+domino.struct.deepScalar('number');        // true
+domino.struct.deepScalar('?number');       // true
+domino.struct.deepScalar('string|number'); // true
+domino.struct.deepScalar({a: 'number'});   // true
+domino.struct.deepScalar('object');        // false
+domino.struct.deepScalar('?object');       // false
+domino.struct.deepScalar('object|number'); // false
