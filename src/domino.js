@@ -574,7 +574,7 @@
             setter.match(regexFull)
           )
             setter = _expand(setter.match(regexFull)[1], shortcuts);
-            
+
           if (
             _struct.get(path) === 'string' &&
             path.match(regexFull)
