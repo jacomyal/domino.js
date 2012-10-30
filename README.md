@@ -137,7 +137,9 @@ function receptorModule() {
   // just display the new value:
   this.triggers.events['stringUpdated'] =
     function(dominoInstance) {
-      console.log('New string value: '+dominoInstance.get('string'));
+      console.log(
+        'New string value: '+dominoInstance.get('string')
+      );
     };
 }
 
