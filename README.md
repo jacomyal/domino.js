@@ -1,5 +1,5 @@
-domino.js - README
-==================
+domino.js
+=========
 
 *domino.js* is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by [Alexis Jacomy](http://github.com/jacomyal) at [Linkfluence](http://github.com/linkfluence).
 
@@ -20,13 +20,17 @@ To get a minified version:
 
 You can contribute by submitting [issues tickets](http://github.com/jacomyal/domino.js/issues) and proposing [pull requests](http://github.com/jacomyal/domino.js/pulls).
 
+<hr />
+
 ## Introduction:
 
 ***domino.js* is a JavaScript library to manage interactions in dashboards**. It has been especially designed for iterative processes, to obtain quickly **maintainable** proofs of concepts.
 
-The concept is pretty simple: First, you define your **properties** (that describe your data as well as all the minor counts/flags that define the state of your interface), and associate input and output events to each of them. Then, you instanciate your **modules** (that basically define all the graphic components that display or make possible to modify the properties), through *domino.js*'s modules factory, that will take care of all the connecting part.
+The concept is pretty simple:
 
-Finally, when a module will dispatch an event, it will automatically update the related properties, and the modules that are listening to these properties' output events. **So you never have to connect two modules by yourself.**
+ 1. First, you define your **properties** (that describe your data as well as all the minor counts/flags that define the state of your interface), and associate input and output events to each of them.
+ 2. Then, you instanciate your **modules** (that basically define all the graphic components that display or make possible to modify the properties), through *domino.js*'s modules factory, that will take care of all the connecting part.
+ 3. Finally, when a module will dispatch an event, it will automatically update the related properties, and the modules that are listening to these properties' output events. **So you never have to connect two modules by yourself.**
 
 But the most important feature of *domino.js* is probably the possibility to add arbitrarily **hacks**. A hack is just a function bound to one or more events. This function will be executed in its own scope, and can update properties, call AJAX services, dispatch other events, and a lot more. So basically, **it gives a strict and clear place to write all those sh\*tty features that were not considered in your original design.**
 
