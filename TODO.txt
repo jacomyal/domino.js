@@ -1,11 +1,8 @@
 NAMING:
-- Rename 'call' as 'seek' ?
 
 TODO:
 - Give a scope as 3rd "dispatchEvent()" parameter
 - Documentation (TODOs are specified in README.md)
-- Refactor repetitions (especially functions execution)
-- Send more errors (properties not referenced, events not recognized, etc...)
 - Develop default modules for Bootstrap UI components
 - Find a solution to make safer the Object properties manipulation
 - Eventually, check circular loops
