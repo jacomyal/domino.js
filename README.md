@@ -22,7 +22,7 @@ You can contribute by submitting [issues tickets](http://github.com/jacomyal/dom
 
 <hr />
 
-## Introduction:
+## Introduction
 
 ***domino.js* is a JavaScript library to manage interactions in dashboards**. It has been especially designed for iterative processes, to obtain quickly **maintainable** proofs of concepts.
 
@@ -40,8 +40,8 @@ It might be easier with **examples**. In the following one, we just declare a *b
 // First, let's instanciate domino.js:
 var d = new domino({
   properties: [
-    // We only declare one property, named "flag", that will contain a
-    // boolean value:
+    // We only declare one property, named "flag", that will contain
+    // a boolean value:
     {
       id: 'flag',
       dispatch: 'flagUpdated',
@@ -56,21 +56,23 @@ function emettorModule() {
 
   // We add a method to update easily the value:
   this.updateFlag = function(newFlagValue) {
-    // The method "dispatchEvent" from "domino.module" will trigger the update
-    // in the domino.js instance. So, it will update the value, and then check
-    // if anything is bound the any of the output events, and trigger:
+    // The method "dispatchEvent" from "domino.module" will trigger
+    // the update in the domino.js instance. So, it will update the
+    // value, and then check if anything is bound the any of the
+    // output events, and trigger:
     this.dispatchEvent('updateFlag', {
       flag: !!newFlagValue
     });
   }
 }
 
-// Here is the module that receive the events when the flag is updated.
+// Here is the module that receive the events when the flag is
+// updated.
 function receptorModule() {
   domino.module.call(this);
 
-  // We add a trigger on the "flagUpdated" event, that will just display the
-  // new value
+  // We add a trigger on the "flagUpdated" event, that will just
+  // display the new value:
   this.triggers.events['flagUpdated'] = function(dominoInstance) {
     console.log('New flag value: '+dominoInstance.get('flag'));
   };
@@ -91,8 +93,8 @@ Now, the following example is basically the same than the previous one. But inst
 // As previously, let's first instanciate domino.js:
 var d = new domino({
   properties: [
-    // We only declare one property, named "string", that will contain a string
-    // value:
+    // We only declare one property, named "string", that will
+    // contain a string value:
     {
       id: 'string',
       dispatch: 'stringUpdated',
@@ -126,15 +128,17 @@ function emettorModule() {
   }
 }
 
-// Here is the module that receive the events when the string is updated.
+// Here is the module that receive the events when the string
+// is updated.
 function receptorModule() {
   domino.module.call(this);
 
-  // We add a trigger on the "stringUpdated" event, that will just display the
-  // new value
-  this.triggers.events['stringUpdated'] = function(dominoInstance) {
-    console.log('New string value: '+dominoInstance.get('string'));
-  };
+  // We add a trigger on the "stringUpdated" event, that will
+  // just display the new value:
+  this.triggers.events['stringUpdated'] =
+    function(dominoInstance) {
+      console.log('New string value: '+dominoInstance.get('string'));
+    };
 }
 
 // Finally, we have to instanciate our modules:
@@ -142,13 +146,15 @@ var emettor = d.addModule(emettorModule),
     receptor = d.addModule(receptorModule);
 
 // Now, let's test it:
-emettor.updateString('abc');       // log: "New string value: abc"
-emettor.updateString('abcdefghi'); // log: "New string value: abcdefghi"
-                                   //      "The string has been truncated!"
-                                   //      "New string value: abcde"
+emettor.updateString('abc');
+  // log: "New string value: abc"
+emettor.updateString('abcdefghi');
+  // log: "New string value: abcdefghi"
+  //      "The string has been truncated!"
+  //      "New string value: abcde"
 ```
 
-## Properties:
+## Properties
 
 The minimal declaration of a property is just a unique string **id**. Here is the exhaustive list of all the other parameters you can add to describe your property:
 
@@ -175,9 +181,10 @@ Here is a more complete example on how to declare string:
   id: 'stringLessThan5Chars',
   label: 'String less than 5 chars',
   triggers: 'updateStringLessThan5Chars',
-  // In this example, we associate two output events to the property. It is
-  // often useful - for example if you have to reinitialize some data or call a
-  // service when one on ten different properties is updated:
+  // In this example, we associate two output events to the
+  // property. It is often useful - for example if you have to
+  // reinitialize some data or call a service when one on ten
+  // different properties is updated:
   dispatch: ['stringLessThan5CharsUpdate', 'aStringIsUpdated'],
   type: 'string',
   setter: function(val) {
@@ -186,17 +193,18 @@ Here is a more complete example on how to declare string:
       val.substr(0,5) :
       val;
 
-    // If the value has not changed, returning false will cancel the update of
-    // this property, ie the output events ('stringLessThan5CharsUpdate' and
-    // 'aStringIsUpdated') will not be dispatched.
+    // If the value has not changed, returning false will cancel
+    // the update of this property, ie the output events
+    // ('stringLessThan5CharsUpdate' and 'aStringIsUpdated') will
+    // not be dispatched.
     if(val === this.get('stringLessThan5Chars'))
       return false;
 
     this.stringLessThan5Chars = val;
     return true;
   },
-  // Here, since the setter will be used to set the initial value, the initial
-  // value will be "abcde" and not "abcdefghi":
+  // Here, since the setter will be used to set the initial value,
+  // the initial value will be "abcde" and not "abcdefghi":
   value: 'abcdefghi'
 }
 // [...]
@@ -204,7 +212,7 @@ Here is a more complete example on how to declare string:
 
 It basically makes the same thing as in the second example, but without the use of a hack.
 
-## Modules:
+## Modules
 
 Most of the time, the **modules** represent each graphic components (*buttons* to dispatch events, *checkboxes* to represent `boolean` properties, etc...). Exactly as it is for the properties, designing your modules atomically is one of the best ways to keep your code *maintainable*.
 
@@ -222,8 +230,8 @@ function Checkbox() {
                  '<label for="flag">Flag</label>' +
                '</fieldset>');
 
-  // When the checkbox is clicked, it will update the "flag" in domino, and
-  // dispatch output events:
+  // When the checkbox is clicked, it will update the "flag" in
+  // domino, and dispatch output events:
   html.find('input').change(function() {
     var data = {};
     data['flag'] = $(this).is(':checked');
@@ -232,8 +240,9 @@ function Checkbox() {
     self.dispatchEvent('updateFlag', data);
   });
 
-  // When the "flag" is updated, we update the state of the checkbox:
-  // ("self.triggers.properties['flag']" could have been used as well)
+  // When the "flag" is updated, we update the state of the
+  // checkbox ("self.triggers.properties['flag']" could have
+  // been used as well):
   self.triggers.events['flagUpdated'] = function(dominoInstance) {
     html.find('input').attr(
       'checked',
@@ -257,7 +266,7 @@ myCheckbox.html.appendTo(dom);
 
 And that's it, the module is here and connected. And you can even create two instances or more, and there will not be any conflict, and they will all stay synchronized, of course.
 
-## Hacks:
+## Hacks
 
 **Hacks** are useful to implement all those features that you can not predict in the definition of your projects - they actually are real *hacks*. Here are some examples of the kind of "features" that can be a disaster for your code, but are easily implementable with *domino.js*:
 
@@ -311,7 +320,7 @@ And that's it: Any time one flag is updated, the list will automatically be refr
 
 *The different methods you can call from the hacks are described in the **Scopes management** section.*
 
-## Services:
+## Services
 
 *domino.js* provides an helper to interact with Web services. Basically, referencing a service will create a shortcut to call in an easy way you Web service.
 
@@ -388,8 +397,8 @@ d.request('propN', {
   }
 });
 
-// Finally, the following line will throw an error, since :property can not be
-// resolved:
+// Finally, the following line will throw an error, since :property
+// can not be resolved:
 d.request('propN');
 ```
 
@@ -493,7 +502,7 @@ Finally, here is a precise description of the second argument (an **object** or 
  - `{?string}` **type**:
    * Overrides the AJAX call type (GET|POST|DELETE).
 
-## Main loop: Inside *domino.js*:
+## Main loop: Inside *domino.js*
 
 The core function in *domino.js* manages the events chain.
 
@@ -520,7 +529,7 @@ The problem here is that `hack1` and `hack2` will be triggered **before** event2
 (module) -> updateProperty1 -> event1, event2 -> hack1, hack2, hack3, hack4
 ```
 
-## Scopes management:
+## Scopes management
 
 There is a lot of functions given to *domino.js* through the initial configuration and the modules. One particularity of *domino.js* is that these methods are called in a specific scope, that contains safe accesses to different properties, and tools to display logs.
 
@@ -680,7 +689,7 @@ Here is the list of every types of functions you can give to *domino.js*, with t
    * Returns:
      + `*` The current value of the property
 
-## Logs and global settings:
+## Logs and global settings
 
 The global method `domino.settings` is used to manage global *domino.js* settings. It works like most *jQuery* methods:
 
@@ -705,7 +714,7 @@ Also, *domino.js* provides its own functions to log, warn or throw errors:
 
 Finally, all the logs/warns/errors will be prefixed by the instance name if specified (the string `"domino"` otherwise).
 
-## Structures:
+## Structures
 
 *domino.js* provides its own helpers to manipulate some "Closure like" types in the `domino.struct` object. Since they can be more complex than simple string types, they are called **structures**.
 
