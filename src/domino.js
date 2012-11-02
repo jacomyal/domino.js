@@ -1340,7 +1340,8 @@
     if (__settings__['displayTime'])
       a.unshift(('00000000' + (new Date().getTime() - _startTime)).substr(-8));
 
-    console.log.apply(console, a);
+    if (console && typeof console.log === 'function')
+      console.log.apply(console, a);
   }
 
   // Utils:
