@@ -296,6 +296,10 @@ a.buttons {
 	height: 30px;
 }
 
+a.buttons.strong {
+  font-weight: bold;
+}
+
 a.github {
 	background: url(../images/octocat-small.png) no-repeat 1px;
 }
