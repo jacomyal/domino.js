@@ -300,6 +300,10 @@ a.buttons.strong {
   font-weight: bold;
 }
 
+a.right {
+  float: right;
+}
+
 a.github {
 	background: url(../images/octocat-small.png) no-repeat 1px;
 }

@@ -50,7 +50,23 @@
 
 <hr />
 
-<h2 id="toc_3">Introduction</h2>
+<h2 id="toc_3">Navigation:</h2>
+
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#properties">Properties</a></li>
+<li><a href="#modules">Modules</a></li>
+<li><a href="#hacks">Hacks</a></li>
+<li><a href="#services">Services</a></li>
+<li><a href="#main_loop_inside_domino_js">Main loop: Inside <em>domino.js</em></a></li>
+<li><a href="#scopes_management">Scopes management</a></li>
+<li><a href="#logs_and_global_settings">Logs and global settings</a></li>
+<li><a href="#structures">Structures</a></li>
+</ul>
+
+<hr />
+
+<h2 id="introduction">Introduction <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 <p><strong><em>domino.js</em> is a JavaScript library to manage interactions in dashboards</strong>. It has been especially designed for iterative processes, to obtain quickly <strong>maintainable</strong> proofs of concepts.</p>
 
@@ -184,7 +200,7 @@
 </pre>
 </div>
 
-<h2 id="toc_4">Properties</h2>
+<h2 id="properties">Properties <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 <p>The minimal declaration of a property is just a unique string <strong>id</strong>. Here is the exhaustive list of all the other parameters you can add to describe your property:</p>
 
@@ -264,7 +280,7 @@
 
 <p>It basically makes the same thing as in the second example, but without the use of a hack.</p>
 
-<h2 id="toc_5">Modules</h2>
+<h2 id="modules">Modules <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 <p>Most of the time, the <strong>modules</strong> represent each graphic components (*buttons* to dispatch events, <em>checkboxes</em> to represent <code>boolean</code> properties, etc...). Exactly as it is for the properties, designing your modules atomically is one of the best ways to keep your code <em>maintainable</em>.</p>
 
@@ -316,7 +332,7 @@
 
 <p>And that&#39;s it, the module is here and connected. And you can even create two instances or more, and there will not be any conflict, and they will all stay synchronized, of course.</p>
 
-<h2 id="toc_6">Hacks</h2>
+<h2 id="hacks">Hacks <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 <p><strong>Hacks</strong> are useful to implement all those features that you can not predict in the definition of your projects - they actually are real <em>hacks</em>. Here are some examples of the kind of &quot;features&quot; that can be a disaster for your code, but are easily implementable with <em>domino.js</em>:</p>
 
@@ -371,7 +387,7 @@
 
 <p><em>The different methods you can call from the hacks are described in the *</em>Scopes management** section.*</p>
 
-<h2 id="toc_7">Services</h2>
+<h2 id="services">Services <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 <p><em>domino.js</em> provides an helper to interact with Web services. Basically, referencing a service will create a shortcut to call in an easy way you Web service.</p>
 
@@ -400,7 +416,7 @@
 
 <p>Then, executing <code>d.request(&#39;getTheProperty&#39;);</code> will make an GET call to the indicated URL, set the received data as <code>theProperty</code> value, and dispatch a <code>&quot;thePropertyUpdated&quot;</code> event.</p>
 
-<h3 id="toc_8">Shortcuts:</h3>
+<h3 id="toc_4">Shortcuts:</h3>
 
 <p>Also, to help manipulating services, it is possible to use <strong>shortcuts</strong> to avoid declare explicitely lots of things. Here is an example:</p>
 <div class="highlight"><pre><span class="kd">var</span> <span class="nx">d</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">domino</span><span class="p">({</span>
@@ -494,7 +510,7 @@
 
 <p>In this last example, when the service &#39;prop&#39; is called, the shortcut &#39;:date&#39; will be resolved as the current date.</p>
 
-<h3 id="toc_9">Service specifications:</h3>
+<h3 id="toc_5">Service specifications:</h3>
 
 <p>Here is the list of attributes to precise a service:</p>
 
@@ -561,7 +577,7 @@
 </ul></li>
 </ul>
 
-<h3 id="toc_10">Request specifications:</h3>
+<h3 id="toc_6">Request specifications:</h3>
 
 <p>Finally, here is a precise description of the second argument (an <strong>object</strong> or <code>undefined</code>) given to the <code>request</code> method:</p>
 
@@ -628,7 +644,7 @@
 </ul></li>
 </ul>
 
-<h2 id="toc_11">Main loop: Inside <em>domino.js</em></h2>
+<h2 id="main_loop_inside_domino_js">Main loop: Inside *domino.js* <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 <p>The core function in <em>domino.js</em> manages the events chain.</p>
 
@@ -649,7 +665,7 @@
 <p><strong>Hopefully, <em>domino.js</em>&#39;s main loop resolves this issue</strong> by executing the previous events chain as following:</p>
 <pre><code>(module) -> updateProperty1 -> event1, event2 -> hack1, hack2, hack3, hack4
 </code></pre>
-<h2 id="toc_12">Scopes management</h2>
+<h2 id="scopes_management">Scopes management <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 <p>There is a lot of functions given to <em>domino.js</em> through the initial configuration and the modules. One particularity of <em>domino.js</em> is that these methods are called in a specific scope, that contains safe accesses to different properties, and tools to display logs.</p>
 
@@ -658,7 +674,7 @@
 </pre>
 </div>
 
-<h3 id="toc_13">Default scope methods:</h3>
+<h3 id="toc_7">Default scope methods:</h3>
 
 <p>Here is the default methods that any of the functions you give to <em>domino.js</em> will find in its scope.</p>
 
@@ -700,7 +716,7 @@
 </ul></li>
 </ul>
 
-<h3 id="toc_14">Additional methods:</h3>
+<h3 id="toc_8">Additional methods:</h3>
 
 <p>Also, some functions you will give to <em>domino.js</em> will have access to some more methods, that can update properties or call AJAX services. Here is the list of thoses methods:</p>
 
@@ -734,7 +750,7 @@
 
 <p><strong>Important</strong>: All the methods described (the default and the additional ones) are also available in the object returned by the <em>domino.js</em> constructor itself. Also, the default scope is always given as the <strong>first</strong> parameter to the modules constructors.</p>
 
-<h3 id="toc_15">Functions given to domino:</h3>
+<h3 id="toc_9">Functions given to domino:</h3>
 
 <p>Here is the list of every types of functions you can give to <em>domino.js</em>, with the related specifications (what you can modify directly in the scope, which parameters are given, which additional methods are available):</p>
 
@@ -933,7 +949,7 @@
 </ul></li>
 </ul>
 
-<h2 id="toc_16">Logs and global settings</h2>
+<h2 id="logs_and_global_settings">Logs and global settings <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 <p>The global method <code>domino.settings</code> is used to manage global <em>domino.js</em> settings. It works like most <em>jQuery</em> methods:</p>
 
@@ -967,7 +983,7 @@
 
 <p>Finally, all the logs/warns/errors will be prefixed by the instance name if specified (the string <code>&quot;domino&quot;</code> otherwise).</p>
 
-<h2 id="toc_17">Structures</h2>
+<h2 id="structures">Structures <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 <p><em>domino.js</em> provides its own helpers to manipulate some &quot;Closure like&quot; types in the <code>domino.struct</code> object. Since they can be more complex than simple string types, they are called <strong>structures</strong>.</p>
 

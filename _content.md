@@ -22,7 +22,21 @@ You can contribute by submitting [issues tickets](http://github.com/jacomyal/dom
 
 <hr />
 
-## Introduction
+## Navigation:
+
+ - [Introduction](#introduction)
+ - [Properties](#properties)
+ - [Modules](#modules)
+ - [Hacks](#hacks)
+ - [Services](#services)
+ - [Main loop: Inside *domino.js*](#main_loop_inside_domino_js)
+ - [Scopes management](#scopes_management)
+ - [Logs and global settings](#logs_and_global_settings)
+ - [Structures](#structures)
+
+<hr />
+
+<h2 id="introduction">Introduction <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 ***domino.js* is a JavaScript library to manage interactions in dashboards**. It has been especially designed for iterative processes, to obtain quickly **maintainable** proofs of concepts.
 
@@ -156,7 +170,7 @@ emettor.updateString('abcdefghi');
   //      "New string value: abcde"
 ```
 
-## Properties
+<h2 id="properties">Properties <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 The minimal declaration of a property is just a unique string **id**. Here is the exhaustive list of all the other parameters you can add to describe your property:
 
@@ -214,7 +228,7 @@ Here is a more complete example on how to declare string:
 
 It basically makes the same thing as in the second example, but without the use of a hack.
 
-## Modules
+<h2 id="modules">Modules <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 Most of the time, the **modules** represent each graphic components (*buttons* to dispatch events, *checkboxes* to represent `boolean` properties, etc...). Exactly as it is for the properties, designing your modules atomically is one of the best ways to keep your code *maintainable*.
 
@@ -268,7 +282,7 @@ myCheckbox.html.appendTo(dom);
 
 And that's it, the module is here and connected. And you can even create two instances or more, and there will not be any conflict, and they will all stay synchronized, of course.
 
-## Hacks
+<h2 id="hacks">Hacks <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 **Hacks** are useful to implement all those features that you can not predict in the definition of your projects - they actually are real *hacks*. Here are some examples of the kind of "features" that can be a disaster for your code, but are easily implementable with *domino.js*:
 
@@ -322,7 +336,7 @@ And that's it: Any time one flag is updated, the list will automatically be refr
 
 *The different methods you can call from the hacks are described in the **Scopes management** section.*
 
-## Services
+<h2 id="services">Services <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 *domino.js* provides an helper to interact with Web services. Basically, referencing a service will create a shortcut to call in an easy way you Web service.
 
@@ -504,7 +518,7 @@ Finally, here is a precise description of the second argument (an **object** or 
  - `{?string}` **type**:
    * Overrides the AJAX call type (GET|POST|DELETE).
 
-## Main loop: Inside *domino.js*
+<h2 id="main_loop_inside_domino_js">Main loop: Inside *domino.js* <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 The core function in *domino.js* manages the events chain.
 
@@ -531,7 +545,7 @@ The problem here is that `hack1` and `hack2` will be triggered **before** event2
 (module) -> updateProperty1 -> event1, event2 -> hack1, hack2, hack3, hack4
 ```
 
-## Scopes management
+<h2 id="scopes_management">Scopes management <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 There is a lot of functions given to *domino.js* through the initial configuration and the modules. One particularity of *domino.js* is that these methods are called in a specific scope, that contains safe accesses to different properties, and tools to display logs.
 
@@ -691,7 +705,7 @@ Here is the list of every types of functions you can give to *domino.js*, with t
    * Returns:
      + `*` The current value of the property
 
-## Logs and global settings
+<h2 id="logs_and_global_settings">Logs and global settings <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 The global method `domino.settings` is used to manage global *domino.js* settings. It works like most *jQuery* methods:
 
@@ -716,7 +730,7 @@ Also, *domino.js* provides its own functions to log, warn or throw errors:
 
 Finally, all the logs/warns/errors will be prefixed by the instance name if specified (the string `"domino"` otherwise).
 
-## Structures
+<h2 id="structures">Structures <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 *domino.js* provides its own helpers to manipulate some "Closure like" types in the `domino.struct` object. Since they can be more complex than simple string types, they are called **structures**.
 
