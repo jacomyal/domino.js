@@ -30,14 +30,18 @@
       </header>
       <section><h1 id="toc_0">domino.js</h1>
 
-<p><em>domino.js</em> is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by <a href="http://github.com/jacomyal">Alexis Jacomy</a> at <a href="http://github.com/linkfluence">Linkfluence</a>.</p>
+<p><em>domino.js</em> is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by <a href="http://github.com/jacomyal">Alexis Jacomy</a> at <a href="http://github.com/linkfluence">Linkfluence</a>. It is released under the <a href="https://raw.github.com/jacomyal/domino.js/master/LICENSE.txt">MIT License</a>.</p>
 
 <h3 id="toc_1">How to use it:</h3>
 
-<p>To use it, clone the depository:</p>
+<p>To use it, clone the repository:</p>
 <pre><code>git clone git@github.com:jacomyal/domino.js.git
 </code></pre>
-<p>To get a minified version:</p>
+<p>The latest minified version is available here:</p>
+
+<p><a href="https://raw.github.com/jacomyal/domino.js/master/build/domino.min.js">https://raw.github.com/jacomyal/domino.js/master/build/domino.min.js</a></p>
+
+<p>You can also minify your own version:</p>
 
 <ul>
 <li>First, download the <a href="https://developers.google.com/closure/compiler/">Google Closure Compiler</a> and copy it to <code>build/compiler.jar</code>.</li>
@@ -282,7 +286,7 @@
 
 <h2 id="modules">Modules <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
-<p>Most of the time, the <strong>modules</strong> represent each graphic components (*buttons* to dispatch events, <em>checkboxes</em> to represent <code>boolean</code> properties, etc...). Exactly as it is for the properties, designing your modules atomically is one of the best ways to keep your code <em>maintainable</em>.</p>
+<p>Most of the time, the <strong>modules</strong> represent each graphic components - <em>buttons</em> to dispatch events, <em>checkboxes</em> to represent <code>boolean</code> properties, etc... Exactly as it is for the properties, designing your modules atomically is one of the best ways to keep your code <em>maintainable</em>.</p>
 
 <p>Any module must extend the <code>domino.module</code> basic class. This class has just the methods to listen to and dispatch events, and empty objects that you will fill with your <strong>triggers</strong>. You can bind a trigger on an <em>event</em> or directly to a <em>property</em> (it will then be triggered any time the property is effectively updated).</p>
 
@@ -385,7 +389,7 @@
 
 <p>And that&#39;s it: Any time one flag is updated, the list will automatically be refreshed, and the event &quot;listUpdated&quot; dispatched.</p>
 
-<p><em>The different methods you can call from the hacks are described in the *</em>Scopes management** section.*</p>
+<p>The different methods you can call from the hacks are described in the <strong>Scopes management</strong> section.</p>
 
 <h2 id="services">Services <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
@@ -644,7 +648,7 @@
 </ul></li>
 </ul>
 
-<h2 id="main_loop_inside_domino_js">Main loop: Inside *domino.js* <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
+<h2 id="main_loop_inside_domino_js">Main loop: Inside <em>domino.js</em> <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 <p>The core function in <em>domino.js</em> manages the events chain.</p>
 
@@ -768,12 +772,12 @@
 <li>Function parameters:
 
 <ul>
-<li><code>Object</code> event: The event that triggered the hack</li>
+<li>[<code>Object</code>] event: The event that triggered the hack</li>
 </ul></li>
 <li>Accepted scope modifications:
 
 <ul>
-<li><code>*</code> this[property] will update <em>property</em></li>
+<li>[<code>*</code>] this[property] will update <em>property</em></li>
 </ul></li>
 <li>Returns: <em>(not evaluated)</em></li>
 </ul></li>
@@ -785,7 +789,7 @@
 <li>Function parameters:
 
 <ul>
-<li><code>Object</code> The dispatched event</li>
+<li>[<code>Object</code>] The dispatched event</li>
 </ul></li>
 <li>Accepted scope modifications: <em>(none)</em></li>
 <li>Returns: <em>(not evaluated)</em></li>
@@ -803,12 +807,12 @@
 <li>Function parameters:
 
 <ul>
-<li><code>Object</code> data: The data received from AJAX</li>
+<li>[<code>Object</code>] data: The data received from AJAX</li>
 </ul></li>
 <li>Accepted scope modifications:
 
 <ul>
-<li><code>*</code> this[property] will update <em>property</em></li>
+<li>[<code>*</code>] this[property] will update <em>property</em></li>
 </ul></li>
 <li>Returns: <em>(not evaluated)</em></li>
 </ul></li>
@@ -825,13 +829,13 @@
 <li>Function parameters:
 
 <ul>
-<li><code>String</code> mes: The error message</li>
-<li><code>Object</code> xhr: The related XHR object</li>
+<li>[<code>String</code>] mes: The error message</li>
+<li>[<code>Object</code>] xhr: The related XHR object</li>
 </ul></li>
 <li>Accepted scope modifications:
 
 <ul>
-<li><code>*</code> this[property] will update <em>property</em></li>
+<li>[<code>*</code>] this[property] will update <em>property</em></li>
 </ul></li>
 <li>Returns: <em>(not evaluated)</em></li>
 </ul></li>
@@ -847,13 +851,13 @@
 <li>Function parameters:
 
 <ul>
-<li><code>String</code> mes: The error message</li>
-<li><code>Object</code> xhr: The related XHR object</li>
+<li>[<code>String</code>] mes: The error message</li>
+<li>[<code>Object</code>] xhr: The related XHR object</li>
 </ul></li>
 <li>Accepted scope modifications:
 
 <ul>
-<li><code>*</code> this[property] will update <em>property</em></li>
+<li>[<code>*</code>] this[property] will update <em>property</em></li>
 </ul></li>
 <li>Returns: <em>(not evaluated)</em></li>
 </ul></li>
@@ -867,7 +871,7 @@
 <li>Returns:
 
 <ul>
-<li><code>String</code> The final URL</li>
+<li>[<code>String</code>] The final URL</li>
 </ul></li>
 </ul></li>
 <li><p><strong>Service &quot;data&quot;</strong>:</p>
@@ -878,13 +882,13 @@
 <li>Function parameters:
 
 <ul>
-<li><code>?*</code> If specified, the <code>data</code> attribute given in the overridding parameters</li>
+<li>[<code>?*</code>] If specified, the <code>data</code> attribute given in the overridding parameters</li>
 </ul></li>
 <li>Accepted scope modifications: <em>(none)</em></li>
 <li>Returns:
 
 <ul>
-<li><code>*</code> The data sent through the AJAX call</li>
+<li>[<code>*</code>] The data sent through the AJAX call</li>
 </ul></li>
 </ul></li>
 <li><p><strong>Shortcuts</strong>:</p>
@@ -897,7 +901,7 @@
 <li>Returns:
 
 <ul>
-<li><code>*</code> Anything you want, that&#39;s the point of the shortcuts</li>
+<li>[<code>*</code>] Anything you want, that&#39;s the point of the shortcuts</li>
 </ul></li>
 </ul></li>
 <li><p><strong>Custom setters</strong>:</p>
@@ -907,23 +911,23 @@
 <li>Parameters given through the scope:
 
 <ul>
-<li><code>*</code> this[property] contains the current value of the property</li>
+<li>[<code>*</code>] this[property] contains the current value of the property</li>
 </ul></li>
 <li>Function parameters:
 
 <ul>
-<li><code>*</code> The new value, given to <code>.set(property, newValue)</code></li>
-<li><code>*</code> Eventually other parameters, if you are using custom setters</li>
+<li>[<code>*</code>] The new value, given to <code>.set(property, newValue)</code></li>
+<li>[<code>*</code>] Eventually other parameters, if you are using custom setters</li>
 </ul></li>
 <li>Accepted scope modifications:
 
 <ul>
-<li><code>*</code> this[property] contains the new value of the property</li>
+<li>[<code>*</code>] this[property] contains the new value of the property</li>
 </ul></li>
 <li>Returns:
 
 <ul>
-<li><code>?boolean</code> If you return a boolean value, the property will be updated and the related events dispatched only if the returned boolean is <code>true</code></li>
+<li>[<code>?boolean</code>] If you return a boolean value, the property will be updated and the related events dispatched only if the returned boolean is <code>true</code></li>
 </ul></li>
 </ul></li>
 <li><p><strong>Custom getters</strong>:</p>
@@ -933,18 +937,18 @@
 <li>Parameters given through the scope:
 
 <ul>
-<li><code>*</code> this[property] contains the current value of the property</li>
+<li>[<code>*</code>] this[property] contains the current value of the property</li>
 </ul></li>
 <li>Function parameters:
 
 <ul>
-<li><code>*</code> Eventually parameters, if you are using custom getters</li>
+<li>[<code>*</code>] Eventually parameters, if you are using custom getters</li>
 </ul></li>
 <li>Accepted scope modifications: <em>(none)</em></li>
 <li>Returns:
 
 <ul>
-<li><code>*</code> The current value of the property</li>
+<li>[<code>*</code>] The current value of the property</li>
 </ul></li>
 </ul></li>
 </ul>

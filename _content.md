@@ -1,17 +1,21 @@
 domino.js
 =========
 
-*domino.js* is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by [Alexis Jacomy](http://github.com/jacomyal) at [Linkfluence](http://github.com/linkfluence).
+*domino.js* is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by [Alexis Jacomy](http://github.com/jacomyal) at [Linkfluence](http://github.com/linkfluence). It is released under the [MIT License](https://raw.github.com/jacomyal/domino.js/master/LICENSE.txt).
 
 ### How to use it:
 
-To use it, clone the depository:
+To use it, clone the repository:
 
 ```
 git clone git@github.com:jacomyal/domino.js.git
 ```
 
-To get a minified version:
+The latest minified version is available here:
+
+[https://raw.github.com/jacomyal/domino.js/master/build/domino.min.js](https://raw.github.com/jacomyal/domino.js/master/build/domino.min.js)
+
+You can also minify your own version:
 
  - First, download the [Google Closure Compiler](https://developers.google.com/closure/compiler/) and copy it to `build/compiler.jar`.
  - Then, use `make` and you will find the file `domino.min.js` in the `build` directory.
@@ -230,7 +234,7 @@ It basically makes the same thing as in the second example, but without the use 
 
 <h2 id="modules">Modules <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
-Most of the time, the **modules** represent each graphic components (*buttons* to dispatch events, *checkboxes* to represent `boolean` properties, etc...). Exactly as it is for the properties, designing your modules atomically is one of the best ways to keep your code *maintainable*.
+Most of the time, the **modules** represent each graphic components - *buttons* to dispatch events, *checkboxes* to represent `boolean` properties, etc... Exactly as it is for the properties, designing your modules atomically is one of the best ways to keep your code *maintainable*.
 
 Any module must extend the `domino.module` basic class. This class has just the methods to listen to and dispatch events, and empty objects that you will fill with your **triggers**. You can bind a trigger on an *event* or directly to a *property* (it will then be triggered any time the property is effectively updated).
 
@@ -334,7 +338,7 @@ var d = new domino({
 
 And that's it: Any time one flag is updated, the list will automatically be refreshed, and the event "listUpdated" dispatched.
 
-*The different methods you can call from the hacks are described in the **Scopes management** section.*
+The different methods you can call from the hacks are described in the **Scopes management** section.
 
 <h2 id="services">Services <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
@@ -518,7 +522,7 @@ Finally, here is a precise description of the second argument (an **object** or 
  - `{?string}` **type**:
    * Overrides the AJAX call type (GET|POST|DELETE).
 
-<h2 id="main_loop_inside_domino_js">Main loop: Inside *domino.js* <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
+<h2 id="main_loop_inside_domino_js">Main loop: Inside <em>domino.js</em> <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 The core function in *domino.js* manages the events chain.
 
@@ -611,16 +615,16 @@ Here is the list of every types of functions you can give to *domino.js*, with t
      + *dispatchEvent*
    * Parameters given through the scope: *(none)*
    * Function parameters:
-     + `Object` event: The event that triggered the hack
+     + [`Object`] event: The event that triggered the hack
    * Accepted scope modifications:
-     + `*` this[property] will update *property*
+     + [`*`] this[property] will update *property*
    * Returns: *(not evaluated)*
 
  - **Triggers (in modules)**:
    * Additional methods in the scope: *(none)*
    * Parameters given through the scope: *(none)*
    * Function parameters:
-     + `Object` The dispatched event
+     + [`Object`] The dispatched event
    * Accepted scope modifications: *(none)*
    * Returns: *(not evaluated)*
 
@@ -630,9 +634,9 @@ Here is the list of every types of functions you can give to *domino.js*, with t
      + *dispatchEvent*
    * Parameters given through the scope: *(none)*
    * Function parameters:
-     + `Object` data: The data received from AJAX
+     + [`Object`] data: The data received from AJAX
    * Accepted scope modifications:
-     + `*` this[property] will update *property*
+     + [`*`] this[property] will update *property*
    * Returns: *(not evaluated)*
 
  - **Service "error"**:
@@ -641,10 +645,10 @@ Here is the list of every types of functions you can give to *domino.js*, with t
      + *dispatchEvent*
    * Parameters given through the scope: *(none)*
    * Function parameters:
-     + `String` mes: The error message
-     + `Object` xhr: The related XHR object
+     + [`String`] mes: The error message
+     + [`Object`] xhr: The related XHR object
    * Accepted scope modifications:
-     + `*` this[property] will update *property*
+     + [`*`] this[property] will update *property*
    * Returns: *(not evaluated)*
 
  - **Service "before"**:
@@ -652,10 +656,10 @@ Here is the list of every types of functions you can give to *domino.js*, with t
      + *dispatchEvent*
    * Parameters given through the scope: *(none)*
    * Function parameters:
-     + `String` mes: The error message
-     + `Object` xhr: The related XHR object
+     + [`String`] mes: The error message
+     + [`Object`] xhr: The related XHR object
    * Accepted scope modifications:
-     + `*` this[property] will update *property*
+     + [`*`] this[property] will update *property*
    * Returns: *(not evaluated)*
 
  - **Service "url"**:
@@ -664,16 +668,16 @@ Here is the list of every types of functions you can give to *domino.js*, with t
    * Function parameters: *(none)*
    * Accepted scope modifications: *(none)*
    * Returns:
-     + `String` The final URL
+     + [`String`] The final URL
 
  - **Service "data"**:
    * Additional methods in the scope: *(none)*
    * Parameters given through the scope: *(none)*
    * Function parameters:
-     + `?*` If specified, the `data` attribute given in the overridding parameters
+     + [`?*`] If specified, the `data` attribute given in the overridding parameters
    * Accepted scope modifications: *(none)*
    * Returns:
-     + `*` The data sent through the AJAX call
+     + [`*`] The data sent through the AJAX call
 
  - **Shortcuts**:
    * Additional methods in the scope: *(none)*
@@ -681,29 +685,29 @@ Here is the list of every types of functions you can give to *domino.js*, with t
    * Function parameters: *(none)*
    * Accepted scope modifications: *(none)*
    * Returns:
-     + `*` Anything you want, that's the point of the shortcuts
+     + [`*`] Anything you want, that's the point of the shortcuts
 
  - **Custom setters**:
    * Additional methods in the scope: *(none)*
    * Parameters given through the scope:
-     + `*` this[property] contains the current value of the property
+     + [`*`] this[property] contains the current value of the property
    * Function parameters:
-     + `*` The new value, given to `.set(property, newValue)`
-     + `*` Eventually other parameters, if you are using custom setters
+     + [`*`] The new value, given to `.set(property, newValue)`
+     + [`*`] Eventually other parameters, if you are using custom setters
    * Accepted scope modifications:
-     + `*` this[property] contains the new value of the property
+     + [`*`] this[property] contains the new value of the property
    * Returns:
-     + `?boolean` If you return a boolean value, the property will be updated and the related events dispatched only if the returned boolean is `true`
+     + [`?boolean`] If you return a boolean value, the property will be updated and the related events dispatched only if the returned boolean is `true`
 
  - **Custom getters**:
    * Additional methods in the scope: *(none)*
    * Parameters given through the scope:
-     + `*` this[property] contains the current value of the property
+     + [`*`] this[property] contains the current value of the property
    * Function parameters:
-     + `*` Eventually parameters, if you are using custom getters
+     + [`*`] Eventually parameters, if you are using custom getters
    * Accepted scope modifications: *(none)*
    * Returns:
-     + `*` The current value of the property
+     + [`*`] The current value of the property
 
 <h2 id="logs_and_global_settings">Logs and global settings <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
