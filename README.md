@@ -7,7 +7,7 @@ Check the project webpage to see the documentation: [http://dominojs.org](http:/
 
 ### How to use it
 
-To use it, clone the depository:
+To use it, clone the repository:
 
 ```
 git clone git@github.com:jacomyal/domino.js.git
