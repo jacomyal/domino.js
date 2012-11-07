@@ -530,23 +530,21 @@ Basically, when an event is dispatched from a module, it will trigger this loop.
 
 This same loop is also called as an output for services success and error function, and the global `update` method (accessible only through the *domino.js* instance itself).
 
-Here is an example: With a simple `EventDispatcher` class to manage the events chain synchronously, here is the kind of case that can happen:
+Here is an example:
 
 ```
-(module) -> updateProperty1 -> event1 -> hack1
-                                      -> hack2
-                            -> event2 -> hack3
-                                      -> hack4
+(module) -> updateProp -> event1 -> hack1 -> event3
+                       -> event2 -> hack2 -> event4
 ```
 
-Here, a module updates the property `A` which dispatches events `event1` and `event2`. Hacks `hack1` and `hack2` are triggered on `event1`, and hacks `hack3` and `hack4` are triggered on `event2`.
+Here, a module updates the property `prop` which dispatches events `event1` and `event2`. Hack `hack1` is triggered on `event1`, and hack `hack2` is triggered on `event2`. Finally, `hack1` dispatches `event3` and `hack2` dispatches `event4`.
 
-The problem here is that `hack1` and `hack2` will be triggered **before** event2. It might not seem that much an issue here, but in more complexe chains, some hacks would be overridden by hacks you designed to happen "earlier".
+The problem here is that, with a classic synchronous events management system, `event3` would be triggered **before** `event2`, when it is expected to be triggered "earlier".
 
 **Hopefully, *domino.js*'s main loop resolves this issue** by executing the previous events chain as following:
 
 ```
-(module) -> updateProperty1 -> event1, event2 -> hack1, hack2, hack3, hack4
+(module) -> updateProp -> event1, event2 -> hack1, hack2 -> event3, event4
 ```
 
 <h2 id="scopes_management">Scopes management <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
