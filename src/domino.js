@@ -33,6 +33,9 @@
   // This Date is used when displayTime is true, to compute the difference:
   var _startTime = new Date();
 
+  // Here is an object containing a reference to any named unkilled instance:
+  var _instances = {};
+
   // Check domino.js existance:
   if (window.domino) {
     throw new Error('domino already exists');
@@ -46,6 +49,7 @@
    * @this {domino}
    */
   window.domino = function() {
+    // Inheritance:
     dispatcher.call(this);
 
     // Misc:
@@ -98,11 +102,13 @@
     })();
 
     // Initialization:
-    var _o = {};
-    this.name = 'domino';
+    _reference = _getScope({ full: true });
+
+    var _o = {},
+        _name;
 
     if (_struct.get(arguments[0]) === 'string')
-      this.name = arguments[0];
+      _name = arguments[0];
     else if (
       arguments[0] !== undefined &&
       _struct.get(arguments[0]) === 'object'
@@ -114,7 +120,15 @@
     )
       _o = arguments[1];
 
-    this.name = _o['name'] || this.name;
+    _name = _o['name'];
+
+    if (_name) {
+      // Check if there is already an instance with the same name running:
+      if (_instances[_name])
+        _die('An instance named "' + _name + '" is already running.');
+      else
+        _instances[_name] = _reference;
+    }
 
     (function() {
       var i;
@@ -1276,10 +1290,11 @@
     function _kill() {
       var i;
 
+      _log('Killing instance "' + _name + '"');
+
       // Remove event listeners:
-      for (i in _modules) {
+      for (i in _modules)
         _modules[i].removeEventListener();
-      }
 
       // Remove references:
       _modules = null;
@@ -1304,9 +1319,12 @@
       _shortcuts = null;
 
       // Disable instance reference:
-      for (i in _reference) {
+      for (i in _reference)
         delete _reference[i];
-      }
+
+      // Kill the named reference:
+      if (_instances[_name])
+        delete _instances[_name];
     }
 
     /**
@@ -1314,7 +1332,7 @@
      */
 
     function _warn() {
-      var a = ['[' + _self.name + ']'];
+      var a = ['[' + _name + ']'];
 
       if (!__settings__['strict'])
         a.push('WARNING');
@@ -1326,7 +1344,7 @@
     };
 
     function _die() {
-      var a = ['[' + _self.name + ']'];
+      var a = ['[' + _name + ']'];
 
       for (var k in arguments)
         a.push(arguments[k]);
@@ -1335,7 +1353,7 @@
     };
 
     function _log() {
-      var a = ['[' + _self.name + ']'];
+      var a = ['[' + _name + ']'];
 
       for (var k in arguments)
         a.push(arguments[k]);
@@ -1344,7 +1362,6 @@
     };
 
     // Return the full scope:
-    _reference = _getScope({ full: true });
     return _reference;
   };
   var domino = window.domino;
@@ -1660,6 +1677,16 @@
       return this;
     }
   };
+
+  // Access to all named instances:
+  domino.instances = function(name) {
+    if (!arguments.length)
+      __die__(
+        '[domino.global] You need to indicate a name to get the instance.'
+      );
+    else
+      return _instances[name];
+  }
 
   // Event dispatcher:
   domino.EventDispatcher = function() {
