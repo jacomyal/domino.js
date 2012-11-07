@@ -3,11 +3,11 @@
  * prototyping.
  *
  * Sources: http://github.com/jacomyal/domino.js
- * Doc:     http://github.com/jacomyal/domino.js#readme
+ * Doc:     http://dominojs.org
  *
  * License:
  * --------
- * Copyright © 2012 Linkfluence
+ * Copyright © 2012 Alexis Jacomy, Linkfluence - http://dominojs.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -51,7 +51,8 @@
     // Misc:
     var _self = this,
         _utils = domino.utils,
-        _struct = domino.struct;
+        _struct = domino.struct,
+        _reference;
 
     // Properties management:
     var _types = {},
@@ -164,6 +165,7 @@
       // features. This scope is basically the "public view" of the domino
       // instance:
       if (o.full) {
+        scope.kill = _kill;
         scope.update = _update;
         scope.addModule = _addModule;
         scope.request = _request;
@@ -1269,6 +1271,45 @@
     }
 
     /**
+     * Kills the instance.
+     */
+    function _kill() {
+      var i;
+
+      // Remove event listeners:
+      for (i in _modules) {
+        _modules[i].removeEventListener();
+      }
+
+      // Remove references:
+      _modules = null;
+      _types = null;
+      _labels = null;
+      _events = null;
+      _getters = null;
+      _setters = null;
+      _statics = null;
+      _properties = null;
+      _overriddenGetters = null;
+      _overriddenSetters = null;
+      _modules = null;
+      _ascending = null;
+      _descending = null;
+      _eventListeners = null;
+      _propertyListeners = null;
+      _hackMethods = null;
+      _hackDispatch = null;
+      _services = null;
+      _currentCalls = null;
+      _shortcuts = null;
+
+      // Disable instance reference:
+      for (i in _reference) {
+        delete _reference[i];
+      }
+    }
+
+    /**
      * Log methods
      */
 
@@ -1303,7 +1344,8 @@
     };
 
     // Return the full scope:
-    return _getScope({ full: true });
+    _reference = _getScope({ full: true });
+    return _reference;
   };
   var domino = window.domino;
 
@@ -1600,7 +1642,7 @@
     verbose: false,
     shortcutPrefix: ':',
     displayTime: false,
-    clone: true
+    clone: false
   };
 
   domino.settings = function(a1, a2) {
