@@ -1007,6 +1007,17 @@
 <ul>
 <li>Example: <code>&#39;string|number&#39;</code>, <code>&#39;?array|object&#39;</code>, etc...</li>
 </ul></li>
+<li>Arrays: <strong>[type]</strong>
+
+<ul>
+<li>The array structure definition must be an array with exactly one value, which must be a valid structure descriptor. Then, any array containing only elements matching this structure is valid.</li>
+<li>Examples:
+
+<ul>
+<li><code>[&#39;boolean&#39;]</code></li>
+<li><code>[{ obj1: { k1: &#39;number&#39;, k2: &#39;number&#39; }, obj2: &#39;object&#39;, list: &#39;?array&#39; }]</code></li>
+</ul></li>
+</ul></li>
 <li>Complex structures: <strong>{ key1: {type1}, key2: {type2} }</strong>
 
 <ul>
@@ -1014,7 +1025,7 @@
 
 <ul>
 <li><code>{ a: &#39;number&#39;, b: &#39;number&#39;, total: &#39;?number&#39; }</code></li>
-<li><code>{ obj1: { k1: &#39;number&#39;, k2: &#39;number&#39; }, obj2: &#39;object&#39;, list: &#39;?array&#39; }</code></li>
+<li><code>{ obj1: { k1: &#39;number&#39;, k2: &#39;number&#39; }, obj2: &#39;object&#39; }</code></li>
 </ul></li>
 </ul></li>
 </ul>
@@ -1045,6 +1056,9 @@
 <span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">check</span><span class="p">({</span><span class="nx">a</span><span class="o">:</span> <span class="s1">&#39;?number&#39;</span><span class="p">},</span> <span class="p">{});</span>    <span class="c1">// true</span>
 <span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">check</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="p">{</span><span class="nx">a</span><span class="o">:</span> <span class="mi">1</span><span class="p">});</span>           <span class="c1">// true</span>
 <span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">check</span><span class="p">({</span><span class="nx">a</span><span class="o">:</span> <span class="s1">&#39;number&#39;</span><span class="p">},</span> <span class="p">{});</span>     <span class="c1">// false</span>
+<span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">check</span><span class="p">([</span><span class="s1">&#39;number&#39;</span><span class="p">],</span> <span class="p">[]);</span>        <span class="c1">// true</span>
+<span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">check</span><span class="p">([</span><span class="s1">&#39;number&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">]);</span>       <span class="c1">// true</span>
+<span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">check</span><span class="p">([</span><span class="s1">&#39;number&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]);</span>    <span class="c1">// true</span>
 </pre>
 </div>
 
@@ -1052,6 +1066,7 @@
 <li><strong>isValid(struct)</strong>: Indicates whether the structure is a valid property structure:</li>
 </ul>
 <div class="highlight"><pre><span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">isValid</span><span class="p">({</span><span class="nx">a</span><span class="o">:</span> <span class="s1">&#39;number&#39;</span><span class="p">});</span>   <span class="c1">// true</span>
+<span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">isValid</span><span class="p">([{</span><span class="nx">a</span><span class="o">:</span> <span class="s1">&#39;number&#39;</span><span class="p">}]);</span> <span class="c1">// true</span>
 <span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">isValid</span><span class="p">(</span><span class="s1">&#39;object&#39;</span><span class="p">);</span>        <span class="c1">// true</span>
 <span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">isValid</span><span class="p">(</span><span class="s1">&#39;?object&#39;</span><span class="p">);</span>       <span class="c1">// true</span>
 <span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">isValid</span><span class="p">(</span><span class="s1">&#39;?object|array&#39;</span><span class="p">);</span> <span class="c1">// true</span>
@@ -1066,8 +1081,10 @@
 </ul>
 <div class="highlight"><pre><span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">deepScalar</span><span class="p">(</span><span class="s1">&#39;number&#39;</span><span class="p">);</span>        <span class="c1">// true</span>
 <span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">deepScalar</span><span class="p">(</span><span class="s1">&#39;?number&#39;</span><span class="p">);</span>       <span class="c1">// true</span>
+<span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">deepScalar</span><span class="p">([</span><span class="s1">&#39;?number&#39;</span><span class="p">]);</span>     <span class="c1">// true</span>
 <span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">deepScalar</span><span class="p">(</span><span class="s1">&#39;string|number&#39;</span><span class="p">);</span> <span class="c1">// true</span>
 <span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">deepScalar</span><span class="p">({</span><span class="nx">a</span><span class="o">:</span> <span class="s1">&#39;number&#39;</span><span class="p">});</span>   <span class="c1">// true</span>
+<span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">deepScalar</span><span class="p">([{</span><span class="nx">a</span><span class="o">:</span> <span class="s1">&#39;number&#39;</span><span class="p">}]);</span> <span class="c1">// true</span>
 <span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">deepScalar</span><span class="p">(</span><span class="s1">&#39;object&#39;</span><span class="p">);</span>        <span class="c1">// false</span>
 <span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">deepScalar</span><span class="p">(</span><span class="s1">&#39;?object&#39;</span><span class="p">);</span>       <span class="c1">// false</span>
 <span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">deepScalar</span><span class="p">(</span><span class="s1">&#39;object|number&#39;</span><span class="p">);</span> <span class="c1">// false</span>

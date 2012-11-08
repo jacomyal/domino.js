@@ -744,10 +744,15 @@ Those structures are:
    * Example: `'?object'`, `'?array'`, etc...
  - Multi-types: **'{type1}|{type2}'**
    * Example: `'string|number'`, `'?array|object'`, etc...
+ - Arrays: **[type]**
+   * The array structure definition must be an array with exactly one value, which must be a valid structure descriptor. Then, any array containing only elements matching this structure is valid.
+   * Examples:
+     + `['boolean']`
+     + `[{ obj1: { k1: 'number', k2: 'number' }, obj2: 'object', list: '?array' }]`
  - Complex structures: **{ key1: {type1}, key2: {type2} }**
    * Examples:
      + `{ a: 'number', b: 'number', total: '?number' }`
-     + `{ obj1: { k1: 'number', k2: 'number' }, obj2: 'object', list: '?array' }`
+     + `{ obj1: { k1: 'number', k2: 'number' }, obj2: 'object' }`
 
 Except for `'undefined'` and `'null'`, all the previously described structures are valid to characterize a property.
 
@@ -774,12 +779,16 @@ domino.struct.check('*', {a: 1});           // true
 domino.struct.check({a: '?number'}, {});    // true
 domino.struct.check('*', {a: 1});           // true
 domino.struct.check({a: 'number'}, {});     // false
+domino.struct.check(['number'], []);        // true
+domino.struct.check(['number'], [1]);       // true
+domino.struct.check(['number'], [1, 2]);    // true
 ```
 
  - **isValid(struct)**: Indicates whether the structure is a valid property structure:
 
 ```js
 domino.struct.isValid({a: 'number'});   // true
+domino.struct.isValid([{a: 'number'}]); // true
 domino.struct.isValid('object');        // true
 domino.struct.isValid('?object');       // true
 domino.struct.isValid('?object|array'); // true
@@ -793,8 +802,11 @@ domino.struct.isValid('null');          // false
 ```js
 domino.struct.deepScalar('number');        // true
 domino.struct.deepScalar('?number');       // true
+domino.struct.deepScalar(['?number']);     // true
 domino.struct.deepScalar('string|number'); // true
 domino.struct.deepScalar({a: 'number'});   // true
+domino.struct.deepScalar([{a: 'number'}]); // true
 domino.struct.deepScalar('object');        // false
 domino.struct.deepScalar('?object');       // false
 domino.struct.deepScalar('object|number'); // false
+```
