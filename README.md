@@ -32,7 +32,7 @@ The whole source code is validated by the [Google Closure Linter](https://develo
 
 ### ChangeLog
 
-#### 1.0 (November 5, 2012)
+#### 1.0 (November 8, 2012)
 
  - *domino.js* first release
  - project web page also released at [http://dominojs.org](http://dominojs.org) (branch `gh-pages`)
