@@ -539,9 +539,9 @@ Here is an example:
 
 Here, a module updates the property `prop` which dispatches events `event1` and `event2`. Hack `hack1` is triggered on `event1`, and hack `hack2` is triggered on `event2`. Finally, `hack1` dispatches `event3` and `hack2` dispatches `event4`.
 
-The problem here is that, with a classic synchronous events management system, `event3` would be triggered **before** `event2`, when it is expected to be triggered "earlier".
+The problem here is that, with a classic synchronous events management system, `event3` would be dispatched **before** `event2`, when it is expected to be triggered "later".
 
-**Hopefully, *domino.js*'s main loop resolves this issue** by executing the previous events chain as following:
+**The *domino.js*'s main loop resolves this issue** by executing the previous events chain as following:
 
 ```
 (module) -> updateProp -> event1, event2 -> hack1, hack2 -> event3, event4

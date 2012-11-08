@@ -662,9 +662,9 @@
 </code></pre>
 <p>Here, a module updates the property <code>prop</code> which dispatches events <code>event1</code> and <code>event2</code>. Hack <code>hack1</code> is triggered on <code>event1</code>, and hack <code>hack2</code> is triggered on <code>event2</code>. Finally, <code>hack1</code> dispatches <code>event3</code> and <code>hack2</code> dispatches <code>event4</code>.</p>
 
-<p>The problem here is that, with a classic synchronous events management system, <code>event3</code> would be triggered <strong>before</strong> <code>event2</code>, when it is expected to be triggered &quot;earlier&quot;.</p>
+<p>The problem here is that, with a classic synchronous events management system, <code>event3</code> would be dispatched <strong>before</strong> <code>event2</code>, when it is expected to be triggered &quot;later&quot;.</p>
 
-<p><strong>Hopefully, <em>domino.js</em>&#39;s main loop resolves this issue</strong> by executing the previous events chain as following:</p>
+<p><strong>The <em>domino.js</em>&#39;s main loop resolves this issue</strong> by executing the previous events chain as following:</p>
 <pre><code>(module) -> updateProp -> event1, event2 -> hack1, hack2 -> event3, event4
 </code></pre>
 <h2 id="scopes_management">Scopes management <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
