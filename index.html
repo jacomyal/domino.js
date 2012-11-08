@@ -347,7 +347,7 @@
 <li>etc...</li>
 </ul>
 
-<p>Let&#39;s consider the following practical case: You have an array of elements (property <code>list</code>) that depends on three different flags (properties <code>flag1</code>, <code>flag2</code> and <code>flag3</code>). More precisely, let&#39;s assume you have a method <code>refreshList</code> that takes the values of <code>flag1</code>, <code>flag2</code> and <code>flag3</code> as parameters and returns the new list.</p>
+<p>Let&#39;s consider the following practical case: You have three different flags (properties <code>flag1</code>, <code>flag2</code> and <code>flag3</code>), and you want to have the three values always stored in an array (property <code>list</code>).</p>
 <div class="highlight"><pre><span class="kd">var</span> <span class="nx">d</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">domino</span><span class="p">({</span>
   <span class="nx">properties</span><span class="o">:</span> <span class="p">[</span>
     <span class="p">{</span>
@@ -375,11 +375,11 @@
       <span class="nx">triggers</span><span class="o">:</span> <span class="s1">&#39;flagUpdated&#39;</span><span class="p">,</span>
       <span class="nx">method</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
         <span class="c1">// Here you can refresh the list:</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">list</span> <span class="o">=</span> <span class="nx">refreshList</span><span class="p">(</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">list</span> <span class="o">=</span> <span class="p">[</span>
           <span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;flag1&#39;</span><span class="p">),</span>
           <span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;flag2&#39;</span><span class="p">),</span>
           <span class="k">this</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;flag3&#39;</span><span class="p">)</span>
-        <span class="p">);</span>
+        <span class="p">];</span>
       <span class="p">}</span>
     <span class="p">}</span>
   <span class="p">]</span>
@@ -389,7 +389,7 @@
 
 <p>And that&#39;s it: Any time one flag is updated, the list will automatically be refreshed, and the event &quot;listUpdated&quot; dispatched.</p>
 
-<p>The different methods you can call from the hacks are described in the <strong>Scopes management</strong> section.</p>
+<p>The different methods you can call from the hacks are described in the <strong><a href="#scopes_management">Scopes management</a></strong> section.</p>
 
 <h2 id="services">Services <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 

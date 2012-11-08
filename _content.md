@@ -295,7 +295,7 @@ And that's it, the module is here and connected. And you can even create two ins
  - Reset some properties when a *button* is clicked, and some other when another *button* is activated.
  - etc...
 
-Let's consider the following practical case: You have an array of elements (property `list`) that depends on three different flags (properties `flag1`, `flag2` and `flag3`). More precisely, let's assume you have a method `refreshList` that takes the values of `flag1`, `flag2` and `flag3` as parameters and returns the new list.
+Let's consider the following practical case: You have three different flags (properties `flag1`, `flag2` and `flag3`), and you want to have the three values always stored in an array (property `list`).
 
 ```js
 var d = new domino({
@@ -325,11 +325,11 @@ var d = new domino({
       triggers: 'flagUpdated',
       method: function() {
         // Here you can refresh the list:
-        this.list = refreshList(
+        this.list = [
           this.get('flag1'),
           this.get('flag2'),
           this.get('flag3')
-        );
+        ];
       }
     }
   ]
@@ -338,7 +338,7 @@ var d = new domino({
 
 And that's it: Any time one flag is updated, the list will automatically be refreshed, and the event "listUpdated" dispatched.
 
-The different methods you can call from the hacks are described in the **Scopes management** section.
+The different methods you can call from the hacks are described in the **[Scopes management](#scopes_management)** section.
 
 <h2 id="services">Services <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
