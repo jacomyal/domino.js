@@ -1563,8 +1563,10 @@
         if (this.get(type) === 'string') {
           a = type.replace(/^\?/, '').split(/\|/);
           for (i in a)
-            if (types.indexOf(a[i]) < 0)
+            if (types.indexOf(a[i]) < 0) {
               __warn__('[domino.global] Invalid type');
+              return false;
+            }
 
           if (obj == null)
             return !!type.match(/^\?/, '');
@@ -1588,6 +1590,20 @@
               return false;
 
           return true;
+        } else if (this.get(type) === 'array') {
+          if (typeOf !== 'array')
+            return false;
+
+          if (type.length !== 1) {
+            __warn__('[domino.global] Invalid type');
+            return false;
+          }
+
+          for (k in obj)
+            if (!this.check(type[0], obj[k]))
+              return false;
+
+          return true;
         } else
           return false;
       },
@@ -1599,7 +1615,7 @@
             if (atoms.indexOf(a[i]) < 0)
               return false;
           return true;
-        } else if (this.get(type) === 'object') {
+        } else if (this.check('object|array', type)) {
           for (i in type)
             if (!this.deepScalar(type[i]))
               return false;
@@ -1627,6 +1643,14 @@
             if (!this.compare(v1[i], v2[i], type[i]))
               return false;
           return true;
+        } else if (this.get(type) === 'array') {
+          if (v1.length !== v2.length)
+            return false;
+          var l = v1.length;
+          for (i = 0; i < l; i++)
+            if (!this.compare(v1[i], v2[i], type[0]))
+              return false;
+          return true;
         }
 
         return false;
@@ -1645,7 +1669,11 @@
               return false;
 
           return true;
-        } else
+        } else if (this.get(type) === 'array')
+          return type.length === 1 ?
+            this.isValid(type[0]) :
+            false;
+        else
           return false;
       }
     };

@@ -60,20 +60,23 @@ test('domino.struct.isValid', function() {
   deepEqual(domino.struct.isValid({a: 'string', b: 'object'}), true, '{a: "string", b: "object"} validity succeeds');
   deepEqual(domino.struct.isValid({a: 'string', b: {a: 'string'}}), true, '{a: "string", b: {a: "string"}} validity succeeds');
   deepEqual(domino.struct.isValid({a: '?string|array', b: '?*'}), true, '{a: "?string|array", b: "?*"} validity succeeds');
+  deepEqual(domino.struct.isValid({a: '?string|array', b: ['?*']}), true, '{a: "?string|array", b: ["?*"]} validity succeeds');
+  deepEqual(domino.struct.isValid([{a: '?string|array', b: '?*'}]), true, '[{a: "?string|array", b: "?*"}] validity succeeds');
   deepEqual(domino.struct.isValid('null'), false, '"null" invalidity succeeds');
   deepEqual(domino.struct.isValid('undefined'), false, '"undefined" invalidity succeeds');
   deepEqual(domino.struct.isValid('string?'), false, '"string?" invalidity succeeds');
   deepEqual(domino.struct.isValid('string|'), false, '"string|" invalidity succeeds');
   deepEqual(domino.struct.isValid('|string'), false, '"|string" invalidity succeeds');
   deepEqual(domino.struct.isValid('sstring'), false, '"sstring" invalidity succeeds');
-  deepEqual(domino.struct.isValid(['string']), false, '["string"] invalidity succeeds');
   deepEqual(domino.struct.isValid({a: 'sstring'}), false, '{a: "sstring"} invalidity succeeds');
   deepEqual(domino.struct.isValid('string|?array'), false, '"string|?array" invalidity succeeds');
-  deepEqual(domino.struct.isValid('?(string|array)'), false, '"?(string|array)" invalidity succeeds');
+  deepEqual(domino.struct.isValid([]), false, '[] invalidity succeeds');
+  deepEqual(domino.struct.isValid(['string', 'number']), false, '["string", "number"] invalidity succeeds');
 });
 
 // domino.struct.check():
 test('domino.struct.check', function() {
+  deepEqual(domino.struct.check('boolean', true), true, '"boolean", true" succeeds');
   deepEqual(domino.struct.check('boolean', true), true, '"boolean", true" succeeds');
   deepEqual(domino.struct.check('number', 42), true, '"number", 42" succeeds');
   deepEqual(domino.struct.check('string', 'abc'), true, '"string", "abc" succeeds');
@@ -97,6 +100,10 @@ test('domino.struct.check', function() {
   deepEqual(domino.struct.check({a: '?string|array', b: '?*'}, {a: null, b: 'def'}), true, '{a: "?string|array", b: "?*"}, {a: null, b: "def"} succeeds');
   deepEqual(domino.struct.check({a: '?string|array', b: '?*'}, {a: 'abc', b: 'def'}), true, '{a: "?string|array", b: "?*"}, {a: "abc", b: "def"} succeeds');
   deepEqual(domino.struct.check({a: '?string|array', b: '?*'}, {a: [1, 2, 3], b: 'def'}), true, '{a: "?string|array", b: "?*"}, {a: [1, 2, 3], b: "def"} succeeds');
+  deepEqual(domino.struct.check(['boolean'], []), true, '["boolean"], [] succeeds');
+  deepEqual(domino.struct.check(['boolean'], [true]), true, '["boolean"], [true] succeeds');
+  deepEqual(domino.struct.check(['boolean'], [true, false, true]), true, '["boolean"], [true, false, true] succeeds');
+  deepEqual(domino.struct.check([{a: '?boolean'}], [{}, {a: false}]), true, '[{a: "?boolean"}], [{}, {a: false}] succeeds');
   deepEqual(domino.struct.check('boolean', 42), false, '');
   deepEqual(domino.struct.check('number', 'abc'), false, '');
   deepEqual(domino.struct.check('string', function() {}), false, '');
@@ -108,6 +115,8 @@ test('domino.struct.check', function() {
   deepEqual(domino.struct.check('*', null), false, '');
   deepEqual(domino.struct.check('string|array', null), false, '');
   deepEqual(domino.struct.check('?string', 42), false, '');
+  deepEqual(domino.struct.check(['boolean'], null), false, '');
+  deepEqual(domino.struct.check(['boolean'], [false, 1]), false, '');
   deepEqual(domino.struct.check({a: 'string'}, {a: 'abc', b: '12'}), false, '');
   deepEqual(domino.struct.check({a: 'string', b: 'object'}, {a: 'abc', b: 42}), false, '');
   deepEqual(domino.struct.check({a: 'string', b: 'object'}, {b: {a: 1, b: 2}}), false, '');
