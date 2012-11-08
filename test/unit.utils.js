@@ -150,13 +150,16 @@ test('domino.struct.deepScalar', function() {
   deepEqual(domino.struct.deepScalar('?string'), true, '"?string" succeeds');
   deepEqual(domino.struct.deepScalar('string|number'), true, '"string|number" succeeds');
   deepEqual(domino.struct.deepScalar('?string|number'), true, '"?string|number" succeeds');
-  deepEqual(domino.struct.deepScalar({a: 'string'}), true, '"{a: string}" succeeds');
+  deepEqual(domino.struct.deepScalar({a: 'string'}), true, '"{a: "string"}" succeeds');
+  deepEqual(domino.struct.deepScalar([{a: 'string'}]), true, '"[{a: "string"}]" succeeds');
+  deepEqual(domino.struct.deepScalar([{a: 'string'}, 'number']), true, '"[{a: "string"}, "number"]" succeeds');
   deepEqual(domino.struct.deepScalar('object'), false, '"object" succeeds');
   deepEqual(domino.struct.deepScalar('array'), false, '"array" succeeds');
   deepEqual(domino.struct.deepScalar('*'), false, '"*" succeeds');
   deepEqual(domino.struct.deepScalar('date'), false, '"date" succeeds');
   deepEqual(domino.struct.deepScalar('regexp'), false, '"regexp" succeeds');
-  deepEqual(domino.struct.deepScalar('?object'), false, '"?number" succeeds');
+  deepEqual(domino.struct.deepScalar('?object'), false, '"?object" succeeds');
+  deepEqual(domino.struct.deepScalar(['object']), false, '["object"] succeeds');
   deepEqual(domino.struct.deepScalar('object|number'), false, '"object|number" succeeds');
   deepEqual(domino.struct.deepScalar('?object|number'), false, '"?object|number" succeeds');
   deepEqual(domino.struct.deepScalar({a: 'object'}), false, '"{a: object}" succeeds');
