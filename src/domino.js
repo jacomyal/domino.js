@@ -831,11 +831,19 @@
      * For each property actually updated, the related events will be
      * dispatched through the _mainLoop method.
      *
-     * @param   {object}  properties The properties to update.
+     * Can be called with two parameters (then the first one must be the name
+     * of a property), or with one (then it must be an object, and each key
+     * must be the name of a property).
      */
-    function _update(properties) {
+    function _update(a1, a2) {
+      var o = (typeof a1 === 'object' && arguments.length === 1) ?
+        a1 || {} :
+        {};
+      if (typeof a1 === 'string')
+        o[a1] = a2;
+
       _mainLoop({
-        update: properties
+        update: o
       });
 
       return this;
