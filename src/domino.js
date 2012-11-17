@@ -56,6 +56,7 @@
     var _self = this,
         _utils = domino.utils,
         _struct = domino.struct,
+        _localSettings = {},
         _reference;
 
     // Properties management:
@@ -183,6 +184,7 @@
         scope.update = _update;
         scope.addModule = _addModule;
         scope.request = _request;
+        scope.settings = _settings;
         scope.dispatchEvent = function(type, data) {
           _mainLoop({
             events: _self.getEvent(type, data)
@@ -520,7 +522,7 @@
             };
 
         var i, exp, k, doTest, val,
-            pref = __settings__['shortcutPrefix'],
+            pref = _settings('shortcutPrefix'),
             regexContains = new RegExp(pref + '(\\w+)', 'g'),
             regexFull = new RegExp('^' + pref + '(\\w+)$'),
             oldURL = null,
@@ -882,7 +884,7 @@
           updateObject = o['update'] || {};
 
       // Log:
-      if (__settings__['verbose']) {
+      if (_settings('verbose')) {
         _log('Iteration ' + o['loop'] + ' (main loop)');
 
         if (eventsArray.length) {
@@ -1034,11 +1036,11 @@
             inputValues: inputs
           });
 
-          return __settings__['clone'] ?
+          return _settings('clone') ?
             _utils.clone(res['returned']) :
             res['returned'];
         } else
-          return __settings__['clone'] ?
+          return _settings('clone') ?
             _utils.clone(_getters[property]()) :
             _getters[property]();
       } else
@@ -1063,7 +1065,7 @@
               arg = [],
               inputs = {};
 
-          if (__settings__['clone'])
+          if (_settings('clone'))
             value = _utils.clone(value);
 
           inputs[property] = _get(property);
@@ -1087,7 +1089,7 @@
         } else
           return _setters[property].call(
             _getScope(),
-            __settings__['clone'] ?
+            _settings('clone') ?
               _utils.clone(value) :
               value
           );
@@ -1255,9 +1257,8 @@
      */
     function _expand(s) {
       var sc = s,
-          l = arguments.length,
           a = (s || '').toString().match(
-            new RegExp('^' + __settings__['shortcutPrefix'] + '(\\w+)$')
+            new RegExp('^' + _settings('shortcutPrefix') + '(\\w+)$')
           );
 
       if (a && a.length) {
@@ -1265,23 +1266,22 @@
         sc = a[1];
       }
 
-      // Check shortcuts:
-      if (_struct.get(_shortcuts[sc]) === 'function')
-        return _shortcuts[sc].call(_getScope());
+      // Check other custom objects:
+      for (var i = 1, l = arguments.length; i < l; i++)
+        if ((arguments[i] || {})[sc] !== undefined)
+          return arguments[i][sc];
 
       // Check properties:
       if (_struct.get(_getters[sc]) === 'function')
         return _get(sc);
 
-      // Check other custom objects:
-      for (var i = 1; i < l; i++)
-        if ((arguments[i] || {})[sc] !== undefined)
-          return arguments[i][sc];
+      // Check declared shortcuts:
+      if (_struct.get(_shortcuts[sc]) === 'function')
+        return _shortcuts[sc].call(_getScope());
 
-      if (__settings__['strict'])
-        _die('The shortcut "', sc, '" has not been recognized.');
-      else
-        return sc;
+      // If the shortcut is not resolved:
+      _warn('The shortcut "', sc, '" has not been recognized.');
+      return sc;
     }
 
     /**
@@ -1328,19 +1328,48 @@
     }
 
     /**
-     * Log methods
+     * Instance settings manipulation method:
+     */
+
+    function _settings(a1, a2) {
+      if (typeof a1 === 'string' && arguments.length === 1)
+        return _localSettings[a1] !== undefined ?
+          _localSettings[a1] :
+          __settings__[a1];
+      else {
+        var o = (typeof a1 === 'object' && arguments.length === 1) ?
+          a1 || {} :
+          {};
+        if (typeof a1 === 'string')
+          o[a1] = a2;
+
+        for (var k in o)
+          if (o[k] !== undefined)
+            _localSettings[k] = o[k];
+          else
+            delete _localSettings[k];
+
+        return this;
+      }
+    };
+
+    /**
+     * Log methods (in the instance)
      */
 
     function _warn() {
       var a = ['[' + _name + ']'];
 
-      if (!__settings__['strict'])
+      if (!_settings('strict'))
         a.push('WARNING');
 
       for (var k in arguments)
         a.push(arguments[k]);
 
-      __warn__.apply(_self, a);
+      if (_settings('strict'))
+        __die__.apply(this, a);
+      else if (_settings('verbose'))
+        __say__.apply(this, a);
     };
 
     function _die() {
@@ -1349,16 +1378,19 @@
       for (var k in arguments)
         a.push(arguments[k]);
 
-      __die__.apply(_self, a);
+      __die__.apply(this, a);
     };
 
     function _log() {
       var a = ['[' + _name + ']'];
 
+      if (!_settings('verbose'))
+        return;
+
       for (var k in arguments)
         a.push(arguments[k]);
 
-      __log__.apply(_self, a);
+      __say__.apply(this, a);
     };
 
     // Return the full scope:
@@ -1392,6 +1424,10 @@
     if (!__settings__['verbose'])
       return;
 
+    __say__.apply(this, arguments);
+  }
+
+  function __say__() {
     var a = [];
     for (var k in arguments)
       a.push(arguments[k]);
@@ -1691,16 +1727,20 @@
   };
 
   domino.settings = function(a1, a2) {
-    if (typeof a1 === 'string' && a2 === undefined)
+    if (typeof a1 === 'string' && arguments.length === 1)
       return __settings__[a1];
     else {
-      var o = (typeof a1 === 'object' && a2 === undefined) ? a1 || {} : {};
+      var o = (typeof a1 === 'object' && arguments.length === 1) ?
+        a1 || {} :
+        {};
       if (typeof a1 === 'string')
         o[a1] = a2;
 
       for (var k in o)
-        if (__settings__[k] !== undefined)
+        if (o[k] !== undefined)
           __settings__[k] = o[k];
+        else
+          delete __settings__[k];
 
       return this;
     }
