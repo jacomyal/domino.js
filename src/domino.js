@@ -499,9 +499,11 @@
               contentType: p['contentType'] || o['contentType'],
               dataType: p['dataType'] || o['dataType'],
               type: (p['type'] || o['type'] || 'GET').toString().toUpperCase(),
-              data: _struct.get(o['data']) === 'function' ?
-                      o['data'].call(_getScope(), p) :
-                      (p['data'] != undefined ? p['data'] : o['data']),
+              data: p['data'] !== undefined ?
+                      p['data'] :
+                      _struct.get(o['data']) === 'function' ?
+                        o['data'].call(_getScope(), p) :
+                        o['data'],
               url: _struct.get(o['url']) === 'function' ?
                      o['url'].call(_getScope(), p) :
                      o['url'],
