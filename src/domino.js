@@ -67,6 +67,7 @@
         _setters = {},
         _statics = {},
         _properties = {},
+        _propertyParameters = {},
         _overriddenGetters = {},
         _overriddenSetters = {};
 
@@ -254,7 +255,7 @@
      *                               by spaces.
      */
     function _addProperty(id, options) {
-      var i,
+      var i, k,
           o = options || {};
 
       // Check errors:
@@ -266,6 +267,12 @@
 
       if (_protectedNames[id] !== undefined)
         _die('"' + id + '" can not be used to name a property');
+
+      // Every parameters are stored here:
+      _propertyParameters[id] = {};
+
+      for (k in o)
+        _propertyParameters[id] = o[k];
 
       // Label:
       _labels[id] = o['label'] || id;
@@ -1044,11 +1051,11 @@
             inputValues: inputs
           });
 
-          return _settings('clone') ?
+          return _doClone(property) ?
             _utils.clone(res['returned']) :
             res['returned'];
         } else
-          return _settings('clone') ?
+          return _doClone(property) ?
             _utils.clone(_getters[property]()) :
             _getters[property]();
       } else
@@ -1073,7 +1080,7 @@
               arg = [],
               inputs = {};
 
-          if (_settings('clone'))
+          if (_doClone(property))
             value = _utils.clone(value);
 
           inputs[property] = _get(property);
@@ -1097,7 +1104,7 @@
         } else
           return _setters[property].call(
             _getScope(),
-            _settings('clone') ?
+            _doClone(property) ?
               _utils.clone(value) :
               value
           );
@@ -1290,6 +1297,14 @@
       // If the shortcut is not resolved:
       _warn('The shortcut "', sc, '" has not been recognized.');
       return sc;
+    }
+
+    /**
+     * An helper to know if the property must be cloned or not:
+     */
+    function _doClone(property) {
+      var c = (_propertyParameters[property] || {}).clone;
+      return c !== undefined ? !!c : _settings('clone');
     }
 
     /**
