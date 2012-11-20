@@ -1599,6 +1599,7 @@
         class2type = {},
         types = ['*'];
 
+    var customs = {};
 
     // Fill types
     for (var k in classes) {
@@ -1608,6 +1609,62 @@
     }
 
     return {
+      add: function(a1, a2) {
+        var i, id, structure, o;
+
+        // Check errors:
+        if (arguments.length === 1) {
+          if (this.get(a1) !== 'object') {
+            o = a1;
+            id = o.id;
+            structure = o.structure;
+          } else
+            __die__(
+              '[domino.global] ' +
+              'If struct.add is called with one arguments, ' +
+              'it has to be an object'
+            );
+        } else if (arguments.length > 1) {
+          if (this.get(a1) !== 'string' || !a1)
+            __die__(
+              '[domino.global] ' +
+              'If struct.add is called with more than one arguments, ' +
+              'the first one must be the string id'
+            );
+          else
+            id = a1;
+
+          structure = a2;
+        }
+
+        if (this.get(id) !== 'string' || id.length === 0)
+          __die__('[domino.global] A structure requires an string id');
+        
+        if (!this.isValid(structure))
+          __die__(
+            '[domino.global] ' +
+            'A structure requires a valid "structure" property ' +
+            '(describing the structure)'
+          );
+
+        if (customs[id] !== undefined)
+          __die__(
+            '[domino.global] The structure "' + id + '" already exists'
+          );
+
+        if (~types.indexOf(id))
+          __die__(
+            '[domino.global] "' + id + '" is a reserved structure name'
+          );
+
+        // Effectively add the structure:
+        customs[id] = (o === undefined) ?
+          {
+            id: id,
+            structure: structure
+          } :
+          o;
+      },
       get: function(obj) {
         return obj == null ?
           String(obj) :
@@ -1620,7 +1677,7 @@
         if (this.get(type) === 'string') {
           a = type.replace(/^\?/, '').split(/\|/);
           for (i in a)
-            if (types.indexOf(a[i]) < 0) {
+            if (types.indexOf(a[i]) < 0 && customs[a[i]] === undefined) {
               __warn__('[domino.global] Invalid type');
               return false;
             }
@@ -1717,7 +1774,7 @@
         if (this.get(type) === 'string') {
           a = type.replace(/^\?/, '').split(/\|/);
           for (i in a)
-            if (types.indexOf(a[i]) < 0)
+            if (types.indexOf(a[i]) < 0 && customs[a[i]] === undefined)
               return false;
           return true;
         } else if (this.get(type) === 'object') {
