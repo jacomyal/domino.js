@@ -396,25 +396,21 @@
       // Errors:
       if (o['triggers'] === undefined)
         _die(
-          'A hack requires at least one trigger to be added'
-        );
-
-      if (o['method'] === undefined && o['dispatch'] === undefined)
-        _die(
-          'A hack requires at least a method or a "dispatch" value to be added'
+          'A hack requires at least one trigger to be bound'
         );
 
       a = _utils.array(o['triggers']);
       for (i in a) {
+        _hackDispatch[a[i]] = _hackDispatch[a[i]] || [];
+        _hackMethods[a[i]] = _hackMethods[a[i]] || [];
+
         // Method to execute:
-        if (o['method']) {
-          _hackMethods[a[i]] = _hackMethods[a[i]] || [];
+        if (o['method'])
           _hackMethods[a[i]].push(o['method']);
-        }
 
         // Events to dispatch:
         if (o['dispatch'])
-          _hackDispatch[a[i]] = (_hackDispatch[a[i]] || []).concat(
+          _hackDispatch[a[i]] = _hackDispatch[a[i]].concat(
             _utils.array(o['dispatch'])
           );
       }
