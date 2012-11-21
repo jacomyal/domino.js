@@ -548,7 +548,7 @@ The problem here is that, with a classic synchronous events management system, `
 (module) -> updateProp -> event1, event2 -> hack1, hack2 -> event3, event4
 ```
 
-And even better: **when an event is about to be triggered twice or more, is is dispatched only once instead**.
+And even better: **when an event is about to be triggered twice or more, it is dispatched only once instead**.
 
 For example, the following chain:
 
