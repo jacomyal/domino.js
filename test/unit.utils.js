@@ -217,6 +217,32 @@ test('Custom structures', function() {
     e: 2.4
   }), false, 'domino.struct.check("template", ...) works again');
 
+  // Create a recursive structure:
+  domino.struct.add({
+    id: 's',
+    recursive: true,
+    structure: {
+      k: '?s'
+    }
+  });
+
+  deepEqual(domino.struct.isValid('s'), true, 'domino.struct.isValid("s") is true (recursive)');
+  deepEqual(domino.struct.check('s', {}), true, 'recursive structures work (level 0)');
+  deepEqual(domino.struct.check('s', {
+    k: {}
+  }), true, 'recursive structures work (level 1)');
+  deepEqual(domino.struct.check('s', {
+    k: {
+      k: {}
+    }
+  }), true, 'recursive structures work (level 2)');
+  deepEqual(domino.struct.check('s', {
+    k: {
+      k: {},
+      a: 42
+    }
+  }), false, 'recursive structures still check wrong keys (level 2)');
+
   // Create two self referencing structures:
   domino.struct.add({
     id: 's1',
@@ -230,21 +256,21 @@ test('Custom structures', function() {
     k: '?s1'
   });
 
-  deepEqual(domino.struct.isValid('s1'), true, 'domino.struct.isValid("s1") is true');
+  deepEqual(domino.struct.isValid('s1'), true, 'domino.struct.isValid("s1") is true (recursive)');
   deepEqual(domino.struct.isValid('s2'), true, 'domino.struct.isValid("s2") is true');
-  deepEqual(domino.struct.check('s1', {}), true, 'recursive structures work (level 0)');
+  deepEqual(domino.struct.check('s1', {}), true, 'double recursive structures work (level 0)');
   deepEqual(domino.struct.check('s1', {
     k: {}
-  }), true, 'recursive structures work (level 1)');
+  }), true, 'double recursive structures work (level 1)');
   deepEqual(domino.struct.check('s1', {
     k: {
       k: {}
     }
-  }), true, 'recursive structures work (level 2)');
+  }), true, 'double recursive structures work (level 2)');
   deepEqual(domino.struct.check('s1', {
     k: {
       k: {},
       a: 42
     }
-  }), false, 'recursive structures still check wrong keys (level 2)');
+  }), false, 'double recursive structures still check wrong keys (level 2)');
 });
