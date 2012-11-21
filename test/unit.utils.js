@@ -165,3 +165,55 @@ test('domino.struct.deepScalar', function() {
   deepEqual(domino.struct.deepScalar({a: 'object'}), false, '"{a: object}" succeeds');
   deepEqual(domino.struct.deepScalar('abcde'), false, '"abcde" succeeds');
 });
+
+// Custom structures:
+test('Custom structures', function() {
+  // Check wrong calls to struct.add:
+  throws(
+    function() {
+      domino.struct.add('number', function(v) {
+        return v === +v;
+      });
+    },
+    /Error\: \[[^\]]*\] .* reserved structure name/,
+    'Naming a structure "number" is forbidden.'
+  );
+
+  // Create a basic structure and use it:
+  domino.struct.add('integer', function(v) {
+    return (v === +v) && ((v % 1) === 0);
+  });
+
+  deepEqual(domino.struct.isValid('integer'), true, 'domino.struct.isValid("integer") is true');
+  deepEqual(domino.struct.check('integer', 1), true, 'domino.struct.check("integer", 1) is true');
+  deepEqual(domino.struct.check('integer', 1.2), false, 'domino.struct.check("integer", 1.2) is false');
+  deepEqual(domino.struct.check({a: 'integer'}, {a: 1}), true, 'domino.struct.check({a: "integer"}, {a: 1}) is true');
+
+  // Create an advanced structure and use it:
+  domino.struct.add('template', {
+    a: 'number',
+    b: 'string',
+    c: {
+      d: 'number|string'
+    },
+    e: '?integer'
+  });
+
+  deepEqual(domino.struct.isValid('template'), true, 'domino.struct.isValid("template") is true');
+  deepEqual(domino.struct.check('template', {
+    a: 42,
+    b: 'toto',
+    c: {
+      d: '42'
+    },
+    e: 2
+  }), true, 'domino.struct.check("template", ...) works');
+  deepEqual(domino.struct.check('template', {
+    a: 42,
+    b: 'toto',
+    c: {
+      d: '42'
+    },
+    e: 2.4
+  }), false, 'domino.struct.check("template", ...) works again');
+});

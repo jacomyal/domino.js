@@ -1609,8 +1609,8 @@
     }
 
     return {
-      add: function(a1, a2) {
-        var i, id, structure, o;
+      add: function(a1, a2, a3) {
+        var k, id, structure, o;
 
         // Check errors:
         if (arguments.length === 1) {
@@ -1624,7 +1624,7 @@
               'If struct.add is called with one arguments, ' +
               'it has to be an object'
             );
-        } else if (arguments.length > 1) {
+        } else if (arguments.length === 2) {
           if (this.get(a1) !== 'string' || !a1)
             __die__(
               '[domino.global] ' +
@@ -1635,16 +1635,21 @@
             id = a1;
 
           structure = a2;
-        }
+        } else
+          __die__(
+            '[domino.global] ' +
+            'struct.add has to be called with one or three arguments'
+          );
 
         if (this.get(id) !== 'string' || id.length === 0)
           __die__('[domino.global] A structure requires an string id');
         
-        if (!this.isValid(structure))
+        if (this.get(structure) !== 'function' && !this.isValid(structure))
           __die__(
             '[domino.global] ' +
             'A structure requires a valid "structure" property ' +
-            '(describing the structure)'
+            'describing the structure. It can be a valid structure or a ' +
+            'function that test if an object matches the structure.'
           );
 
         if (customs[id] !== undefined)
@@ -1663,7 +1668,18 @@
             id: id,
             structure: structure
           } :
-          o;
+          {};
+
+        if (o !== undefined)
+          for (k in o)
+            customs[id][k] = o[k];
+      },
+      cast: function(v, type) {
+        // Check for errors:
+        if (__settings__['strict'] && !this.isValid(type))
+          __die__('[domino.global] The type is not valid');
+
+        // TODO
       },
       get: function(obj) {
         return obj == null ?
@@ -1687,9 +1703,16 @@
           else
             type = type.replace(/^\?/, '');
 
-          var splitted = type.split(/\|/);
+          for (i in a)
+            if (customs[a[i]])
+              if (
+                (this.get(customs[a[i]].structure) === 'function') &&
+                (customs[a[i]].structure(obj) === true) ||
+                this.check(customs[a[i]].structure, obj)
+              )
+                return true;
 
-          return !!(~splitted.indexOf('*') || ~splitted.indexOf(typeOf));
+          return !!(~a.indexOf('*') || ~a.indexOf(typeOf));
         } else if (this.get(type) === 'object') {
           if (typeOf !== 'object')
             return false;
