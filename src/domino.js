@@ -1614,7 +1614,7 @@
 
         // Check errors:
         if (arguments.length === 1) {
-          if (this.get(a1) !== 'object') {
+          if (this.get(a1) === 'object') {
             o = a1;
             id = o.id;
             structure = o.structure;
@@ -1644,7 +1644,10 @@
         if (this.get(id) !== 'string' || id.length === 0)
           __die__('[domino.global] A structure requires an string id');
         
-        if (this.get(structure) !== 'function' && !this.isValid(structure))
+        if (
+          (this.get(structure) !== 'function') &&
+          (!(o || {}).recursive && !this.isValid(structure))
+        )
           __die__(
             '[domino.global] ' +
             'A structure requires a valid "structure" property ' +

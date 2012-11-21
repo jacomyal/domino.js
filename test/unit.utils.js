@@ -216,4 +216,35 @@ test('Custom structures', function() {
     },
     e: 2.4
   }), false, 'domino.struct.check("template", ...) works again');
+
+  // Create two self referencing structures:
+  domino.struct.add({
+    id: 's1',
+    recursive: true,
+    structure: {
+      k: '?s2'
+    }
+  });
+
+  domino.struct.add('s2', {
+    k: '?s1'
+  });
+
+  deepEqual(domino.struct.isValid('s1'), true, 'domino.struct.isValid("s1") is true');
+  deepEqual(domino.struct.isValid('s2'), true, 'domino.struct.isValid("s2") is true');
+  deepEqual(domino.struct.check('s1', {}), true, 'recursive structures work (level 0)');
+  deepEqual(domino.struct.check('s1', {
+    k: {}
+  }), true, 'recursive structures work (level 1)');
+  deepEqual(domino.struct.check('s1', {
+    k: {
+      k: {}
+    }
+  }), true, 'recursive structures work (level 2)');
+  deepEqual(domino.struct.check('s1', {
+    k: {
+      k: {},
+      a: 42
+    }
+  }), false, 'recursive structures still check wrong keys (level 2)');
 });
