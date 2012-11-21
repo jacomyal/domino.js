@@ -1379,7 +1379,7 @@
      */
 
     function _warn() {
-      var a = ['[' + _name + ']'];
+      var a = ['[' + (_name || 'domino') + ']'];
 
       if (!_settings('strict'))
         a.push('WARNING');
@@ -1394,7 +1394,7 @@
     };
 
     function _die() {
-      var a = ['[' + _name + ']'];
+      var a = ['[' + (_name || 'domino') + ']'];
 
       for (var k in arguments)
         a.push(arguments[k]);
@@ -1403,7 +1403,7 @@
     };
 
     function _log() {
-      var a = ['[' + _name + ']'];
+      var a = ['[' + (_name || 'domino') + ']'];
 
       if (!_settings('verbose'))
         return;
