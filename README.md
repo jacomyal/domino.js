@@ -32,6 +32,16 @@ The whole source code is validated by the [Google Closure Linter](https://develo
 
 ### ChangeLog
 
+#### 1.1 (November 22, 2012)
+
+ - Fixed shortcuts priority: custom objects > properties > shortcuts
+ - `update(key, value)` now works
+ - Added possibility to override any setting in each instance
+ - Added possibility to override `clone` property for each property
+ - Using `data` when calling a service now eventually overrides the function `data` in the service declaration
+ - Adding a hack with only a `triggers` property allows transversal communication between modules
+ - Custom structures (see [documentation](http://dominojs.org/#structures))
+
 #### 1.0 (November 8, 2012)
 
  - *domino.js* first release
