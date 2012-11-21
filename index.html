@@ -30,6 +30,8 @@
       </header>
       <section><h1 id="toc_0">domino.js</h1>
 
+<p>Current version: <strong>v1.0</strong></p>
+
 <p><em>domino.js</em> is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by <a href="http://github.com/jacomyal">Alexis Jacomy</a> at <a href="http://github.com/linkfluence">Linkfluence</a>. It is released under the <a href="https://raw.github.com/jacomyal/domino.js/master/LICENSE.txt">MIT License</a>.</p>
 
 <h3 id="toc_1">How to use it:</h3>
@@ -471,15 +473,14 @@
 </pre>
 </div>
 
-<p>There are three different ways to resolve a shortcut:</p>
+<p>Here is how <em>domino.js</em> resolves shortcuts:</p>
 
 <ul>
-<li>Declare explicitely shortcuts when calling the service</li>
-<li>Name a property to get the current value when called</li>
-<li>Declare explicitely a shortcut in <em>domino.js</em></li>
+<li>If there is a <code>shortcuts</code> object in the parameters given to the service when called, it will look if a value has been specified in it for the shortcut.</li>
+<li>If not, it will check if there is a property named like the shortcut, and use its current value if it exists.</li>
+<li>Then, if still not resolved, it will check if there is a shortcut declared in the instance with the same name, and use the returned value if it exists.</li>
+<li>Finally, if the shortcut can not be resolved, then an error is thrown.</li>
 </ul>
-
-<p>If the shortcut can not be resolved, then an error is thrown.</p>
 
 <p>Here is an example with shortcuts declared directly in <em>domino.js</em> instance:</p>
 <div class="highlight"><pre><span class="kd">var</span> <span class="nx">d</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">domino</span><span class="p">({</span>
@@ -667,6 +668,15 @@
 <p><strong>The <em>domino.js</em>&#39;s main loop resolves this issue</strong> by executing the previous events chain as following:</p>
 <pre><code>(module) -> updateProp -> event1, event2 -> hack1, hack2 -> event3, event4
 </code></pre>
+<p>And even better: <strong>when an event is about to be triggered twice or more, is is dispatched only once instead</strong>.</p>
+
+<p>For example, the following chain:</p>
+<pre><code>(module) -> updateProp -> event1 -> hack1 -> event3
+                       -> event2 -> hack2 -> event3
+</code></pre>
+<p>... will become:</p>
+<pre><code>(module) -> updateProp -> event1, event2 -> hack1, hack2 -> event3
+</code></pre>
 <h2 id="scopes_management">Scopes management <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 <p>There is a lot of functions given to <em>domino.js</em> through the initial configuration and the modules. One particularity of <em>domino.js</em> is that these methods are called in a specific scope, that contains safe accesses to different properties, and tools to display logs.</p>
@@ -723,11 +733,6 @@
 <p>Also, some functions you will give to <em>domino.js</em> will have access to some more methods, that can update properties or call AJAX services. Here is the list of thoses methods:</p>
 
 <ul>
-<li><p><strong>set</strong> <em>(property, value, args...)</em></p>
-
-<ul>
-<li>Update the property&#39;s value, and returns <code>true</code> if the property has effectively been updated, <code>false</code> else.</li>
-</ul></li>
 <li><p><strong>request</strong> <em>(serviceId, options)</em></p>
 
 <ul>
@@ -743,10 +748,10 @@
 <ul>
 <li>Instanciate the specified module, plugs all the event connections, and returns the module instance.</li>
 </ul></li>
-<li><p><strong>update</strong> <em>({Array|Object})</em></p>
+<li><p><strong>update</strong> <em>({String|Object}, ?</em>)*</p>
 
 <ul>
-<li>If the given parameter is an <code>Object</code>, then each <em>key/value</em> pair will set the <em>value</em> to the <em>key</em> property. If the parameter is an <code>Array</code>, it must contain objects matching <em>{property: String, value: *, parameters: ?Array}</em> (it&#39;s the only way to use update with additional parameters to the setters). After having updated the properties, this method will also dispatch the related events.</li>
+<li>If the given parameter is an <code>Object</code>, then each <em>key/value</em> pair will set the <em>value</em> to the <em>key</em> property. If called with two arguments, then the first must be the property name, and the second one the new value.</li>
 </ul></li>
 </ul>
 
@@ -770,7 +775,7 @@
 <li>Function parameters:
 
 <ul>
-<li>[<code>Object</code>] event: The event that triggered the hack</li>
+<li>[<code>Object</code>] The event that triggered the hack</li>
 </ul></li>
 <li>Accepted scope modifications:
 
@@ -787,6 +792,7 @@
 <li>Function parameters:
 
 <ul>
+<li>[<code>Object</code>] The domino scope</li>
 <li>[<code>Object</code>] The dispatched event</li>
 </ul></li>
 <li>Accepted scope modifications: <em>(none)</em></li>
@@ -805,7 +811,8 @@
 <li>Function parameters:
 
 <ul>
-<li>[<code>Object</code>] data: The data received from AJAX</li>
+<li>[<code>Object</code>] The data received from AJAX</li>
+<li>[<code>?Object</code>] The params given to the service when called</li>
 </ul></li>
 <li>Accepted scope modifications:
 
@@ -827,8 +834,9 @@
 <li>Function parameters:
 
 <ul>
-<li>[<code>String</code>] mes: The error message</li>
-<li>[<code>Object</code>] xhr: The related XHR object</li>
+<li>[<code>String</code>] The error message</li>
+<li>[<code>Object</code>] The related XHR object</li>
+<li>[<code>?Object</code>] The params given to the service when called</li>
 </ul></li>
 <li>Accepted scope modifications:
 
@@ -849,8 +857,7 @@
 <li>Function parameters:
 
 <ul>
-<li>[<code>String</code>] mes: The error message</li>
-<li>[<code>Object</code>] xhr: The related XHR object</li>
+<li>[<code>?Object</code>] The params given to the service when called</li>
 </ul></li>
 <li>Accepted scope modifications:
 
@@ -864,7 +871,11 @@
 <ul>
 <li>Additional methods in the scope: <em>(none)</em></li>
 <li>Parameters given through the scope: <em>(none)</em></li>
-<li>Function parameters: <em>(none)</em></li>
+<li>Function parameters:
+
+<ul>
+<li>[<code>?Object</code>] The params given to the service when called</li>
+</ul></li>
 <li>Accepted scope modifications: <em>(none)</em></li>
 <li>Returns:
 
@@ -880,7 +891,7 @@
 <li>Function parameters:
 
 <ul>
-<li>[<code>?*</code>] If specified, the <code>data</code> attribute given in the overridding parameters</li>
+<li>[<code>?Object</code>] The params given to the service when called</li>
 </ul></li>
 <li>Accepted scope modifications: <em>(none)</em></li>
 <li>Returns:
@@ -914,8 +925,7 @@
 <li>Function parameters:
 
 <ul>
-<li>[<code>*</code>] The new value, given to <code>.set(property, newValue)</code></li>
-<li>[<code>*</code>] Eventually other parameters, if you are using custom setters</li>
+<li>[<code>*</code>] The new value</li>
 </ul></li>
 <li>Accepted scope modifications:
 
@@ -937,11 +947,7 @@
 <ul>
 <li>[<code>*</code>] this[property] contains the current value of the property</li>
 </ul></li>
-<li>Function parameters:
-
-<ul>
-<li>[<code>*</code>] Eventually parameters, if you are using custom getters</li>
-</ul></li>
+<li>Function parameters: <em>(none)</em></li>
 <li>Accepted scope modifications: <em>(none)</em></li>
 <li>Returns:
 

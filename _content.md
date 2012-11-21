@@ -1,6 +1,8 @@
 domino.js
 =========
 
+Current version: **v1.0**
+
 *domino.js* is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by [Alexis Jacomy](http://github.com/jacomyal) at [Linkfluence](http://github.com/linkfluence). It is released under the [MIT License](https://raw.github.com/jacomyal/domino.js/master/LICENSE.txt).
 
 ### How to use it:
@@ -422,13 +424,12 @@ d.request('propN', {
 d.request('propN');
 ```
 
-There are three different ways to resolve a shortcut:
+Here is how *domino.js* resolves shortcuts:
 
- - Declare explicitely shortcuts when calling the service
- - Name a property to get the current value when called
- - Declare explicitely a shortcut in *domino.js*
-
-If the shortcut can not be resolved, then an error is thrown.
+ - If there is a `shortcuts` object in the parameters given to the service when called, it will look if a value has been specified in it for the shortcut.
+ - If not, it will check if there is a property named like the shortcut, and use its current value if it exists.
+ - Then, if still not resolved, it will check if there is a shortcut declared in the instance with the same name, and use the returned value if it exists.
+ - Finally, if the shortcut can not be resolved, then an error is thrown.
 
 Here is an example with shortcuts declared directly in *domino.js* instance:
 
@@ -547,6 +548,21 @@ The problem here is that, with a classic synchronous events management system, `
 (module) -> updateProp -> event1, event2 -> hack1, hack2 -> event3, event4
 ```
 
+And even better: **when an event is about to be triggered twice or more, is is dispatched only once instead**.
+
+For example, the following chain:
+
+```
+(module) -> updateProp -> event1 -> hack1 -> event3
+                       -> event2 -> hack2 -> event3
+```
+
+... will become:
+
+```
+(module) -> updateProp -> event1, event2 -> hack1, hack2 -> event3
+```
+
 <h2 id="scopes_management">Scopes management <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 There is a lot of functions given to *domino.js* through the initial configuration and the modules. One particularity of *domino.js* is that these methods are called in a specific scope, that contains safe accesses to different properties, and tools to display logs.
@@ -585,9 +601,6 @@ Here is the default methods that any of the functions you give to *domino.js* wi
 ### Additional methods:
 
 Also, some functions you will give to *domino.js* will have access to some more methods, that can update properties or call AJAX services. Here is the list of thoses methods:
- 
- - **set** *(property, value, args...)*
-   * Update the property's value, and returns `true` if the property has effectively been updated, `false` else.
 
  - **request** *(serviceId, options)*
    * Calls the specified service. Check the **Services** documentation to see which options you can use.
@@ -598,8 +611,8 @@ Also, some functions you will give to *domino.js* will have access to some more 
  - **addModule** *(class, options)*
    * Instanciate the specified module, plugs all the event connections, and returns the module instance.
 
- - **update** *(\{Array|Object\})*
-   * If the given parameter is an `Object`, then each *key/value* pair will set the *value* to the *key* property. If the parameter is an `Array`, it must contain objects matching *{property: String, value: *, parameters: ?Array}* (it's the only way to use update with additional parameters to the setters). After having updated the properties, this method will also dispatch the related events.
+ - **update** *(\{String|Object\}, ?*)*
+   * If the given parameter is an `Object`, then each *key/value* pair will set the *value* to the *key* property. If called with two arguments, then the first must be the property name, and the second one the new value.
 
 **Important**: All the methods described (the default and the additional ones) are also available in the object returned by the *domino.js* constructor itself. Also, the default scope is always given as the **first** parameter to the modules constructors.
 
@@ -613,7 +626,7 @@ Here is the list of every types of functions you can give to *domino.js*, with t
      + *dispatchEvent*
    * Parameters given through the scope: *(none)*
    * Function parameters:
-     + [`Object`] event: The event that triggered the hack
+     + [`Object`] The event that triggered the hack
    * Accepted scope modifications:
      + [`*`] this[property] will update *property*
    * Returns: *(not evaluated)*
@@ -622,6 +635,7 @@ Here is the list of every types of functions you can give to *domino.js*, with t
    * Additional methods in the scope: *(none)*
    * Parameters given through the scope: *(none)*
    * Function parameters:
+     + [`Object`] The domino scope
      + [`Object`] The dispatched event
    * Accepted scope modifications: *(none)*
    * Returns: *(not evaluated)*
@@ -632,7 +646,8 @@ Here is the list of every types of functions you can give to *domino.js*, with t
      + *dispatchEvent*
    * Parameters given through the scope: *(none)*
    * Function parameters:
-     + [`Object`] data: The data received from AJAX
+     + [`Object`] The data received from AJAX
+     + [`?Object`] The params given to the service when called
    * Accepted scope modifications:
      + [`*`] this[property] will update *property*
    * Returns: *(not evaluated)*
@@ -643,8 +658,9 @@ Here is the list of every types of functions you can give to *domino.js*, with t
      + *dispatchEvent*
    * Parameters given through the scope: *(none)*
    * Function parameters:
-     + [`String`] mes: The error message
-     + [`Object`] xhr: The related XHR object
+     + [`String`] The error message
+     + [`Object`] The related XHR object
+     + [`?Object`] The params given to the service when called
    * Accepted scope modifications:
      + [`*`] this[property] will update *property*
    * Returns: *(not evaluated)*
@@ -654,8 +670,7 @@ Here is the list of every types of functions you can give to *domino.js*, with t
      + *dispatchEvent*
    * Parameters given through the scope: *(none)*
    * Function parameters:
-     + [`String`] mes: The error message
-     + [`Object`] xhr: The related XHR object
+     + [`?Object`] The params given to the service when called
    * Accepted scope modifications:
      + [`*`] this[property] will update *property*
    * Returns: *(not evaluated)*
@@ -663,7 +678,8 @@ Here is the list of every types of functions you can give to *domino.js*, with t
  - **Service "url"**:
    * Additional methods in the scope: *(none)*
    * Parameters given through the scope: *(none)*
-   * Function parameters: *(none)*
+   * Function parameters:
+     + [`?Object`] The params given to the service when called
    * Accepted scope modifications: *(none)*
    * Returns:
      + [`String`] The final URL
@@ -672,7 +688,7 @@ Here is the list of every types of functions you can give to *domino.js*, with t
    * Additional methods in the scope: *(none)*
    * Parameters given through the scope: *(none)*
    * Function parameters:
-     + [`?*`] If specified, the `data` attribute given in the overridding parameters
+     + [`?Object`] The params given to the service when called
    * Accepted scope modifications: *(none)*
    * Returns:
      + [`*`] The data sent through the AJAX call
@@ -690,8 +706,7 @@ Here is the list of every types of functions you can give to *domino.js*, with t
    * Parameters given through the scope:
      + [`*`] this[property] contains the current value of the property
    * Function parameters:
-     + [`*`] The new value, given to `.set(property, newValue)`
-     + [`*`] Eventually other parameters, if you are using custom setters
+     + [`*`] The new value
    * Accepted scope modifications:
      + [`*`] this[property] contains the new value of the property
    * Returns:
@@ -701,8 +716,7 @@ Here is the list of every types of functions you can give to *domino.js*, with t
    * Additional methods in the scope: *(none)*
    * Parameters given through the scope:
      + [`*`] this[property] contains the current value of the property
-   * Function parameters:
-     + [`*`] Eventually parameters, if you are using custom getters
+   * Function parameters: *(none)*
    * Accepted scope modifications: *(none)*
    * Returns:
      + [`*`] The current value of the property
