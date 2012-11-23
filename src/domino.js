@@ -30,6 +30,9 @@
 (function(window) {
   'use strict';
 
+  // This RegExp determines which property names are valid or not:
+  var _validPropertyName = /^[a-zA-Z_$-][a-zA-Z_$0-9-]*$/;
+
   // This Date is used when displayTime is true, to compute the difference:
   var _startTime = new Date();
 
@@ -262,11 +265,17 @@
       if (id === undefined)
         _die('Property name not specified');
 
+      if (_struct.get(id) !== 'string')
+        _die('The property name must be a string');
+
       if (_properties[id] !== undefined)
         _die('Property "' + id + '" already exists');
 
       if (_protectedNames[id] !== undefined)
         _die('"' + id + '" can not be used to name a property');
+
+      if (!id.match(_validPropertyName))
+        _die('Property name not valid (' + _validPropertyName + ')');
 
       // Every parameters are stored here:
       _propertyParameters[id] = {};
@@ -304,11 +313,14 @@
         )
           return false;
 
-        if (_types[id] && !_struct.check(_types[id], v))
-          _warn(
-            'Property "' + id + '": Wrong type error'
-          );
-        else
+        if (_types[id] && !_struct.check(_types[id], v)) {
+          if (_settings('cast'))
+            _properties[id] = _struct.cast(v, _types[id]);
+          else
+            _warn(
+              'Property "' + id + '": Wrong type error'
+            );
+        } else
           _properties[id] = v;
 
         return true;
@@ -1610,14 +1622,14 @@
 
     return {
       add: function(a1, a2, a3) {
-        var k, id, structure, o;
+        var k, id, struct, o;
 
         // Check errors:
         if (arguments.length === 1) {
           if (this.get(a1) === 'object') {
             o = a1;
             id = o.id;
-            structure = o.structure;
+            struct = o.struct;
           } else
             __die__(
               '[domino.global] ' +
@@ -1634,7 +1646,7 @@
           else
             id = a1;
 
-          structure = a2;
+          struct = a2;
         } else
           __die__(
             '[domino.global] ' +
@@ -1645,8 +1657,8 @@
           __die__('[domino.global] A structure requires an string id');
         
         if (
-          (this.get(structure) !== 'function') &&
-          (!(o || {}).recursive && !this.isValid(structure))
+          (this.get(struct) !== 'function') &&
+          (!(o || {}).recursive && !this.isValid(struct))
         )
           __die__(
             '[domino.global] ' +
@@ -1669,7 +1681,7 @@
         customs[id] = (o === undefined) ?
           {
             id: id,
-            structure: structure
+            struct: struct
           } :
           {};
 
@@ -1682,7 +1694,10 @@
         if (__settings__['strict'] && !this.isValid(type))
           __die__('[domino.global] The type is not valid');
 
-        // TODO
+        if (customs[type] && customs[type].cast)
+          return customs[type].cast(v);
+        else
+          return v;
       },
       get: function(obj) {
         return obj == null ?
@@ -1709,9 +1724,9 @@
           for (i in a)
             if (customs[a[i]])
               if (
-                (this.get(customs[a[i]].structure) === 'function') &&
-                (customs[a[i]].structure(obj) === true) ||
-                this.check(customs[a[i]].structure, obj)
+                (this.get(customs[a[i]].struct) === 'function') &&
+                (customs[a[i]].struct(obj) === true) ||
+                this.check(customs[a[i]].struct, obj)
               )
                 return true;
 

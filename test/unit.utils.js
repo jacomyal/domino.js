@@ -221,7 +221,7 @@ test('Custom structures', function() {
   domino.struct.add({
     id: 's',
     recursive: true,
-    structure: {
+    struct: {
       k: '?s'
     }
   });
@@ -247,7 +247,7 @@ test('Custom structures', function() {
   domino.struct.add({
     id: 's1',
     recursive: true,
-    structure: {
+    struct: {
       k: '?s2'
     }
   });
