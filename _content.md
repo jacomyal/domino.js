@@ -1,7 +1,7 @@
 domino.js
 =========
 
-Current version: **v1.0**
+Current version: **v1.1**
 
 *domino.js* is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by [Alexis Jacomy](http://github.com/jacomyal) at [Linkfluence](http://github.com/linkfluence). It is released under the [MIT License](https://raw.github.com/jacomyal/domino.js/master/LICENSE.txt).
 
@@ -823,4 +823,79 @@ domino.struct.deepScalar([{a: 'number'}]); // true
 domino.struct.deepScalar('object');        // false
 domino.struct.deepScalar('?object');       // false
 domino.struct.deepScalar('object|number'); // false
+```
+
+Also, **it is possible to define globally structures**, with the method `domino.struct.add()`. This makes possible to use recursive structures, and to avoid declaring several times the same structures in different instances of *domino.js*. Also, it is possible to define abstract structures with just a method that can determine wether any value matches the structure or not.
+
+This method can be used by different ways:
+
+ - `domino.struct.add( id, struct )`:
+   * **id** (`string`): 
+   * **struct** (`*|function`): 
+ - `domino.struct.add( obj )`
+   * **obj** (`object`): Must contain `id` and `struct`. Can also have a `proto` value.
+
+Here are some examples:
+
+```js
+// Here is how to add the "integer" structure:
+domino.struct.add('integer', function(v) {
+  // v===+v  tests if the value is a number
+  // v===v|0 tests if the value is an integer
+  return v===+v && v===v|0;
+});
+
+// Here are some tests:
+[
+  123,
+  -24,
+  12.4,
+  '12',
+  '12.4',
+  'twelve'
+].forEach(function(v) {
+  console.log(
+    domino.struct.check('integer', v) ?
+      v + ' is an integer' :
+      v + ' is not an integer'
+  );
+});
+
+// Here is another example, more data-oriented:
+domino.struct.add({
+  id: 'user',
+  struct: {
+    login: 'string',
+    name: '?string',
+    friends: ['string']
+  }
+});
+
+// Here are some tests:
+domino.struct.check('user', {
+  id: 'bwayne',
+  name: 'Bruce Wayne',W
+  friends: [
+    'batman',
+    'apennyworth'
+  ]
+});
+```
+
+The parameter `'proto'` will indicates structures that must be considered as valid, event if they are not already created - only interesting if you need to use multi recursive structures, as in the following example:
+
+```js
+// "struct1" describes an array of "struct2" elements. Since "struct2" is not
+// defined yet, it is declared in "proto" values, to avoid "Wrong type error".
+domino.struct.add({
+  id: 'struct1',
+  proto: ['struct2'],
+  struct: ['struct2']
+});
+
+// "struct2" describes an object that is empty or might contain a "struct1"
+// element associated to the key "key".
+domino.struct.add('struct2', {
+  key: '?struct1'
+});
 ```

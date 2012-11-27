@@ -30,7 +30,7 @@
       </header>
       <section><h1 id="toc_0">domino.js</h1>
 
-<p>Current version: <strong>v1.0</strong></p>
+<p>Current version: <strong>v1.1</strong></p>
 
 <p><em>domino.js</em> is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by <a href="http://github.com/jacomyal">Alexis Jacomy</a> at <a href="http://github.com/linkfluence">Linkfluence</a>. It is released under the <a href="https://raw.github.com/jacomyal/domino.js/master/LICENSE.txt">MIT License</a>.</p>
 
@@ -1094,6 +1094,87 @@
 <span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">deepScalar</span><span class="p">(</span><span class="s1">&#39;object&#39;</span><span class="p">);</span>        <span class="c1">// false</span>
 <span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">deepScalar</span><span class="p">(</span><span class="s1">&#39;?object&#39;</span><span class="p">);</span>       <span class="c1">// false</span>
 <span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">deepScalar</span><span class="p">(</span><span class="s1">&#39;object|number&#39;</span><span class="p">);</span> <span class="c1">// false</span>
+</pre>
+</div>
+
+<p>Also, <strong>it is possible to define globally structures</strong>, with the method <code>domino.struct.add()</code>. This makes possible to use recursive structures, and to avoid declaring several times the same structures in different instances of <em>domino.js</em>. Also, it is possible to define abstract structures with just a method that can determine wether any value matches the structure or not.</p>
+
+<p>This method can be used by different ways:</p>
+
+<ul>
+<li><code>domino.struct.add( id, struct )</code>:
+
+<ul>
+<li><strong>id</strong> (<code>string</code>): </li>
+<li><strong>struct</strong> (<code>*|function</code>): </li>
+</ul></li>
+<li><code>domino.struct.add( obj )</code>
+
+<ul>
+<li><strong>obj</strong> (<code>object</code>): Must contain <code>id</code> and <code>struct</code>. Can also have a <code>proto</code> value.</li>
+</ul></li>
+</ul>
+
+<p>Here are some examples:</p>
+<div class="highlight"><pre><span class="c1">// Here is how to add the &quot;integer&quot; structure:</span>
+<span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="s1">&#39;integer&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">v</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// v===+v  tests if the value is a number</span>
+  <span class="c1">// v===v|0 tests if the value is an integer</span>
+  <span class="k">return</span> <span class="nx">v</span><span class="o">===+</span><span class="nx">v</span> <span class="o">&amp;&amp;</span> <span class="nx">v</span><span class="o">===</span><span class="nx">v</span><span class="o">|</span><span class="mi">0</span><span class="p">;</span>
+<span class="p">});</span>
+
+<span class="c1">// Here are some tests:</span>
+<span class="p">[</span>
+  <span class="mi">123</span><span class="p">,</span>
+  <span class="o">-</span><span class="mi">24</span><span class="p">,</span>
+  <span class="mf">12.4</span><span class="p">,</span>
+  <span class="s1">&#39;12&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;12.4&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;twelve&#39;</span>
+<span class="p">].</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">v</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span>
+    <span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">check</span><span class="p">(</span><span class="s1">&#39;integer&#39;</span><span class="p">,</span> <span class="nx">v</span><span class="p">)</span> <span class="o">?</span>
+      <span class="nx">v</span> <span class="o">+</span> <span class="s1">&#39; is an integer&#39;</span> <span class="o">:</span>
+      <span class="nx">v</span> <span class="o">+</span> <span class="s1">&#39; is not an integer&#39;</span>
+  <span class="p">);</span>
+<span class="p">});</span>
+
+<span class="c1">// Here is another example, more data-oriented:</span>
+<span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span>
+  <span class="nx">id</span><span class="o">:</span> <span class="s1">&#39;user&#39;</span><span class="p">,</span>
+  <span class="nx">struct</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">login</span><span class="o">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
+    <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;?string&#39;</span><span class="p">,</span>
+    <span class="nx">friends</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;string&#39;</span><span class="p">]</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="c1">// Here are some tests:</span>
+<span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">check</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">id</span><span class="o">:</span> <span class="s1">&#39;bwayne&#39;</span><span class="p">,</span>
+  <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;Bruce Wayne&#39;</span><span class="p">,</span><span class="nx">W</span>
+  <span class="nx">friends</span><span class="o">:</span> <span class="p">[</span>
+    <span class="s1">&#39;batman&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;apennyworth&#39;</span>
+  <span class="p">]</span>
+<span class="p">});</span>
+</pre>
+</div>
+
+<p>The parameter <code>&#39;proto&#39;</code> will indicates structures that must be considered as valid, event if they are not already created - only interesting if you need to use multi recursive structures, as in the following example:</p>
+<div class="highlight"><pre><span class="c1">// &quot;struct1&quot; describes an array of &quot;struct2&quot; elements. Since &quot;struct2&quot; is not</span>
+<span class="c1">// defined yet, it is declared in &quot;proto&quot; values, to avoid &quot;Wrong type error&quot;.</span>
+<span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">add</span><span class="p">({</span>
+  <span class="nx">id</span><span class="o">:</span> <span class="s1">&#39;struct1&#39;</span><span class="p">,</span>
+  <span class="nx">proto</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;struct2&#39;</span><span class="p">],</span>
+  <span class="nx">struct</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;struct2&#39;</span><span class="p">]</span>
+<span class="p">});</span>
+
+<span class="c1">// &quot;struct2&quot; describes an object that is empty or might contain a &quot;struct1&quot;</span>
+<span class="c1">// element associated to the key &quot;key&quot;.</span>
+<span class="nx">domino</span><span class="p">.</span><span class="nx">struct</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="s1">&#39;struct2&#39;</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">key</span><span class="o">:</span> <span class="s1">&#39;?struct1&#39;</span>
+<span class="p">});</span>
 </pre>
 </div>
       </section>
