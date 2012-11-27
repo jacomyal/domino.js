@@ -314,12 +314,9 @@
           return false;
 
         if (_types[id] && !_struct.check(_types[id], v)) {
-          if (_settings('cast'))
-            _properties[id] = _struct.cast(v, _types[id]);
-          else
-            _warn(
-              'Property "' + id + '": Wrong type error'
-            );
+          _warn(
+            'Property "' + id + '": Wrong type error'
+          );
         } else
           _properties[id] = v;
 
@@ -1622,7 +1619,7 @@
 
     return {
       add: function(a1, a2, a3) {
-        var k, id, struct, o;
+        var k, a, id, struct, o;
 
         // Check errors:
         if (arguments.length === 1) {
@@ -1655,21 +1652,25 @@
 
         if (this.get(id) !== 'string' || id.length === 0)
           __die__('[domino.global] A structure requires an string id');
-        
+
+        if (customs[id] !== undefined && customs[id] !== 'proto')
+          __die__(
+            '[domino.global] The structure "' + id + '" already exists'
+          );
+
+        // Check given prototypes:
+        a = domino.utils.array((o || {}).proto);
+        for (k in a)
+          customs[a[k]] = customs[a[k]] || 'proto';
+
         if (
-          (this.get(struct) !== 'function') &&
-          (!(o || {}).recursive && !this.isValid(struct))
+          (this.get(struct) !== 'function') && !this.isValid(struct)
         )
           __die__(
             '[domino.global] ' +
             'A structure requires a valid "structure" property ' +
             'describing the structure. It can be a valid structure or a ' +
             'function that test if an object matches the structure.'
-          );
-
-        if (customs[id] !== undefined)
-          __die__(
-            '[domino.global] The structure "' + id + '" already exists'
           );
 
         if (~types.indexOf(id))
@@ -1688,16 +1689,6 @@
         if (o !== undefined)
           for (k in o)
             customs[id][k] = o[k];
-      },
-      cast: function(v, type) {
-        // Check for errors:
-        if (__settings__['strict'] && !this.isValid(type))
-          __die__('[domino.global] The type is not valid');
-
-        if (customs[type] && customs[type].cast)
-          return customs[type].cast(v);
-        else
-          return v;
       },
       get: function(obj) {
         return obj == null ?

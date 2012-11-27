@@ -262,55 +262,6 @@
       d3.addModule(domino.modules.Text, [{
         property: 'valuesA'
       }]).html.appendTo(dom3_2);
-
-      /**
-       * TEST 4:
-       *********
-       * Custom structures
-       */
-      domino.struct.add({
-        id: 'str',
-        struct: function(v) {
-          return (v === v+'') && (v.length <= 3);
-        },
-        cast: function(v) {
-          return (v + '').substr(0, 3);
-        }
-      });
-
-      var dom4 = $('#test4'),
-          dom4_1 = $('.line1', dom4),
-          dom4_2 = $('.line2', dom4),
-          d4 = new domino({
-            name: 'd4',
-            properties: [
-              // As in the previous example, stringA value is restricted by
-              // the values of the property valuesA.
-              // But this time, the values in valuesA can be edited by a
-              // module:
-              {
-                id: 'string',
-                label: 'String',
-                value: 'abc',
-                type: 'str',
-                triggers: 'updateString',
-                dispatch: 'stringUpdated'
-              }
-            ]
-          });
-
-      // Set "cast" to true:
-      d4.settings('cast', true);
-
-      // Here is the module to set "stringA":
-      d4.addModule(domino.modules.TextInput, [{
-        property: 'string'
-      }]).html.appendTo(dom4_1);
-
-      // Finally, as usual, two modules to observe the different values:
-      d4.addModule(domino.modules.Text, [{
-        property: 'string'
-      }]).html.appendTo(dom4_2);
     });
   </script>
 </head>
@@ -327,11 +278,6 @@
   </div>
   <div class="testing" id="test3">
     <h2>Test 3: Array and select</h2>
-    <div class="line1"></div>
-    <div class="line2"></div>
-  </div>
-  <div class="testing" id="test4">
-    <h2>Test 4: Custom structures and cast</h2>
     <div class="line1"></div>
     <div class="line2"></div>
   </div>
