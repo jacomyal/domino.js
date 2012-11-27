@@ -220,7 +220,6 @@ test('Custom structures', function() {
   // Create a recursive structure:
   domino.struct.add({
     id: 's',
-    proto: 's',
     struct: {
       k: '?s'
     }

@@ -1619,7 +1619,7 @@
 
     return {
       add: function(a1, a2, a3) {
-        var k, a, id, struct, o;
+        var k, a, id, tmp, struct, o;
 
         // Check errors:
         if (arguments.length === 1) {
@@ -1658,10 +1658,16 @@
             '[domino.global] The structure "' + id + '" already exists'
           );
 
+        customs[id] = 1;
+
         // Check given prototypes:
         a = domino.utils.array((o || {}).proto);
+        tmp = {};
         for (k in a)
-          customs[a[k]] = customs[a[k]] || 'proto';
+          if (customs[a[k]] === undefined) {
+            customs[a[k]] = 1;
+            tmp[a[k]] = 1;
+          }
 
         if (
           (this.get(struct) !== 'function') && !this.isValid(struct)
@@ -1689,6 +1695,11 @@
         if (o !== undefined)
           for (k in o)
             customs[id][k] = o[k];
+
+        // Delete prototypes:
+        for (k in tmp)
+          if (k !== id)
+            delete customs[k];
       },
       get: function(obj) {
         return obj == null ?
