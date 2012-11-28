@@ -873,8 +873,8 @@ domino.struct.add({
 
 // Here are some tests:
 domino.struct.check('user', {
-  id: 'bwayne',
-  name: 'Bruce Wayne',W
+  login: 'bwayne',
+  name: 'Bruce Wayne',
   friends: [
     'batman',
     'apennyworth'
