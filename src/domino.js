@@ -281,7 +281,7 @@
       _propertyParameters[id] = {};
 
       for (k in o)
-        _propertyParameters[id] = o[k];
+        _propertyParameters[id][k] = o[k];
 
       // Label:
       _labels[id] = o['label'] || id;
