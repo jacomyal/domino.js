@@ -32,7 +32,7 @@ The whole source code is validated by the [Google Closure Linter](https://develo
 
 ### ChangeLog
 
-#### 1.1 (November 22, 2012)
+#### 1.1 (November 28, 2012)
 
  - Fixed shortcuts priority: custom objects > properties > shortcuts
  - `update(key, value)` now works
