@@ -186,4 +186,143 @@ test('Shortcuts management', function() {
 
   deepEqual(d.expand('a'), 'ahahohoh', 'The recursive shortcut expanding works.');
   d.kill();
+
+  // Test 3:
+  var d = new domino({
+    properties: [
+      {
+        id: 'a',
+        type: 'string',
+        value: 'property'
+      }
+    ],
+    shortcuts: [
+      {
+        id: 'a',
+        method: function() {
+          return 'shortcut';
+        }
+      }
+    ]
+  });
+
+  deepEqual(d.expand('a', {a: 'custom'}), 'custom', 'Priorities: Custom objects are resolved before properties and shortcuts.');
+  deepEqual(d.expand('a'), 'property', 'Priorities: Properties are resolved before shortcuts.');
+  d.kill();
+});
+
+test('Properties cloning', function() {
+  // Test 1:
+  (function() {
+    var d = new domino({
+      properties: [
+        {
+          id: 'o',
+          type: 'object',
+          value: {
+            a: 1,
+            b: 2,
+            c: 3
+          }
+        }
+      ]
+    });
+
+    d.settings('clone', false);
+    var o1 = d.get('o');
+
+    d.update('o', o1);
+
+    var o2 = d.get('o');
+    o1.a = 42;
+
+    deepEqual(o1, o2, 'Not cloning properties work.');
+    d.kill();
+  })();
+
+  // Test 2:
+  (function() {
+    var d = new domino({
+      properties: [
+        {
+          id: 'o',
+          type: 'object',
+          value: {
+            a: 1,
+            b: 2,
+            c: 3
+          }
+        }
+      ]
+    });
+
+    d.settings('clone', true);
+    var o1 = d.get('o');
+
+    d.update('o', o1);
+
+    var o2 = d.get('o');
+    o1.a = 42;
+
+    notDeepEqual(o1, o2, 'Cloning properties works.');
+    d.kill();
+  })();
+
+  // Test 3:
+  (function() {
+    var d = new domino({
+      properties: [
+        {
+          id: 'o',
+          type: 'object',
+          clone: false,
+          value: {
+            a: 1,
+            b: 2,
+            c: 3
+          }
+        }
+      ]
+    });
+
+    d.settings('clone', true);
+    var o1 = d.get('o');
+
+    d.update('o', o1);
+
+    var o2 = d.get('o');
+    o1.a = 42;
+
+    deepEqual(o1, o2, 'Not cloning properties work (overriden in the property).');
+    d.kill();
+  })();
+
+  // Test 4:
+  (function() {
+    var d = new domino({
+      properties: [
+        {
+          id: 'o',
+          type: 'object',
+          clone: true,
+          value: {
+            a: 1,
+            b: 2,
+            c: 3
+          }
+        }
+      ]
+    });
+
+    d.settings('clone', false);
+    var o1 = d.get('o');
+
+    d.update('o', o1);
+
+    var o2 = d.get('o');
+    o1.a = 42;
+
+    notDeepEqual(o1, o2, 'Cloning properties works (overriden in the property).');
+    d.kill();
+  })();
 });
