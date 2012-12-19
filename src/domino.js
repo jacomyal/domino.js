@@ -893,6 +893,7 @@
     function _mainLoop(options) {
       var a, i, j, k, event, data, push, property, log,
           reiterate = false,
+          hacks = [],
           events = [],
           services = [],
           o = options || {},
@@ -983,31 +984,36 @@
 
         // Hacks:
         for (j in _hackMethods[event.type] || []) {
-          var obj = _execute(_hackMethods[event.type][j], {
-            parameters: [event],
-            scope: {
-              request: true,
-              dispatchEvent: true
+          if (hacks.indexOf(_hackMethods[event.type][j]) < 0) {
+            hacks.push(_hackMethods[event.type][j]);
+
+            var obj = _execute(_hackMethods[event.type][j], {
+              parameters: [event],
+              scope: {
+                request: true,
+                dispatchEvent: true
+              }
+            });
+
+            a = _utils.array(obj['events']);
+            for (k in a)
+              dispatch[a[k].type] = 1;
+
+            for (k in obj['update']) {
+              if (update[k] === undefined) {
+                reiterate = true;
+                update[k] = obj['update'][k];
+              } else
+                _warn(
+                  'The property "' + k + '" ' +
+                  'has already been updated in the current loop.'
+                );
             }
-          });
 
-          a = _utils.array(obj['events']);
-          for (k in a)
-            dispatch[a[k].type] = 1;
-
-          for (k in obj['update']) {
-            if (update[k] === undefined) {
+            if ((obj['services'] || []).length) {
               reiterate = true;
-              update[k] = obj['update'][k];
-            } else
-              _warn(
-                'The property "' + k + '" is not a method nor a property.'
-              );
-          }
-
-          if ((obj['services'] || []).length) {
-            reiterate = true;
-            services = services.concat(obj['services']);
+              services = services.concat(obj['services']);
+            }
           }
         }
 
