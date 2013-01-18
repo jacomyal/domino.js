@@ -27,7 +27,7 @@
  * from, out of or in connection with the software or the use or other dealings
  * in the Software.
  */
-(function(window) {
+;(function(window, undefined) {
   'use strict';
 
   // This RegExp determines which property names are valid or not:
