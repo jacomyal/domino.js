@@ -193,6 +193,8 @@
           _mainLoop({
             events: _self.getEvent(type, data)
           });
+
+          return this;
         };
 
       // But here, request() and dispatchEvent() will be "fake" functions: They
@@ -209,6 +211,8 @@
               service: service,
               params: params
             });
+
+            return this;
           };
         }
 
@@ -222,6 +226,8 @@
               type: type,
               data: data
             });
+
+            return this;
           };
         }
       }
