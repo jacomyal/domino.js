@@ -230,6 +230,25 @@
     }
 
     /**
+     * Replaces the pseudo-methods in the scope by errors, since they are no
+     * longer useful.
+     * @param  {Object} scope The scope the disable.
+     */
+    function _disableScope(scope) {
+      if (scope.request !== undefined)
+        scope.request = function() {
+          _die('This method is no longer available.');
+          return this;
+        };
+
+      if (scope.dispatchEvent !== undefined)
+        scope.dispatchEvent = function() {
+          _die('This method is no longer available.');
+          return this;
+        };
+    }
+
+    /**
      * References a new property, generated the setter and getter if not
      * specified, and binds the events.
      *
@@ -689,6 +708,8 @@
               reiterate = true;
               services = services.concat(obj['services']);
             }
+
+            _disableScope(obj);
           }
 
           // Check events to dispatch:
@@ -1014,6 +1035,8 @@
               reiterate = true;
               services = services.concat(obj['services']);
             }
+
+            _disableScope(obj);
           }
         }
 
