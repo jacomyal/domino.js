@@ -32,6 +32,12 @@ The whole source code is validated by the [Google Closure Linter](https://develo
 
 ### ChangeLog
 
+#### 1.11 (January 28, 2013)
+
+ - Fixed #1: `request` and `dispatchEvent` have the same behaviour from instance and from scopes.
+ - Fixed #4: `request` and `dispatchEvent` from scopes are disabled when the scopes are analyzed.
+ - Improved a bit environment.
+
 #### 1.1 (November 28, 2012)
 
  - Fixed shortcuts priority: custom objects > properties > shortcuts
