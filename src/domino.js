@@ -494,6 +494,9 @@
      *                                  This value can be set as well from the
      *                                  instance settings or the global
      *                                  settings.
+     *                                  This function takes as arguments the
+     *                                  data returned by the service, the input
+     *                                  object and the service configuration.
      *   {?string}         setter+*     The name of a property. If the setter
      *                                  exists, then it will be called with the
      *                                  received data as parameter, or the
