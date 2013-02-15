@@ -128,9 +128,19 @@
 
 	// If logging is enabled, log the mock to the console
 	function logMock( mockHandler, requestSettings ) {
-		var c = $.extend({}, $.mockjaxSettings, mockHandler);
-		if ( c.log && $.isFunction(c.log) ) {
-			c.log('MOCK ' + requestSettings.type.toUpperCase() + ': ' + requestSettings.url, $.extend({}, requestSettings));
+		if ( window.console && console.log ) {
+			var message = 'MOCK ' + requestSettings.type.toUpperCase() + ': ' + requestSettings.url;
+			var request = $.extend({}, requestSettings);
+			
+			if (typeof console.log === 'function') {
+				console.log(message, request);
+			} else {
+				try {
+					console.log( message + ' ' + JSON.stringify(request) );
+				} catch (e) {
+					console.log(message);
+				}
+			}
 		}
 	}
 
@@ -214,7 +224,7 @@
 	// Construct a mocked XHR Object
 	function xhr(mockHandler, requestSettings, origSettings, origHandler) {
 		// Extend with our default mockjax settings
-		mockHandler = $.extend({}, $.mockjaxSettings, mockHandler);
+		mockHandler = $.extend(true, {}, $.mockjaxSettings, mockHandler);
 
 		if (typeof mockHandler.headers === 'undefined') {
 			mockHandler.headers = {};
@@ -455,6 +465,8 @@
 			mockHandler.timeout = requestSettings.timeout;
 			mockHandler.global = requestSettings.global;
 
+	  copyUrlParameters(mockHandler, origSettings);
+
 			(function(mockHandler, requestSettings, origSettings, origHandler) {
 				mockRequest = _ajax.call($, $.extend(true, {}, origSettings, {
 					// Mock the XHR object
@@ -469,6 +481,40 @@
 		return _ajax.apply($, [origSettings]);
 	}
 
+	/**
+	* Copies URL parameter values if they were captured by a regular expression
+	* @param {Object} mockHandler
+	* @param {Object} origSettings
+	*/
+	function copyUrlParameters(mockHandler, origSettings) {
+		//parameters aren't captured if the URL isn't a RegExp
+		if (!mockHandler.url instanceof RegExp) {
+			return;
+		}
+		//if no URL params were defined on the handler, don't attempt a capture
+		if (!mockHandler.hasOwnProperty('urlParams')) {
+			return;
+		}
+		var captures = mockHandler.url.exec(origSettings.url);
+		//the whole RegExp match is always the first value in the capture results
+		if (captures.length === 1) {
+			return;
+		}
+		captures.shift();
+		//use handler params as keys and capture resuts as values
+		var i = 0,
+		capturesLength = captures.length,
+		paramsLength = mockHandler.urlParams.length,
+		//in case the number of params specified is less than actual captures
+		maxIterations = Math.min(capturesLength, paramsLength),
+		paramValues = {};
+		for (i; i < maxIterations; i++) {
+			var key = mockHandler.urlParams[i];
+			paramValues[key] = captures[i];
+		}
+		origSettings.urlParams = paramValues;
+	}
+
 
 	// Public
 
@@ -480,8 +526,9 @@
 		//url:        null,
 		//type:       'GET',
 		log:          function( msg ) {
-			if ( window[ 'console' ] && window.console.log ) {
-				window.console.log.apply( console, arguments );
+			if (window['console'] && window.console.log) {
+				var log = Function.prototype.bind.call(console.log, console);
+				log.apply(console, arguments);
 			}
 		},
 		status:       200,
