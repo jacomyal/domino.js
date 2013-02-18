@@ -553,6 +553,11 @@
                 var error = p['error'] || o['error'],
                     a, k, property;
 
+                _log(
+                  'Loading service "' + o['id'] + '" ' +
+                  'failed with message "' + mes + '" ' +
+                  'and status ' + xhr.status + '.'
+                );
                 if (_struct.get(error) === 'function') {
                   _execute(error, {
                     parameters: [mes, xhr, p],
@@ -562,12 +567,7 @@
                       dispatchEvent: true
                     }
                   });
-                } else
-                  _log(
-                    'Loading service "' + o['id'] + '" ' +
-                    'failed with message "' + mes + '" ' +
-                    'and status ' + xhr.status + '.'
-                  );
+                }
               }
             };
 
@@ -623,8 +623,6 @@
 
         // Success management:
         ajaxObj.success = function(data) {
-          _log('Service "' + o['id'] + '" successfull.');
-
           var i, a, pushEvents, event, property,
               pathArray, d,
               dispatch = {},
@@ -644,9 +642,12 @@
             // instead of the success:
             !expect.call(_getScope(), data, p, o)
           ) {
-            ajaxObj.error.call(this, 'Unexpected data received.', this);
+            ajaxObj.error.call(this, 'Unexpected data received.', this.xhr());
             return;
           }
+
+          // Log:
+          _log('Service "' + o['id'] + '" successfull.');
 
           // Expand different string params:
           if (
