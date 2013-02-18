@@ -36,6 +36,7 @@ The whole source code is validated by the [Google Closure Linter](https://develo
 
  - Added `expect` feature to filter successful service calls.
  - Added unit tests for services.
+ - Added a sample with two instances communicating through a server emulated with [jquery.mockjax.js](https://github.com/appendto/jquery-mockjax).
 
 #### 1.11 (January 18, 2013)
 

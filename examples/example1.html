@@ -240,7 +240,8 @@
 
       // Here is the module to set "stringA":
       d3.addModule(domino.modules.TextInput, [{
-        property: 'stringA'
+        property: 'stringA',
+        validate: false
       }]).html.appendTo(dom3_1);
 
       // Here is the module to set "stringA", but constrained by "valuesA":
@@ -251,7 +252,8 @@
 
       // And here is the input module to set the values of "valuesA:
       d3.addModule(domino.modules.ArrayInput, [{
-        property: 'valuesA'
+        property: 'valuesA',
+        validate: true
       }]).html.appendTo(dom3_1);
 
       // Finally, as usual, two modules to observe the different values:

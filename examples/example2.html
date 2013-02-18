@@ -11,56 +11,53 @@
       border: none;
     }
   </style>
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+  <script src="../test/jquery/jquery.min.js"></script>
   <script src="../test/jquery/jquery.mockjax.js"></script>
+
   <!-- domino.js + modules -->
   <script type="text/javascript" src="../src/domino.js"></script>
   <script type="text/javascript" src="../src/domino.modules.js"></script>
   
-  <!-- sample -->
   <script type="text/javascript">
-    // DISCLAIMER:
-    // ***********
-    // This sample is currently broken: The GET does not work when at least one
-    // POST has been sent earlier. The ticket (from mockjax) is here:
-    // 
-    //        https://github.com/appendto/jquery-mockjax/issues/76
-
     // Here is our server (emulated with jquery.mockjax.js)
     (function() {
       // Our data model:
-      window.data = {
-        NumberA: 42,
-        StringA: 'Hello World!',
-        ArrayA: ['foo', 'bar', 'baz']
+      window.DATA = {
+        property: 'foo',
+        array: 'foo bar baz'.split(' ')
       };
       
       // Replace domino ajax with jquery one
       domino.utils.ajax = $.ajax;
 
+      // Reduce the response time:
+      $.mockjaxSettings.responseTime = 1;
+
       // Setup mockjaxes
       $.mockjax({
-        url: /\/get\/(.+)/,
+        url: /\/(.+)/,
+        urlParams: ['property'],
         type: 'GET',
         response: function(settings) {
-          var p = settings.url.match(this.url)[1],
+          var p = settings.urlParams.property,
               o = {};
 
-          o[p] = data[p];
+          o[p] = DATA[p];
           this.responseText = o;
         }
       });
 
       $.mockjax({
-        url: /\/post\/(.+)/,
+        url: /\/(.+)/,
+        urlParams: ['property'],
         type: 'POST',
         contentType: 'application/json',
         response: function(settings) {
-          var p = settings.url.match(this.url)[1],
+          var p = settings.urlParams.property,
               o = {};
 
-          data[p] = settings.data.value;
-          o[p] = data[p];
+          DATA[p] = settings.data.value;
+          o[p] = DATA[p];
           this.responseText = JSON.stringify(o);
         }
       });
@@ -72,7 +69,7 @@
     $(document).ready(function() {
       // Setup domino:
       domino.settings({
-        verbose: true,
+        verbose: false,
         strict: true,
         displayTime: true
       });
@@ -81,123 +78,126 @@
        * TEST 1:
        *********
        */
-      dom = $('#test1');
-      dom1 = $('.line1', dom);
-      dom2 = $('.line2', dom);
+      dom1 = $('#test1');
+      line1 = $('.line1', dom1);
+      line2 = $('.line2', dom1);
 
-      d = new domino({
-        name: 'test_ajax',
+      var config = {
         properties: [
+          // Here is the property we are manipulating:
           {
-            id: 'NumberA',
-            label: 'Number A',
-            value: 1,
-            type: 'number',
-            triggers: 'updateNumberA',
-            dispatch: 'numberAUpdated'
-          },
-          {
-            id: 'StringA',
+            id: 'property',
             label: 'String A',
             value: 'a',
             type: 'string',
-            triggers: 'updateStringA',
-            dispatch: 'stringAUpdated'
+            triggers: 'updateProperty',
+            dispatch: 'propertyUpdated'
+          },
+
+          // This property is true when the user has just changed the property:
+          {
+            id: 'updating',
+            type: 'boolean',
+            value: false
+          },
+
+          // This property is true when the property has just been changed on
+          // the "server":
+          {
+            id: 'updated',
+            type: 'boolean',
+            value: false
+          }
+        ],
+        hacks: [
+          {
+            triggers: 'propertyUpdated',
+            method: function() {
+              if (!this.get('updated')) {
+                this.updating = true;
+                this.request('postValue', {
+                  value: this.get('property'),
+                  shortcuts: { property: 'property' }
+                });
+              }
+
+              this.updated = false;
+            }
           },
           {
-            id: 'ArrayA',
-            label: 'Array A',
-            value: [ 1, 2, 3 ],
-            type: 'array',
-            triggers: 'updateArrayA',
-            dispatch: 'arrayAUpdated'
+            triggers: 'reload',
+            method: function() {
+              if (!this.get('updating'))
+                this.request('getValue');
+
+              this.updating = false;
+            }
           }
         ],
         services: [
           {
             id: 'getValue',
-            setter: ':property',
-            path: ':property',
-            url: '/get/:property'
+            url: '/property',
+            success: function(data) {
+              if (
+                !this.get('updating') &&
+                this.get('property') !== data.property
+              ) {
+                this.property = data.property;
+                this.updated = true;
+              }
+
+              this.updating = false;
+            }
           },
           {
             id: 'postValue',
             type: 'POST',
+            data: function(input) {
+              return {
+                value: input.value
+              };
+            },
             contentType: 'application/json',
-            url: '/post/:property'
-          }
-        ],
-        hacks: [
-          {
-            triggers: 'reload',
-            method: function() {
-              this.request('getValue', { shortcuts: { property: 'NumberA' } });
-              this.request('getValue', { shortcuts: { property: 'StringA' } });
-              this.request('getValue', { shortcuts: { property: 'ArrayA' } });
-            }
-          },
-          {
-            triggers: 'upload',
-            method: function() {
-              this.request('postValue', {
-                value: this.get('NumberA'),
-                shortcuts: { property: 'NumberA' }
-              });
-              this.request('postValue', {
-                value: this.get('StringA'),
-                shortcuts: { property: 'StringA' }
-              });
-              this.request('postValue', {
-                value: this.get('ArrayA'),
-                shortcuts: { property: 'ArrayA' }
-              });
-            }
+            url: '/property'
           }
         ]
-      });
+      }
 
-      d.addModule(domino.modules.NumberInput, [{
-        property: 'NumberA'
-      }]).html.appendTo(dom1);
+      // First instance:
+      d1 = new domino(config);
 
-      d.addModule(domino.modules.TextInput, [{
-        property: 'StringA'
-      }]).html.appendTo(dom1);
+      d1.addModule(domino.modules.Select, [{
+        values: DATA.array,
+        property: 'property'
+      }]).html.appendTo(line1);
 
-      d.addModule(domino.modules.ArrayInput, [{
-        property: 'ArrayA'
-      }]).html.appendTo(dom1);
+      // Second instance:
+      d2 = new domino(config);
 
-      d.addModule(domino.modules.Button, [{
-        dispatch: 'reload',
-        htmlContent: 'Reload'
-      }]).html.appendTo(dom1);
+      d2.addModule(domino.modules.Select, [{
+        values: DATA.array,
+        property: 'property'
+      }]).html.appendTo(line2);
 
-      d.addModule(domino.modules.Button, [{
-        dispatch: 'upload',
-        htmlContent: 'Upload'
-      }]).html.appendTo(dom1);
-
-
-      d.addModule(domino.modules.Text, [{
-        property: 'NumberA'
-      }]).html.appendTo(dom2);
-
-      d.addModule(domino.modules.Text, [{
-        property: 'StringA'
-      }]).html.appendTo(dom2);
-
-      d.addModule(domino.modules.Text, [{
-        property: 'ArrayA'
-      }]).html.appendTo(dom2);
+      // Finally, we add frequent calls to get the data up to date:
+      window.setInterval(function() {
+        d1.dispatchEvent('reload');
+        d2.dispatchEvent('reload');
+      }, 50);
     });
   </script>
 </head>
 <body>
   <div class="testing" id="test1">
-    <h2>Test 1: Ajax</h2>
-    <div class="line1"></div>
-    <div class="line2"></div>
+    <h2>Test: Ajax</h2>
+    <p>The two following Select modules depend each on its own domino instance. These two instances do not communicate directly with each other, but with a server, emulated with <a href="https://github.com/appendto/jquery-mockjax">jquery.mockjax.js</a>.</p>
+    <div class="line1">
+      <span>Domino instance 1</span>
+    </div>
+    <div class="line2">
+      <span>Domino instance 2</span>
+    </div>
   </div>
 </body>
 </html>
