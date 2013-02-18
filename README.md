@@ -32,6 +32,11 @@ The whole source code is validated by the [Google Closure Linter](https://develo
 
 ### ChangeLog
 
+#### 1.2 (February 18, 2013)
+
+ - Added `expect` feature to filter successful service calls.
+ - Added unit tests for services.
+
 #### 1.11 (January 18, 2013)
 
  - Fixed #1: `request` and `dispatchEvent` have the same behaviour from instance and from scopes.
