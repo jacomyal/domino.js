@@ -857,8 +857,8 @@ Here are some examples:
 // Here is how to add the "integer" structure:
 domino.struct.add('integer', function(v) {
   // v===+v  tests if the value is a number
-  // v===v|0 tests if the value is an integer
-  return v===+v && v===v|0;
+  // v===~~v tests if the value is an integer
+  return v===+v && v===~~v;
 });
 
 // Here are some tests:
