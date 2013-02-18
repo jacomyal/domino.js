@@ -1,7 +1,7 @@
 domino.js
 =========
 
-Current version: **v1.1**
+Current version: **v1.2**
 
 *domino.js* is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by [Alexis Jacomy](http://github.com/jacomyal) at [Linkfluence](http://github.com/linkfluence). It is released under the [MIT License](https://raw.github.com/jacomyal/domino.js/master/LICENSE.txt).
 
@@ -487,6 +487,9 @@ Here is the list of attributes to precise a service:
    * A function to execute before calling AJAX.
  - `{?function}` **success**:
    * A function to execute if AJAX successed.
+ - `{?function}` **expect**:
+   * A function that will be triggered with the data, the input and the service configuration before triggering the `success` callback. If this method returns a falsy value, then the `success` will be skipped and the `error` callback will be triggered instead.
+   * Also, this parameter can be set directly in the instance or global settings, under the key `expect`.
  - `{?string}` **setter**:
    * The name of a property. If the setter exists, then it will be called with the received data as parameter, or the value corresponding to the path, if specified. Shortcuts will be resolved.
  - `{?(string|array)}` **path**:
@@ -520,6 +523,8 @@ Finally, here is a precise description of the second argument (an **object** or 
    * Overrides the original service "setter" value.
  - `{?function}` **success**:
    * Overrides the original service "success" value.
+ - `{?function}` **expect**:
+   * Overrides the original service "expect" value.
  - `{?string}` **type**:
    * Overrides the AJAX call type (GET|POST|DELETE).
 
@@ -674,6 +679,17 @@ Here is the list of every types of functions you can give to *domino.js*, with t
    * Accepted scope modifications:
      + [`*`] this[property] will update *property*
    * Returns: *(not evaluated)*
+
+ - **Service "expect"**:
+   * Additional methods in the scope: *(none)*
+   * Parameters given through the scope: *(none)*
+   * Function parameters:
+     + [`Object`] The data received from AJAX
+     + [`?Object`] The params given to the service when called
+     + [`Object`] The service configuration object
+   * Accepted scope modifications: *(none)*
+   * Returns:
+     + [`Boolean`] `true` if the success method can be called, `false` else
 
  - **Service "url"**:
    * Additional methods in the scope: *(none)*

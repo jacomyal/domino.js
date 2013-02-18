@@ -8,10 +8,14 @@
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/pygment_trac.css">
     <script src="javascripts/scale.fix.js"></script>
+
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+    
+    <!-- A guy said once "Every JavaScript libraries must be included in its documentation, to let people play with it directly". Here it is: -->
+    <script src="https://raw.github.com/jacomyal/domino.js/master/build/domino.min.js"></script>
   </head>
   <body>
     <div class="wrapper">
@@ -30,7 +34,7 @@
       </header>
       <section><h1 id="toc_0">domino.js</h1>
 
-<p>Current version: <strong>v1.1</strong></p>
+<p>Current version: <strong>v1.2</strong></p>
 
 <p><em>domino.js</em> is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by <a href="http://github.com/jacomyal">Alexis Jacomy</a> at <a href="http://github.com/linkfluence">Linkfluence</a>. It is released under the <a href="https://raw.github.com/jacomyal/domino.js/master/LICENSE.txt">MIT License</a>.</p>
 
@@ -565,6 +569,12 @@
 <ul>
 <li>A function to execute if AJAX successed.</li>
 </ul></li>
+<li><code>{?function}</code> <strong>expect</strong>:
+
+<ul>
+<li>A function that will be triggered with the data, the input and the service configuration before triggering the <code>success</code> callback. If this method returns a falsy value, then the <code>success</code> will be skipped and the <code>error</code> callback will be triggered instead.</li>
+<li>Also, this parameter can be set directly in the instance or global settings, under the key <code>expect</code>.</li>
+</ul></li>
 <li><code>{?string}</code> <strong>setter</strong>:
 
 <ul>
@@ -641,6 +651,11 @@
 
 <ul>
 <li>Overrides the original service &quot;success&quot; value.</li>
+</ul></li>
+<li><code>{?function}</code> <strong>expect</strong>:
+
+<ul>
+<li>Overrides the original service &quot;expect&quot; value.</li>
 </ul></li>
 <li><code>{?string}</code> <strong>type</strong>:
 
@@ -865,6 +880,25 @@
 <li>[<code>*</code>] this[property] will update <em>property</em></li>
 </ul></li>
 <li>Returns: <em>(not evaluated)</em></li>
+</ul></li>
+<li><p><strong>Service &quot;expect&quot;</strong>:</p>
+
+<ul>
+<li>Additional methods in the scope: <em>(none)</em></li>
+<li>Parameters given through the scope: <em>(none)</em></li>
+<li>Function parameters:
+
+<ul>
+<li>[<code>Object</code>] The data received from AJAX</li>
+<li>[<code>?Object</code>] The params given to the service when called</li>
+<li>[<code>Object</code>] The service configuration object</li>
+</ul></li>
+<li>Accepted scope modifications: <em>(none)</em></li>
+<li>Returns:
+
+<ul>
+<li>[<code>Boolean</code>] <code>true</code> if the success method can be called, <code>false</code> else</li>
+</ul></li>
 </ul></li>
 <li><p><strong>Service &quot;url&quot;</strong>:</p>
 
