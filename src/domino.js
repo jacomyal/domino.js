@@ -920,7 +920,8 @@
      */
     function _triggerMainLoop(event) {
       _mainLoop({
-        events: [event]
+        events: [event],
+        emitter: event.target
       });
     }
 
@@ -937,6 +938,7 @@
      *   {?array}   events   The events to trigger.
      *   {?array}   services The services to call.
      *   {?number}  loop     The depth of the loop.
+     *   {?object}  emitter  The emitter of the original event.
      *   {?boolean} force    If true, all updated properties will dispatch the
      *                       outgoing events, event if the property has
      *                       actually not been updated.
@@ -996,7 +998,8 @@
             for (i in _propertyListeners[property])
               _execute(_propertyListeners[property][i], {
                 parameters: [_getScope(), {
-                  property: property
+                  property: property,
+                  emitter: o['emitter']
                 }]
               });
 
@@ -1029,7 +1032,11 @@
         // Modules triggers:
         for (k in _eventListeners[event.type]) {
           _execute(_eventListeners[event.type][k], {
-            parameters: [_getScope(), event]
+            parameters: [
+              _getScope(),
+              event,
+              o['emitter']
+            ]
           });
         }
 
@@ -1086,6 +1093,7 @@
           events: events,
           update: update,
           services: services,
+          emitter: o['emitter'],
           loop: o['loop']
         });
     }
