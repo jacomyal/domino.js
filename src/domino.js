@@ -959,6 +959,10 @@
       o['loop'] = (+o['loop'] || 0) + 1;
       o['loopId'] = o['loopId'] || (++_loopId);
 
+      // Check if maximum loop depth has been reached:
+      if (_settings('maxDepth') && o['loop'] > _settings('maxDepth'))
+        _die('Loop ' + o['loopId'] + ' exceeds maximum depth (' + _settings('maxDepth') + ')');
+
       var eventsArray = _utils.array(o['events']),
           servicesArray = _utils.array(o['services']),
           updateObject = o['update'] || {};
