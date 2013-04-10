@@ -77,6 +77,9 @@
     // Modules:
     var _modules = [];
 
+    // Incremental loops id:
+    var _loopId = 0;
+
     // Communication management:
     var _ascending = {},
         _descending = {},
@@ -954,6 +957,7 @@
           update = {};
 
       o['loop'] = (+o['loop'] || 0) + 1;
+      o['loopId'] = o['loopId'] || (++_loopId);
 
       var eventsArray = _utils.array(o['events']),
           servicesArray = _utils.array(o['services']),
@@ -961,7 +965,7 @@
 
       // Log:
       if (_settings('verbose')) {
-        _log('Iteration ' + o['loop'] + ' (main loop)');
+        _log('Iteration ' + o['loop'] + ' (loop ' + o['loopId'] + ')');
 
         if (eventsArray.length) {
           log = [];
@@ -1094,6 +1098,7 @@
           update: update,
           services: services,
           emitter: o['emitter'],
+          loopId: o['loopId'],
           loop: o['loop']
         });
     }
