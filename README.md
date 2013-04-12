@@ -32,6 +32,19 @@ The whole source code is validated by the [Google Closure Linter](https://develo
 
 ### ChangeLog
 
+#### 1.21 (April 12, 2013)
+
+ - `src/domino.modules.js` has moved to `examples/modules.js`
+ - Added emitter reference to the main loop.
+ - Each loop now has an ID, which is logged at every iteration
+ - Added possibility to add a maximum loop iterations depth in settings (`"maxDepth"`)
+ - Fixed: Events `data` are no more lost from a `_mainLoop` iteration to the next one
+ - `domino.EventDispatcher` is now prototyped
+ - `request` now accept an array of objects as argument.
+ - Unless the settings key `"mergeRequests"` is `false`, parallel requests are now "merged" to prevent parallel loops multiplication when:
+   * the `request` method is called several time in the same callback (hack, success, etc...)
+   * the `request` method is called with an array of services descriptions
+
 #### 1.2 (February 18, 2013)
 
  - Added `expect` feature to filter successful service calls.

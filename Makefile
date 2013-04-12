@@ -3,7 +3,7 @@ MINIFY_PATH=build/domino.min.js
 TEMP_PATH=build/tmp.js
 CLOSURE=build/compiler.jar
 BUILD=build
-LICENSE=/* domino.js - a JS fast dashboard prototyping framework - Version: 1.2 - Author:  Alexis Jacomy, Linkfluence - License: MIT */
+LICENSE=/* domino.js - a JS fast dashboard prototyping framework - Version: 1.21 - Author:  Alexis Jacomy, Linkfluence - License: MIT */
 
 all: clean minify
 check:
