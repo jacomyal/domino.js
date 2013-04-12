@@ -763,7 +763,7 @@
           // Check events to dispatch:
           events = [];
           for (event in dispatch)
-            events.push(_self.getEvent(event, _getScope()));
+            events.push(_self.getEvent(event));
 
           // Start looping:
           if (reiterate)
@@ -956,11 +956,11 @@
      *   {?number}  loop     The depth of the loop.
      *   {?object}  emitter  The emitter of the original event.
      *   {?boolean} force    If true, all updated properties will dispatch the
-     *                       outgoing events, event if the property has
+     *                       outgoing events, even if the property has
      *                       actually not been updated.
      */
     function _mainLoop(options) {
-      var a, i, j, k, event, data, push, property, log,
+      var a, i, j, k, e, event, data, push, property, log,
           reiterate = false,
           hacks = [],
           events = [],
@@ -1031,8 +1031,10 @@
                 }]
               });
 
-            for (i in _descending[property] || [])
-              dispatch[_descending[property][i]] = 1;
+            for (i in _descending[property] || []) {
+              e = _descending[property][i];
+              dispatch[e] = _self.getEvent(e);
+            }
           }
         }
       }
@@ -1088,7 +1090,7 @@
 
             a = _utils.array(obj['events']);
             for (k in a)
-              dispatch[a[k].type] = 1;
+              dispatch[a[k].type] = a[k];
 
             for (k in obj['update']) {
               if (update[k] === undefined) {
@@ -1110,13 +1112,15 @@
           }
         }
 
-        for (j in _hackDispatch[event.type] || [])
-          dispatch[_hackDispatch[event.type][j]] = 1;
+        for (j in _hackDispatch[event.type] || []) {
+          e = _hackDispatch[event.type][j];
+          dispatch[e] = _self.getEvent(e);
+        }
       }
 
       for (event in dispatch) {
-        _self.dispatchEvent(event, _getScope());
-        events.push(_self.getEvent(event, _getScope()));
+        _self.dispatchEvent(event, dispatch[event].data);
+        events.push(dispatch[event]);
         reiterate = true;
       }
 
@@ -2223,7 +2227,7 @@
     function getEvent(event, data) {
       return {
         type: event,
-        data: data,
+        data: data || {},
         target: this
       };
     };
