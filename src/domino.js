@@ -1,5 +1,5 @@
 /**
- * *domino.js* is a JavaScript cascading controller for quick interaction
+ * domino.js is a JavaScript cascading controller for quick interaction
  * prototyping.
  *
  * Sources: http://github.com/jacomyal/domino.js
@@ -101,6 +101,7 @@
       services: 1,
       hacks: 1
     };
+
     (function() {
       var k;
       for (k in Object.prototype)
@@ -210,11 +211,25 @@
             value: []
           });
 
-          scope.request = function(service, params) {
-            this._services.push({
-              service: service,
-              params: params
-            });
+          scope.request = function(p1, p2) {
+            var i,
+                o;
+
+            if (_struct.check('string', p1)) {
+              o = {
+                service: p1
+              };
+
+              for (i in p2 || {})
+                o[i] = p2[i]
+
+              this._services.push(o);
+            } else if (_struct.check('object', p1)) {
+              this._services.push(p1);
+            } else if (_struct.check('array', p1)) {
+              for (i in p1)
+                this._services.push(p1[i]);
+            }
 
             return this;
           };
@@ -564,7 +579,7 @@
                 if (_struct.get(error) === 'function') {
                   _execute(error, {
                     parameters: [mes, xhr, p],
-                    loop: true,
+                    loop: p['loop'] || _mainLoop,
                     scope: {
                       request: true,
                       dispatchEvent: true
@@ -747,14 +762,12 @@
 
           // Check events to dispatch:
           events = [];
-          for (event in dispatch) {
-            _self.dispatchEvent(event, _getScope());
+          for (event in dispatch)
             events.push(_self.getEvent(event, _getScope()));
-          }
 
           // Start looping:
           if (reiterate)
-            _mainLoop({
+            (p['loop'] || _mainLoop)({
               events: events,
               update: update,
               services: services
@@ -961,7 +974,10 @@
 
       // Check if maximum loop depth has been reached:
       if (_settings('maxDepth') && o['loop'] > _settings('maxDepth'))
-        _die('Loop ' + o['loopId'] + ' exceeds maximum depth (' + _settings('maxDepth') + ')');
+        _die(
+          'Loop ' + o['loopId'] +
+          ' exceeds maximum depth (' + _settings('maxDepth') + ')'
+        );
 
       var eventsArray = _utils.array(o['events']),
           servicesArray = _utils.array(o['services']),
@@ -981,7 +997,11 @@
         if (servicesArray.length) {
           log = [];
           for (i in servicesArray)
-            log.push(servicesArray[i].service);
+            log.push(
+              typeof servicesArray[i] === 'string' ?
+                servicesArray[i] :
+                servicesArray[i]['service']
+            );
           _log(' -> Services: ', log);
         }
 
@@ -1017,9 +1037,14 @@
         }
       }
 
+      if (servicesArray.length) {
       // Check services to call:
-      for (i in servicesArray || [])
-        _request(servicesArray[i].service, servicesArray[i].params);
+        if (_settings('mergeRequests'))
+          _request(servicesArray);
+        else
+          for (j in servicesArray)
+            _request(servicesArray[j]);
+      }
 
       // Check events to trigger:
       for (i in eventsArray) {
@@ -1198,16 +1223,38 @@
     }
 
     /**
-     * Calls a service declared in the domino instance.
+     * Calls one or several services declared in the domino instance.
      *
+     * This method has multiple signatures:
+     *
+     * Signature 1:
+     * ************
      * @param  {string}  service The name of the service.
      * @param  {?object} options An object of options given to the declared
      *                           service.
      *
+     * Signature 2:
+     * ************
+     * @param  {object}  options An object of options given to the declared
+     *                           service.
+     *
+     * Signature 3:
+     * ************
+     * @param  {array}   array   An array containing objects that each describe
+     *                           valid options describing a service to call. If
+     *                           a string is used instead of an object, then
+     *                           the related service will be called without any
+     *                           option.
+     * @param  {object}  options Options to deal with multiple services call.
+     *
      * @return {*} Returns itself.
      *
-     * Here is the list of options that are recognized:
+     * Valid parameters:
+     * *****************
+     * Here is the list of options that are recognized to describe a service:
      *
+     *   {?string}       service     The name of the service to call. Can not
+     *                               be used with the first signature.
      *   {?boolean}      abort       Indicates if the last call of the
      *                               specified service has to be aborted.
      *   {?function}     before      Overrides the original service "before"
@@ -1231,12 +1278,98 @@
      *                               value.
      *   {?string}       type        Overrides the AJAX call type
      *                               (GET|POST|DELETE).
+     *
+     * And here is the list of options for the signature 3:
+     *
+     *   {?boolean} merge If true, the success methods will be executed only
+     *                    when all the calls are done, in the same order than
+     *                    in the services options array. Also, all the success
+     *                    methods will start only *one* main loop.
+     *                    (true by default)
      */
-    function _request(service, options) {
-      if (_services[service])
-        _services[service](options);
-      else
-        _warn('Service "' + service + '" not referenced.');
+    function _request(p1, p2) {
+      if (_struct.check('string', p1)) {
+        if (_services[p1])
+          _services[p1](p2);
+        else
+          _warn('Service "' + p1 + '" not referenced.');
+      } else if (_struct.check('object', p1)) {
+        _request(p1['service'], p1);
+      } else if (_struct.check('array', p1)) {
+        p2 = p2 || {};
+
+        var i,
+            l = p1.length,
+            merge = p2['merge'] !== undefined ?
+              !!p2['merge'] :
+              _settings('mergeRequests');
+
+        // If merge is specified and falsy, then the services will just be
+        // called independently:
+        if (!merge) {
+          for (i = 0, l = p1.length; i < l; i++) {
+            _request(p1[i]);
+          }
+
+        // Else, it's more complicated: The services will be called but the
+        // successes and errors will be handled when every call is endedn to
+        // make possible to start only one main loop:
+        } else {
+          var o,
+              k,
+              ended = l,
+              returned = [],
+              conclude = function() {
+                var o, i, k,
+                    res = {
+                      update: {},
+                      events: [],
+                      services: []
+                    };
+
+                for (i = 0; i < l; i++) {
+                  o = returned[i] || {};
+
+                  for (k in o.update || {})
+                    res.update[k] = o.update[k];
+
+                  res.events = res.events.concat(o.events || []);
+                  res.services = res.services.concat(o.services || []);
+                }
+
+                _mainLoop(res);
+              };
+
+          for (i = 0; i < l; i++) {
+            if (typeof p1[i] === 'string')
+              o = {
+                service: p1[i]
+              };
+            else {
+              o = {};
+
+              // The options object is "clone" to ensure adding the new loop to
+              // it is safe:
+              for (k in p1[i])
+                o[k] = p1[i][k];
+            }
+
+            // Override the loop:
+            (function(i) {
+              o['loop'] = function(obj) {
+                returned[i] = obj;
+
+                // Check if it is time to trigger the main loop:
+                if (!--ended)
+                  conclude();
+              };
+            })(i);
+
+            // Call the service:
+            _request(o);
+          }
+        }
+      }
 
       return this;
     }
@@ -1283,7 +1416,7 @@
         'services': []
       };
 
-      // Check new vars:
+      // Check new properties:
       if (scope._events != null && !_struct.check('array', scope._events))
         _warn('Events must be stored in an array.');
       else
@@ -1314,7 +1447,11 @@
           }
 
         if (iterate)
-          _mainLoop(obj);
+          (
+            _struct.check('function', o['loop']) ?
+              o['loop'] :
+              _mainLoop
+          )(obj);
       } else {
         return obj;
       }
@@ -1916,10 +2053,12 @@
 
   // Global settings:
   var __settings__ = {
+    maxDepth: 0,
     strict: false,
     verbose: false,
-    shortcutPrefix: ':',
     displayTime: false,
+    shortcutPrefix: ':',
+    mergeRequests: true,
     clone: false
   };
 
@@ -2094,6 +2233,7 @@
     this.dispatchEvent = dispatchEvent;
     this.getEvent = getEvent;
   };
+
   var dispatcher = domino.EventDispatcher;
 
   // Default module template:
