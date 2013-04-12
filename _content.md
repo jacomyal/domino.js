@@ -1,7 +1,7 @@
 domino.js
 =========
 
-Current version: **v1.2**
+Current version: **v1.21**
 
 *domino.js* is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by [Alexis Jacomy](http://github.com/jacomyal) at [Linkfluence](http://github.com/linkfluence). It is released under the [MIT License](https://raw.github.com/jacomyal/domino.js/master/LICENSE.txt).
 
@@ -370,7 +370,7 @@ var d = new domino({
 });
 ```
 
-Then, executing `d.request('getTheProperty');` will make an GET call to the indicated URL, set the received data as `theProperty` value, and dispatch a `"thePropertyUpdated"` event.
+Then, executing `d.request('getTheProperty');` will make a GET call to the indicated URL, set the received data as `theProperty` value, and dispatch a `"thePropertyUpdated"` event.
 
 ### Shortcuts:
 
@@ -422,6 +422,23 @@ d.request('propN', {
 // Finally, the following line will throw an error, since :property
 // can not be resolved:
 d.request('propN');
+
+// Note that it is possible to throw several requests at the same time:
+d.request([
+  {
+    service: 'propN',
+    shortcuts: {
+      property: 'prop1'
+    }
+  },
+  {
+    service: 'propN',
+    shortcuts: {
+      property: 'prop2'
+    }
+  },
+  'propN'
+]);
 ```
 
 Here is how *domino.js* resolves shortcuts:
@@ -499,8 +516,10 @@ Here is the list of attributes to precise a service:
 
 ### Request specifications:
 
-Finally, here is a precise description of the second argument (an **object** or `undefined`) given to the `request` method:
+Finally, here is a precise description of the options given to the `request` method:
 
+ - `{?string}` **service**:
+   * The id of the service to call (if not given as first argument).
  - `{?boolean}` **abort**:
    * Indicates if the last call of the specified service has to be aborted if not ended.
  - `{?function}` **before**:
@@ -581,7 +600,7 @@ this.anyProperty = 42;
 ### Default scope methods:
 
 Here is the default methods that any of the functions you give to *domino.js* will find in its scope.
- 
+
  - **get** *(property, args...)*
    * Returns the current value of the specified property. The additional parameters are given to the getter, if this one has been customly defined.
 
@@ -751,6 +770,12 @@ Here is the list of currently recognized global settings:
  - **verbose**: If `true`, logs will be sent in `console.log` (default: `false`).
  - **shortcutPrefix**: Determines the shortcuts prefix (default: `":"`).
  - **displayTime**: If `true`, logs will be prefixed by the time since *domino.js* initialization, in milliseconds (default: `false`).
+ - **maxDepth**: If a positive number (say `N`), if a loop exceeds the `N`-th iteration, domino throws an error (default: `0`).
+ - **mergeRequests**:
+   + If `true`, when several requests are called at the same time, domino will wait for each of them to succeed before starting a unique loop, instead of starting one loop for each service (default: `true`).
+   + Several calls are sent at the same time when:
+     + An array is given as first argument to the method `request`
+     + The method `request` is called several time in the same callback (hack, success, etc...)
  - **clone**:
    + If `true`, getters return always clone of the values, and setters clone values before they actually update values, using the `domino.utils.clone()` method. It might decrease *domino.js* performances, but makes data manipulation safer. More precisely, when clone mode is activated, there is no properties update without the related events (default: `true`).
 
@@ -846,8 +871,8 @@ Also, **it is possible to define globally structures**, with the method `domino.
 This method can be used by different ways:
 
  - `domino.struct.add( id, struct )`:
-   * **id** (`string`): 
-   * **struct** (`*|function`): 
+   * **id** (`string`):
+   * **struct** (`*|function`):
  - `domino.struct.add( obj )`
    * **obj** (`object`): Must contain `id` and `struct`. Can also have a `proto` value.
 

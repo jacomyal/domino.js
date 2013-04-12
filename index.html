@@ -34,7 +34,7 @@
       </header>
       <section><h1 id="toc_0">domino.js</h1>
 
-<p>Current version: <strong>v1.2</strong></p>
+<p>Current version: <strong>v1.21</strong></p>
 
 <p><em>domino.js</em> is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by <a href="http://github.com/jacomyal">Alexis Jacomy</a> at <a href="http://github.com/linkfluence">Linkfluence</a>. It is released under the <a href="https://raw.github.com/jacomyal/domino.js/master/LICENSE.txt">MIT License</a>.</p>
 
@@ -424,7 +424,7 @@
 </pre>
 </div>
 
-<p>Then, executing <code>d.request(&#39;getTheProperty&#39;);</code> will make an GET call to the indicated URL, set the received data as <code>theProperty</code> value, and dispatch a <code>&quot;thePropertyUpdated&quot;</code> event.</p>
+<p>Then, executing <code>d.request(&#39;getTheProperty&#39;);</code> will make a GET call to the indicated URL, set the received data as <code>theProperty</code> value, and dispatch a <code>&quot;thePropertyUpdated&quot;</code> event.</p>
 
 <h3 id="toc_4">Shortcuts:</h3>
 
@@ -474,6 +474,23 @@
 <span class="c1">// Finally, the following line will throw an error, since :property</span>
 <span class="c1">// can not be resolved:</span>
 <span class="nx">d</span><span class="p">.</span><span class="nx">request</span><span class="p">(</span><span class="s1">&#39;propN&#39;</span><span class="p">);</span>
+
+<span class="c1">// Note that it is possible to throw several requests at the same time:</span>
+<span class="nx">d</span><span class="p">.</span><span class="nx">request</span><span class="p">([</span>
+  <span class="p">{</span>
+    <span class="nx">service</span><span class="o">:</span> <span class="s1">&#39;propN&#39;</span><span class="p">,</span>
+    <span class="nx">shortcuts</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">property</span><span class="o">:</span> <span class="s1">&#39;prop1&#39;</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="p">{</span>
+    <span class="nx">service</span><span class="o">:</span> <span class="s1">&#39;propN&#39;</span><span class="p">,</span>
+    <span class="nx">shortcuts</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">property</span><span class="o">:</span> <span class="s1">&#39;prop2&#39;</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="s1">&#39;propN&#39;</span>
+<span class="p">]);</span>
 </pre>
 </div>
 
@@ -594,9 +611,14 @@
 
 <h3 id="toc_6">Request specifications:</h3>
 
-<p>Finally, here is a precise description of the second argument (an <strong>object</strong> or <code>undefined</code>) given to the <code>request</code> method:</p>
+<p>Finally, here is a precise description of the options given to the <code>request</code> method:</p>
 
 <ul>
+<li><code>{?string}</code> <strong>service</strong>:
+
+<ul>
+<li>The id of the service to call (if not given as first argument).</li>
+</ul></li>
 <li><code>{?boolean}</code> <strong>abort</strong>:
 
 <ul>
@@ -1008,6 +1030,18 @@
 <li><strong>verbose</strong>: If <code>true</code>, logs will be sent in <code>console.log</code> (default: <code>false</code>).</li>
 <li><strong>shortcutPrefix</strong>: Determines the shortcuts prefix (default: <code>&quot;:&quot;</code>).</li>
 <li><strong>displayTime</strong>: If <code>true</code>, logs will be prefixed by the time since <em>domino.js</em> initialization, in milliseconds (default: <code>false</code>).</li>
+<li><strong>maxDepth</strong>: If a positive number (say <code>N</code>), if a loop exceeds the <code>N</code>-th iteration, domino throws an error (default: <code>0</code>).</li>
+<li><strong>mergeRequests</strong>:
+
+<ul>
+<li>If <code>true</code>, when several requests are called at the same time, domino will wait for each of them to succeed before starting a unique loop, instead of starting one loop for each service (default: <code>true</code>).</li>
+<li>Several calls are sent at the same time when:
+
+<ul>
+<li>An array is given as first argument to the method <code>request</code></li>
+<li>The method <code>request</code> is called several time in the same callback (hack, success, etc...)</li>
+</ul></li>
+</ul></li>
 <li><strong>clone</strong>:
 
 <ul>
@@ -1139,8 +1173,8 @@
 <li><code>domino.struct.add( id, struct )</code>:
 
 <ul>
-<li><strong>id</strong> (<code>string</code>): </li>
-<li><strong>struct</strong> (<code>*|function</code>): </li>
+<li><strong>id</strong> (<code>string</code>):</li>
+<li><strong>struct</strong> (<code>*|function</code>):</li>
 </ul></li>
 <li><code>domino.struct.add( obj )</code>
 
