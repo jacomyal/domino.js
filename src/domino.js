@@ -225,7 +225,7 @@
               };
 
               for (i in p2 || {})
-                o[i] = p2[i]
+                o[i] = p2[i];
 
               this._services.push(o);
             } else if (_struct.check('object', p1)) {
