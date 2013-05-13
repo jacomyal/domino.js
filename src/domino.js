@@ -664,6 +664,7 @@
             // instead of the success:
             !expect.call(_getScope(), data, p, o)
           ) {
+            _log('"expect" test failed for service "' + o['id'] + '".');
             ajaxObj.error.call(this, 'Unexpected data received.', this.xhr());
             return;
           }
