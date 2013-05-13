@@ -67,7 +67,8 @@
         _reference;
 
     // Properties management:
-    var _types = {},
+    var _config,
+        _types = {},
         _labels = {},
         _events = {},
         _getters = {},
@@ -120,9 +121,10 @@
     var _o = {},
         _name;
 
-    if (_struct.get(arguments[0]) === 'string')
-      _name = arguments[0];
-    else if (
+    if (_struct.get(arguments[0]) === 'string') {
+      _o = arguments[1];
+      _o['name'] = arguments[0];
+    } else if (
       arguments[0] !== undefined &&
       _struct.get(arguments[0]) === 'object'
     )
@@ -133,6 +135,7 @@
     )
       _o = arguments[1];
 
+    _o['name'] = _name || _o['name'];
     _name = _o['name'];
 
     if (_name) {
@@ -157,6 +160,8 @@
       for (i in _o.shortcuts || [])
         _addShortcut(_o.shortcuts[i]['id'], _o.shortcuts[i]['method']);
     })();
+
+    _config = _utils.clone(_o);
 
     /**
      * Generates a "view" of the instance of domino, ie a new object containing
@@ -198,6 +203,7 @@
         scope.addModule = _addModule;
         scope.request = _request;
         scope.settings = _settings;
+        scope.configuration = _configuration;
         scope.dispatchEvent = function(type, data) {
           _mainLoop({
             events: _self.getEvent(type, data)
@@ -1537,6 +1543,18 @@
     }
 
     /**
+     * Returns the configuration object
+     * @param  {[type]} key [description]
+     * @return {[type]}     [description]
+     */
+    function _configuration(key) {
+      if (arguments.length)
+        return _utils.clone(_config[key]);
+      else
+        return _utils.clone(_config);
+    }
+
+    /**
      * Kills the instance.
      */
     function _kill() {
@@ -1582,7 +1600,6 @@
     /**
      * Instance settings manipulation method:
      */
-
     function _settings(a1, a2) {
       if (typeof a1 === 'string' && arguments.length === 1)
         return _localSettings[a1] !== undefined ?
@@ -1608,7 +1625,6 @@
     /**
      * Log methods (in the instance)
      */
-
     function _warn() {
       var a = ['[' + (_name || 'domino') + ']'];
 
