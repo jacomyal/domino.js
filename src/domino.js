@@ -203,6 +203,15 @@
         scope.request = _request;
         scope.settings = _settings;
         scope.addModule = _addModule;
+        scope.getEvent = function() {
+          _self.getEvent.apply(_self, arguments);
+        };
+        scope.addEventListener = function() {
+          _self.addEventListener.apply(_self, arguments);
+        };
+        scope.removeEventListener = function() {
+          _self.removeEventListener.apply(_self, arguments);
+        };
         scope.configuration = _configuration;
         scope.dispatchEvent = function(type, data) {
           _mainLoop({
