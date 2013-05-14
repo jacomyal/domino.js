@@ -51,7 +51,7 @@ asyncTest('Services', function() {
     {
       data: 'abc',
       expected: 'abc',
-      label: 'GET call (with "success")',
+      label: 'GET call (with "success" and scope alteration)',
       params: {
         success: function(data) {
           this.prop_0 = data.prop_0;
@@ -60,10 +60,20 @@ asyncTest('Services', function() {
     },
     {
       data: 'abc',
-      expected: { prop_1: 'abc' },
+      expected: 'abc',
+      label: 'GET call (with "success" and the "update" method)',
+      params: {
+        success: function(data) {
+          this.update('prop_1', data.prop_1);
+        }
+      }
+    },
+    {
+      data: 'abc',
+      expected: { prop_2: 'abc' },
       label: 'GET call (with "setter")',
       params: {
-        setter: 'prop_1'
+        setter: 'prop_2'
       }
     },
     {
@@ -71,8 +81,8 @@ asyncTest('Services', function() {
       expected: 'abc',
       label: 'GET call (with "setter" and "path")',
       params: {
-        setter: 'prop_2',
-        path: 'prop_2.a'
+        setter: 'prop_3',
+        path: 'prop_3.a'
       }
     },
     {
@@ -84,19 +94,19 @@ asyncTest('Services', function() {
         contentType: 'application/json',
         data: { value: 'def' },
         success: function(data) {
-          this.prop_3 = data.prop_3;
+          this.prop_4 = data.prop_4;
         }
       }
     },
     {
       data: 'abc',
-      expected: { prop_4: 'def' },
+      expected: { prop_5: 'def' },
       label: 'POST call (with "setter")',
       params: {
         type: 'POST',
         contentType: 'application/json',
         data: { value: 'def' },
-        setter: 'prop_4'
+        setter: 'prop_5'
       }
     },
     {
@@ -107,8 +117,8 @@ asyncTest('Services', function() {
         type: 'POST',
         contentType: 'application/json',
         data: { value: { a: 'def' } },
-        setter: 'prop_5',
-        path: 'prop_5.a'
+        setter: 'prop_6',
+        path: 'prop_6.a'
       }
     },
     {
@@ -120,10 +130,10 @@ asyncTest('Services', function() {
           return true;
         },
         success: function(data) {
-          this.prop_6 = data.prop_6;
+          this.prop_7 = data.prop_7;
         },
         error: function() {
-          this.prop_6 = 'def';
+          this.prop_7 = 'def';
         }
       }
     },
@@ -136,11 +146,10 @@ asyncTest('Services', function() {
           return false;
         },
         success: function(data) {
-          this.prop_7 = data.prop_7;
+          this.prop_8 = data.prop_8;
         },
         error: function(message, xhr) {
-          // No way to get the
-          this.prop_7 = 'def';
+          this.prop_8 = 'def';
         }
       }
     }

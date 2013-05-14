@@ -45,8 +45,10 @@ function init(properties) {
 // Properties:
 module('domino instance');
 test('Properties management', function() {
+  var o;
+
   // Test 1
-  var o = init([{ id: 's', type: 'string', value: 'abc', triggers: 'updateS', dispatch: 'sUpdated'}]);
+  o = init([{ id: 's', type: 'string', value: 'abc', triggers: 'updateS', dispatch: 'sUpdated'}]);
 
   // Here we simply update the value:
   o.m.s.dispatch('def');
@@ -54,7 +56,7 @@ test('Properties management', function() {
   o.d.kill();
 
   // Test 2
-  var o = init([{ id: 's', type: 'string', value: 'abc', triggers: 'updateS', dispatch: 'sUpdated'}]);
+  o = init([{ id: 's', type: 'string', value: 'abc', triggers: 'updateS', dispatch: 'sUpdated'}]);
 
   // Here we update the property, but with a different value, and we want to check that domino has triggered:
   o.m.s.dispatch('def');
@@ -62,7 +64,7 @@ test('Properties management', function() {
   o.d.kill();
 
   // Test 3
-  var o = init([{ id: 's', type: 'string', value: 'abc', triggers: 'updateS', dispatch: 'sUpdated'}]);
+  o = init([{ id: 's', type: 'string', value: 'abc', triggers: 'updateS', dispatch: 'sUpdated'}]);
 
   // Here we update the property, but with the same value, and we want to check that domino does not trigger:
   o.m.s.dispatch('abc');
@@ -70,7 +72,7 @@ test('Properties management', function() {
   o.d.kill();
 
   // Test 4
-  var o = init([{ id: 's', type: {a: 'number', b: '?number'}, value: {a: 1}, triggers: 'updateS', dispatch: 'sUpdated'}]);
+  o = init([{ id: 's', type: {a: 'number', b: '?number'}, value: {a: 1}, triggers: 'updateS', dispatch: 'sUpdated'}]);
 
   // Here we simply update the value:
   o.m.s.dispatch({a: 2, b: 1});
@@ -78,7 +80,7 @@ test('Properties management', function() {
   o.d.kill();
 
   // Test 5
-  var o = init([{ id: 's', type: {a: 'number', b: '?number'}, value: {a: 1}, triggers: 'updateS', dispatch: 'sUpdated'}]);
+  o = init([{ id: 's', type: {a: 'number', b: '?number'}, value: {a: 1}, triggers: 'updateS', dispatch: 'sUpdated'}]);
 
   // Here we update the property, but with a different value, and we want to check that domino has triggered:
   o.m.s.dispatch({a: 2, b: 1});
@@ -86,7 +88,7 @@ test('Properties management', function() {
   o.d.kill();
 
   // Test 6
-  var o = init([{ id: 's', type: {a: 'number', b: '?number'}, value: {a: 1}, triggers: 'updateS', dispatch: 'sUpdated'}]);
+  o = init([{ id: 's', type: {a: 'number', b: '?number'}, value: {a: 1}, triggers: 'updateS', dispatch: 'sUpdated'}]);
 
   // Here we update the property, but with the same value, and we want to check that domino does not trigger:
   o.m.s.dispatch({a: 1});
@@ -94,7 +96,7 @@ test('Properties management', function() {
   o.d.kill();
 
   // Test 7
-  var o = init([{ id: 's', type: 'object', value: {a: 1}, triggers: 'updateS', dispatch: 'sUpdated'}]);
+  o = init([{ id: 's', type: 'object', value: {a: 1}, triggers: 'updateS', dispatch: 'sUpdated'}]);
 
   // Here we simply update the value:
   o.m.s.dispatch({a: 2, b: 1});
@@ -102,7 +104,7 @@ test('Properties management', function() {
   o.d.kill();
 
   // Test 8
-  var o = init([{ id: 's', type: 'object', value: {a: 1}, triggers: 'updateS', dispatch: 'sUpdated'}]);
+  o = init([{ id: 's', type: 'object', value: {a: 1}, triggers: 'updateS', dispatch: 'sUpdated'}]);
 
   // Here we update the property, but with a different value, and we want to check that domino has triggered:
   o.m.s.dispatch({a: 2, b: 1});
@@ -110,7 +112,7 @@ test('Properties management', function() {
   o.d.kill();
 
   // Test 9
-  var o = init([{ id: 's', type: 'object', value: {a: 1}, triggers: 'updateS', dispatch: 'sUpdated'}]);
+  o = init([{ id: 's', type: 'object', value: {a: 1}, triggers: 'updateS', dispatch: 'sUpdated'}]);
 
   // Here we update the property, but with the same value, and we want to check that domino triggers anyway ('object' typed):
   o.m.s.dispatch({a: 1});
@@ -118,7 +120,7 @@ test('Properties management', function() {
   o.d.kill();
 
   // Test 10
-  var o = init([{
+  o = init([{
     id: 's',
     type: 'string',
     value: '',
@@ -134,7 +136,7 @@ test('Properties management', function() {
   o.d.kill();
 
   // Test 11
-  var o = init([{
+  o = init([{
     id: 's',
     type: 'string',
     value: 'abc',
