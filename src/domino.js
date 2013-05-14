@@ -200,9 +200,9 @@
       if (o.full) {
         scope.kill = _kill;
         scope.update = _update;
-        scope.addModule = _addModule;
         scope.request = _request;
         scope.settings = _settings;
+        scope.addModule = _addModule;
         scope.configuration = _configuration;
         scope.dispatchEvent = function(type, data) {
           _mainLoop({
@@ -255,6 +255,28 @@
               type: type,
               data: data
             });
+
+            return this;
+          };
+        }
+
+        if (o.update) {
+          Object.defineProperty(scope, '_properties', {
+            value: []
+          });
+
+          scope.update = function(v1, v2) {
+            if (typeof v1 === 'object')
+              for (var k in v1)
+                this._properties.push({
+                  property: k,
+                  value: v1[k]
+                });
+            else if (typeof v1 === 'string' && arguments.length > 1)
+              this._properties.push({
+                property: v1,
+                value: v2
+              });
 
             return this;
           };
@@ -592,7 +614,8 @@
                     loop: p['loop'] || _mainLoop,
                     scope: {
                       request: true,
-                      dispatchEvent: true
+                      dispatchEvent: true,
+                      update: true
                     }
                   });
                 }
@@ -742,7 +765,8 @@
               parameters: [data, p],
               scope: {
                 request: true,
-                dispatchEvent: true
+                dispatchEvent: true,
+                update: true
               }
             });
 
@@ -792,7 +816,8 @@
             parameters: [p],
             loop: true,
             scope: {
-              dispatchEvent: true
+              dispatchEvent: true,
+              update: true
             }
           });
         }
@@ -1095,7 +1120,8 @@
               parameters: [event],
               scope: {
                 request: true,
-                dispatchEvent: true
+                dispatchEvent: true,
+                update: true
               }
             });
 
@@ -1410,7 +1436,10 @@
      *                          be formalized and returned.
      */
     function _execute(f, options) {
-      var k, obj, returned,
+      var k,
+          obj,
+          returned,
+          alters = {},
           o = options || {},
           scope = _getScope(o['scope']);
 
@@ -1431,16 +1460,23 @@
         'services': []
       };
 
-      // Check new properties:
+      // Check events to dispatch:
       if (scope._events != null && !_struct.check('array', scope._events))
         _warn('Events must be stored in an array.');
       else
         obj['events'] = scope._events;
 
+      // Merge properties to update from scope and scope._properties
       for (k in scope)
-        if (_setters[k] !== undefined) {
-          obj['update'][k] = scope[k];
-        } else if (_protectedNames[k] === undefined)
+        alters[k] = scope[k];
+      for (k in scope._properties)
+        alters[scope._properties[k].property] = scope._properties[k].value;
+
+      // Check properties to update:
+      for (k in alters)
+        if (_setters[k] !== undefined)
+          obj['update'][k] = alters[k];
+        else if (_protectedNames[k] === undefined)
           _warn('The key "' + k + '" is not a method nor a property.');
 
       for (k in o['inputValues'])
