@@ -100,45 +100,22 @@
               type: 'string',
               triggers: 'updateProperty',
               dispatch: 'propertyUpdated'
-            },
-
-            // This property is true when the user has just changed the property:
-            {
-              id: 'updating',
-              type: 'boolean',
-              value: false
-            },
-
-            // This property is true when the property has just been changed on
-            // the "server":
-            {
-              id: 'updated',
-              type: 'boolean',
-              value: false
             }
           ],
           hacks: [
             {
               triggers: 'propertyUpdated',
               method: function() {
-                if (!this.get('updated')) {
-                  this.updating = true;
-                  this.request('postValue', {
-                    value: this.get('property'),
-                    shortcuts: { property: 'property' }
-                  });
-                }
-
-                this.updated = false;
+                this.request('postValue', {
+                  value: this.get('property'),
+                  shortcuts: { property: 'property' }
+                });
               }
             },
             {
               triggers: 'reload',
               method: function() {
-                if (!this.get('updating'))
-                  this.request('getValue');
-
-                this.updating = false;
+                this.request('getValue');
               }
             }
           ],
@@ -147,15 +124,8 @@
               id: 'getValue',
               url: '/property',
               success: function(data) {
-                if (
-                  !this.get('updating') &&
-                  this.get('property') !== data.property
-                ) {
+                if (this.get('property') !== data.property)
                   this.property = data.property;
-                  this.updated = true;
-                }
-
-                this.updating = false;
               }
             },
             {

@@ -63,8 +63,8 @@
               {
                 triggers: 'resetFlags',
                 method: function() {
-                  this.booleanA = false;
-                  this.booleanB = false;
+                  this.update('booleanA', false);
+                  this.update('booleanB', false);
                 }
               }
             ]
@@ -212,12 +212,12 @@
                   // Check if there are still values in 'valuesA':
                   if (valuesA.length === 0) {
                     this.log('Wow, you have deleted all the values, I can\'t let you do that...');
-                    this.valuesA = [stringA];
+                    this.update('valuesA', [stringA]);
 
                   // Check if 'stringA' value is still in 'valuesA':
                   } else if (valuesA.indexOf(stringA)<0) {
                     this.log('Be carefull, you have deleted the selected value!');
-                    this.stringA = valuesA[0];
+                    this.update('stringA', valuesA[0]);
                   }
                 }
               },
@@ -230,7 +230,7 @@
                   // Check if 'stringA' value is still in 'valuesA':
                   if (valuesA.indexOf(stringA)<0) {
                     this.log('Be carefull, you have selected an invalid value!');
-                    this.stringA = valuesA[0];
+                    this.update('stringA', valuesA[0]);
                   }
                 }
               }
