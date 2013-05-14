@@ -1579,9 +1579,7 @@
     }
 
     /**
-     * Returns the configuration object
-     * @param  {[type]} key [description]
-     * @return {[type]}     [description]
+     * Returns a clone of the configuration object.
      */
     function _configuration(key) {
       if (arguments.length)
