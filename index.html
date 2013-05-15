@@ -34,7 +34,7 @@
       </header>
       <section><h1 id="toc_0">domino.js</h1>
 
-<p>Current version: <strong>v1.21</strong></p>
+<p>Current version: <strong>v1.2.2</strong></p>
 
 <p><em>domino.js</em> is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by <a href="http://github.com/jacomyal">Alexis Jacomy</a> at <a href="http://github.com/linkfluence">Linkfluence</a>. It is released under the <a href="https://raw.github.com/jacomyal/domino.js/master/LICENSE.txt">MIT License</a>.</p>
 
@@ -56,7 +56,7 @@
 
 <h3 id="toc_2">Contributing:</h3>
 
-<p>You can contribute by submitting <a href="http://github.com/jacomyal/domino.js/issues">issues tickets</a> and proposing <a href="http://github.com/jacomyal/domino.js/pulls">pull requests</a>.</p>
+<p>You can contribute by submitting <a href="http://github.com/jacomyal/domino.js/issues">issues tickets</a> and proposing <a href="http://github.com/jacomyal/domino.js/pulls">pull requests</a>. The changelog is accessible <a href="https://github.com/jacomyal/domino.js#changelog">here</a>.</p>
 
 <hr />
 
@@ -68,6 +68,7 @@
 <li><a href="#modules">Modules</a></li>
 <li><a href="#hacks">Hacks</a></li>
 <li><a href="#services">Services</a></li>
+<li><a href="#specifications">Specifications summary</a></li>
 <li><a href="#main_loop_inside_domino_js">Main loop: Inside <em>domino.js</em></a></li>
 <li><a href="#scopes_management">Scopes management</a></li>
 <li><a href="#logs_and_global_settings">Logs and global settings</a></li>
@@ -215,6 +216,11 @@
 <p>The minimal declaration of a property is just a unique string <strong>id</strong>. Here is the exhaustive list of all the other parameters you can add to describe your property:</p>
 
 <ul>
+<li><code>{string}</code> <strong>id</strong>:
+
+<ul>
+<li>The id of the property.</li>
+</ul></li>
 <li><code>{?string}</code> <strong>label</strong>:
 
 <ul>
@@ -397,6 +403,28 @@
 
 <p>The different methods you can call from the hacks are described in the <strong><a href="#scopes_management">Scopes management</a></strong> section.</p>
 
+<h3 id="toc_4">Specifications:</h3>
+
+<p>Each hack must be an <code>object</code></p>
+
+<ul>
+<li><code>{string|array}</code> <strong>triggers</strong>:
+
+<ul>
+<li>At least one event that will trigger the hack.</li>
+</ul></li>
+<li><code>{?(string|array)}</code> <strong>dispatch</strong>:
+
+<ul>
+<li>Eventually one or more events that will be dispatched when the hack is triggered.</li>
+</ul></li>
+<li><code>{?function}</code> <strong>method</strong>:
+
+<ul>
+<li>Eventually a function that will be executed when the hack is triggered. It takes the event that triggered the hack as only parameter. Its scope is described in the <strong><a href="#scopes_management">Scopes management</a></strong> section.</li>
+</ul></li>
+</ul>
+
 <h2 id="services">Services <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 <p><em>domino.js</em> provides an helper to interact with Web services. Basically, referencing a service will create a shortcut to call in an easy way you Web service.</p>
@@ -426,7 +454,7 @@
 
 <p>Then, executing <code>d.request(&#39;getTheProperty&#39;);</code> will make a GET call to the indicated URL, set the received data as <code>theProperty</code> value, and dispatch a <code>&quot;thePropertyUpdated&quot;</code> event.</p>
 
-<h3 id="toc_4">Shortcuts:</h3>
+<h3 id="toc_5">Shortcuts:</h3>
 
 <p>Also, to help manipulating services, it is possible to use <strong>shortcuts</strong> to avoid declare explicitely lots of things. Here is an example:</p>
 <div class="highlight"><pre><span class="kd">var</span> <span class="nx">d</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">domino</span><span class="p">({</span>
@@ -536,7 +564,7 @@
 
 <p>In this last example, when the service &#39;prop&#39; is called, the shortcut &#39;:date&#39; will be resolved as the current date.</p>
 
-<h3 id="toc_5">Service specifications:</h3>
+<h3 id="toc_6">Service specifications:</h3>
 
 <p>Here is the list of attributes to precise a service:</p>
 
@@ -609,7 +637,7 @@
 </ul></li>
 </ul>
 
-<h3 id="toc_6">Request specifications:</h3>
+<h3 id="toc_7">Request specifications:</h3>
 
 <p>Finally, here is a precise description of the options given to the <code>request</code> method:</p>
 
@@ -686,6 +714,56 @@
 </ul></li>
 </ul>
 
+<h2 id="specifications">Specifications summary <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
+
+<p>Here is a summary of the specifications of <em>domino.js</em> instanciation:</p>
+
+<ul>
+<li><code>{?string}</code> <strong>name</strong></li>
+<li><code>{?array}</code> <strong>properties</strong>: Each element of the array must be an <code>object</code> with:
+
+<ul>
+<li><code>{string}</code> <strong>id</strong></li>
+<li><code>{?string}</code> <strong>label</strong></li>
+<li><code>{?(string|object)}</code> <strong>type</strong></li>
+<li><code>{?*}</code> <strong>value</strong></li>
+<li><code>{?function}</code> <strong>setter</strong></li>
+<li><code>{?function}</code> <strong>getter</strong></li>
+<li><code>{?(string|array)}</code> <strong>triggers</strong></li>
+<li><code>{?(string|array)}</code> <strong>dispatch</strong></li>
+</ul></li>
+<li><code>{?array}</code> <strong>hacks</strong>: Each element of the array must be an <code>object</code> with:
+
+<ul>
+<li><code>{string|array}</code> <strong>triggers</strong></li>
+<li><code>{?(string|array)}</code> <strong>dispatch</strong></li>
+<li><code>{?function}</code> <strong>method</strong></li>
+</ul></li>
+<li><code>{?array}</code> <strong>services</strong>: Each element of the array must be an <code>object</code> with:
+
+<ul>
+<li><code>{string}</code> <strong>id</strong></li>
+<li><code>{string|function}</code> <strong>url</strong></li>
+<li><code>{?string}</code> <strong>contentType</strong></li>
+<li><code>{?string}</code> <strong>dataType</strong></li>
+<li><code>{?string}</code> <strong>type</strong></li>
+<li><code>{?(*|function)}</code> <strong>data</strong></li>
+<li><code>{?function}</code> <strong>error</strong></li>
+<li><code>{?function}</code> <strong>before</strong></li>
+<li><code>{?function}</code> <strong>success</strong></li>
+<li><code>{?function}</code> <strong>expect</strong></li>
+<li><code>{?string}</code> <strong>setter</strong></li>
+<li><code>{?(string|array)}</code> <strong>path</strong></li>
+<li><code>{?(string|array)}</code> <strong>events</strong></li>
+</ul></li>
+<li><code>{?array}</code> <strong>shortcuts</strong>: Each element of the array must be an <code>object</code> with:
+
+<ul>
+<li><code>{string}</code> <strong>id</strong></li>
+<li><code>{function}</code> <strong>method</strong></li>
+</ul></li>
+</ul>
+
 <h2 id="main_loop_inside_domino_js">Main loop: Inside <em>domino.js</em> <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 <p>The core function in <em>domino.js</em> manages the events chain.</p>
@@ -723,7 +801,7 @@
 </pre>
 </div>
 
-<h3 id="toc_7">Default scope methods:</h3>
+<h3 id="toc_8">Default scope methods:</h3>
 
 <p>Here is the default methods that any of the functions you give to <em>domino.js</em> will find in its scope.</p>
 
@@ -765,7 +843,7 @@
 </ul></li>
 </ul>
 
-<h3 id="toc_8">Additional methods:</h3>
+<h3 id="toc_9">Additional methods:</h3>
 
 <p>Also, some functions you will give to <em>domino.js</em> will have access to some more methods, that can update properties or call AJAX services. Here is the list of thoses methods:</p>
 
@@ -794,7 +872,7 @@
 
 <p><strong>Important</strong>: All the methods described (the default and the additional ones) are also available in the object returned by the <em>domino.js</em> constructor itself. Also, the default scope is always given as the <strong>first</strong> parameter to the modules constructors.</p>
 
-<h3 id="toc_9">Functions given to domino:</h3>
+<h3 id="toc_10">Functions given to domino:</h3>
 
 <p>Here is the list of every types of functions you can give to <em>domino.js</em>, with the related specifications (what you can modify directly in the scope, which parameters are given, which additional methods are available):</p>
 

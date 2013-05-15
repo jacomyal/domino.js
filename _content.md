@@ -1,7 +1,7 @@
 domino.js
 =========
 
-Current version: **v1.21**
+Current version: **v1.2.2**
 
 *domino.js* is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by [Alexis Jacomy](http://github.com/jacomyal) at [Linkfluence](http://github.com/linkfluence). It is released under the [MIT License](https://raw.github.com/jacomyal/domino.js/master/LICENSE.txt).
 
@@ -24,7 +24,7 @@ You can also minify your own version:
 
 ### Contributing:
 
-You can contribute by submitting [issues tickets](http://github.com/jacomyal/domino.js/issues) and proposing [pull requests](http://github.com/jacomyal/domino.js/pulls).
+You can contribute by submitting [issues tickets](http://github.com/jacomyal/domino.js/issues) and proposing [pull requests](http://github.com/jacomyal/domino.js/pulls). The changelog is accessible [here](https://github.com/jacomyal/domino.js#changelog).
 
 <hr />
 
@@ -35,6 +35,7 @@ You can contribute by submitting [issues tickets](http://github.com/jacomyal/dom
  - [Modules](#modules)
  - [Hacks](#hacks)
  - [Services](#services)
+ - [Specifications summary](#specifications)
  - [Main loop: Inside *domino.js*](#main_loop_inside_domino_js)
  - [Scopes management](#scopes_management)
  - [Logs and global settings](#logs_and_global_settings)
@@ -180,6 +181,8 @@ emettor.updateString('abcdefghi');
 
 The minimal declaration of a property is just a unique string **id**. Here is the exhaustive list of all the other parameters you can add to describe your property:
 
+ - `{string}` **id**:
+   * The id of the property.
  - `{?string}` **label**:
    * The label of the property (the ID by default)
  - `{?(string|object)}` **type**:
@@ -341,6 +344,17 @@ var d = new domino({
 And that's it: Any time one flag is updated, the list will automatically be refreshed, and the event "listUpdated" dispatched.
 
 The different methods you can call from the hacks are described in the **[Scopes management](#scopes_management)** section.
+
+### Specifications:
+
+Each hack must be an `object`
+
+ - `{string|array}` **triggers**:
+   * At least one event that will trigger the hack.
+ - `{?(string|array)}` **dispatch**:
+   * Eventually one or more events that will be dispatched when the hack is triggered.
+ - `{?function}` **method**:
+   * Eventually a function that will be executed when the hack is triggered. It takes the event that triggered the hack as only parameter. Its scope is described in the **[Scopes management](#scopes_management)** section.
 
 <h2 id="services">Services <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
@@ -546,6 +560,42 @@ Finally, here is a precise description of the options given to the `request` met
    * Overrides the original service "expect" value.
  - `{?string}` **type**:
    * Overrides the AJAX call type (GET|POST|DELETE).
+
+<h2 id="specifications">Specifications summary <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
+
+Here is a summary of the specifications of <em>domino.js</em> instanciation:
+
+ - `{?string}` **name**
+ - `{?array}` **properties**: Each element of the array must be an `object` with:
+   + `{string}` **id**
+   + `{?string}` **label**
+   + `{?(string|object)}` **type**
+   + `{?*}` **value**
+   + `{?function}` **setter**
+   + `{?function}` **getter**
+   + `{?(string|array)}` **triggers**
+   + `{?(string|array)}` **dispatch**
+ - `{?array}` **hacks**: Each element of the array must be an `object` with:
+   + `{string|array}` **triggers**
+   + `{?(string|array)}` **dispatch**
+   + `{?function}` **method**
+ - `{?array}` **services**: Each element of the array must be an `object` with:
+   + `{string}` **id**
+   + `{string|function}` **url**
+   + `{?string}` **contentType**
+   + `{?string}` **dataType**
+   + `{?string}` **type**
+   + `{?(*|function)}` **data**
+   + `{?function}` **error**
+   + `{?function}` **before**
+   + `{?function}` **success**
+   + `{?function}` **expect**
+   + `{?string}` **setter**
+   + `{?(string|array)}` **path**
+   + `{?(string|array)}` **events**
+ - `{?array}` **shortcuts**: Each element of the array must be an `object` with:
+   + `{string}` **id**
+   + `{function}` **method**
 
 <h2 id="main_loop_inside_domino_js">Main loop: Inside <em>domino.js</em> <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
