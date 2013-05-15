@@ -32,7 +32,16 @@ The whole source code is validated by the [Google Closure Linter](https://develo
 
 ### ChangeLog
 
-#### 1.21 (April 12, 2013)
+#### 1.2.2 (May 15, 2013)
+
+ - Fixed #10: Added log when `expect` callbacks fail
+ - Fixed #11: Added an access to the global configuration hash of any instance, through the method `configuration`
+ - Fixed #20: Added an `update` method in scopes
+ - Added `addEventListener`, `removeEventListener` and `getEvent` access in global instances
+ - Cleaned up existing tests and examples
+ - Added unit tests for `hacks`
+
+#### 1.2.1 (April 12, 2013)
 
  - `src/domino.modules.js` has moved to `examples/modules.js`
  - Added emitter reference to the main loop.
@@ -51,7 +60,7 @@ The whole source code is validated by the [Google Closure Linter](https://develo
  - Added unit tests for services.
  - Added a sample with two instances communicating through a server emulated with [jquery.mockjax.js](https://github.com/appendto/jquery-mockjax).
 
-#### 1.11 (January 18, 2013)
+#### 1.1.1 (January 18, 2013)
 
  - Fixed #1: `request` and `dispatchEvent` have the same behaviour from instance and from scopes.
  - Fixed #4: `request` and `dispatchEvent` from scopes are disabled when the scopes are analyzed.
