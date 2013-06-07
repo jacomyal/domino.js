@@ -203,6 +203,7 @@
         scope.request = _request;
         scope.settings = _settings;
         scope.addModule = _addModule;
+        scope.killModule = _killModule;
         scope.getEvent = function() {
           _self.getEvent.apply(_self, arguments);
         };
@@ -873,7 +874,7 @@
     }
 
     /**
-     * This module will create and reference a module, and return it
+     * This method will create and reference a module, and return it.
      *
      * @param   {function} klass   The module class constructor.
      * @param   {?array}   params  The array of the parameters to give to the
@@ -948,6 +949,88 @@
 
       // Finalize:
       _modules.push(module);
+      return module;
+    }
+
+    /**
+     * This method will unreference a module: It will remove ascending and
+     * descending bindings, and remove the reference of the module. Although,
+     * it will not remove other eventual bindings.
+     *
+     * @param   {*}       klass   The module instance.
+     * @param   {?object} options An object containing some more precise
+     *                            indications about the service (currently not
+     *                            used).
+     *
+     * @return {*} Returns the module just unreferenced.
+     */
+    function _killModule(module) {
+      var i,
+          l,
+          a,
+          f,
+          event,
+          property,
+          triggers,
+          unbind = {};
+
+      // First, let's check that the module is referenced:
+      if (_modules.indexOf(module) < 0) {
+        _self.warn('The module you try to kill is actually not referenced.');
+        return module;
+      }
+
+      // If referenced, let's remove the triggers:
+      triggers = module.triggers || {};
+
+      // Remove events bindings:
+      for (event in triggers.events) {
+        a = _eventListeners[event];
+        f = triggers.events[event];
+
+        // Remove the function reference:
+        if (a && a.length)
+          for (i = 0, l = a.length; i < l; i++)
+            if (a[i] === f)
+              a.splice(i, 1);
+
+        // Unreference the event if no more bindings:
+        if (a && !a.length)
+          delete _eventListeners[event]
+      }
+
+      // Remove properties bindings:
+      for (property in triggers.properties) {
+        a = _propertyListeners[property];
+        f = triggers.properties[property];
+
+        // Remove the function reference:
+        if (a && a.length)
+          for (i = 0, l = a.length; i < l; i++)
+            if (a[i] === f)
+              a.splice(i, 1);
+
+        // Unreference the property if no more bindings:
+        if (a && !a.length)
+          delete _propertyListeners[property]
+      }
+
+      // Remove ascending bindings:
+      for (event in _ascending || {})
+        unbind[event] = 1;
+
+      for (event in _hackMethods || {})
+        unbind[event] = 1;
+
+      for (event in _hackDispatch || {})
+        unbind[event] = 1;
+
+      for (event in unbind)
+        module.removeEventListener(event, _triggerMainLoop);
+
+      // Remove the module reference:
+      _modules.splice(_modules.indexOf(module), 1);
+
       return module;
     }
 
