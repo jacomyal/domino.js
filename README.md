@@ -32,6 +32,11 @@ The whole source code is validated by the [Google Closure Linter](https://develo
 
 ### ChangeLog
 
+#### 1.2.3 (June 7, 2013)
+
+ - Added the  `killModule` method to cleanly remove every bindings between a module and its related `domino` instance.
+ - Fixed #22: Hacks `description` field added for logging. Set the parameter `"logDescriptions"` to `false` to quit logging hacks descriptions.
+
 #### 1.2.2 (May 15, 2013)
 
  - Fixed #10: Added log when `expect` callbacks fail
