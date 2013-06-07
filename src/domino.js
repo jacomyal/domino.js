@@ -507,7 +507,7 @@
         // Descriptions to log:
         if (o['description'])
           _hackDescription[a[i]] = _hackDescription[a[i]].concat(
-            _utils.array(o['description'])
+            o['description']
           );
 
         // Method to execute:
