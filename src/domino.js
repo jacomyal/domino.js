@@ -93,7 +93,8 @@
 
     // Hacks management:
     var _hackMethods = {},
-        _hackDispatch = {};
+        _hackDispatch = {},
+        _hackDescription = {};
 
     // AJAX management:
     var _services = {},
@@ -473,16 +474,19 @@
      *
      * Here is the list of options that are interpreted:
      *
-     *   {(array|string)}  triggers The list of events that can trigger the
-     *                              hack. Can be an array or the list of
-     *                              events separated by spaces.
-     *   {?(array|string)} dispatch The list of events that will be triggered
-     *                              after actionning the hack. Can be an array
-     *                              or the list of events separated by spaces.
-     *                              spaces.
-     *   {?function}       method   A method to execute after receiving a
-     *                              trigger and before dispatching the
-     *                              specified events.
+     *   {(array|string)}  triggers    The list of events that can trigger the
+     *                                 hack. Can be an array or the list of
+     *                                 events separated by spaces.
+     *   {?(array|string)} dispatch    The list of events that will be
+     *                                 triggered after actionning the hack. Can
+     *                                 be an array or the list of events
+     *                                 separated by spaces.
+     *   {?function}       method      A method to execute after receiving a
+     *                                 trigger and before dispatching the
+     *                                 specified events.
+     *   {?string}         description A string describing what the hack does.
+     *                                 It will be logged everytime the hack is
+     *                                 triggered.
      */
     function _addHack(options) {
       var a, i,
@@ -496,8 +500,15 @@
 
       a = _utils.array(o['triggers']);
       for (i in a) {
+        _hackDescription[a[i]] = _hackDescription[a[i]] || [];
         _hackDispatch[a[i]] = _hackDispatch[a[i]] || [];
         _hackMethods[a[i]] = _hackMethods[a[i]] || [];
+
+        // Descriptions to log:
+        if (o['description'])
+          _hackDescription[a[i]] = _hackDescription[a[i]].concat(
+            _utils.array(o['description'])
+          );
 
         // Method to execute:
         if (o['method'])
@@ -944,6 +955,9 @@
       for (event in _hackDispatch || {})
         bind[event] = 1;
 
+      for (event in _hackDescription || {})
+        bind[event] = 1;
+
       for (event in bind)
         module.addEventListener(event, _triggerMainLoop);
 
@@ -1023,6 +1037,9 @@
         unbind[event] = 1;
 
       for (event in _hackDispatch || {})
+        unbind[event] = 1;
+
+      for (event in _hackDescription || {})
         unbind[event] = 1;
 
       for (event in unbind)
@@ -1245,6 +1262,10 @@
           e = _hackDispatch[event.type][j];
           dispatch[e] = _self.getEvent(e);
         }
+
+        if (_settings('logDescriptions'))
+          for (j in _hackDescription[event.type] || [])
+            _log('[HACK]', _hackDescription[event.type][j]);
       }
 
       for (event in dispatch) {
@@ -2210,6 +2231,7 @@
     displayTime: false,
     shortcutPrefix: ':',
     mergeRequests: true,
+    logDescriptions: true,
     clone: false
   };
 
