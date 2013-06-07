@@ -1,7 +1,7 @@
 domino.js
 =========
 
-Current version: **v1.2.2**
+Current version: **v1.2.3**
 
 *domino.js* is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by [Alexis Jacomy](http://github.com/jacomyal) at [Linkfluence](http://github.com/linkfluence). It is released under the [MIT License](https://raw.github.com/jacomyal/domino.js/master/LICENSE.txt).
 
@@ -39,6 +39,7 @@ You can contribute by submitting [issues tickets](http://github.com/jacomyal/dom
  - [Main loop: Inside *domino.js*](#main_loop_inside_domino_js)
  - [Scopes management](#scopes_management)
  - [Logs and global settings](#logs_and_global_settings)
+ - [Killing instances and modules](#killing)
  - [Structures](#structures)
 
 <hr />
@@ -355,6 +356,8 @@ Each hack must be an `object`
    * Eventually one or more events that will be dispatched when the hack is triggered.
  - `{?function}` **method**:
    * Eventually a function that will be executed when the hack is triggered. It takes the event that triggered the hack as only parameter. Its scope is described in the **[Scopes management](#scopes_management)** section.
+ - `{?string}` **description**:
+   * Eventually a descriptions string that will be logged when the hack is triggered.
 
 <h2 id="services">Services <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
@@ -579,6 +582,7 @@ Here is a summary of the specifications of <em>domino.js</em> instanciation:
    + `{string|array}` **triggers**
    + `{?(string|array)}` **dispatch**
    + `{?function}` **method**
+   + `{?string}` **description**
  - `{?array}` **services**: Each element of the array must be an `object` with:
    + `{string}` **id**
    + `{string|function}` **url**
@@ -820,6 +824,7 @@ Here is the list of currently recognized global settings:
  - **verbose**: If `true`, logs will be sent in `console.log` (default: `false`).
  - **shortcutPrefix**: Determines the shortcuts prefix (default: `":"`).
  - **displayTime**: If `true`, logs will be prefixed by the time since *domino.js* initialization, in milliseconds (default: `false`).
+ - **logDescriptions**: If `true`, hacks description will be logged when the related hacks are triggered (default: `true`).
  - **maxDepth**: If a positive number (say `N`), if a loop exceeds the `N`-th iteration, domino throws an error (default: `0`).
  - **mergeRequests**:
    + If `true`, when several requests are called at the same time, domino will wait for each of them to succeed before starting a unique loop, instead of starting one loop for each service (default: `true`).
@@ -836,6 +841,26 @@ Also, *domino.js* provides its own functions to log, warn or throw errors:
  - `warn(args...)` will call `die(args...)` if the global setting `strict` is true, `log(args...)` otherwise.
 
 Finally, all the logs/warns/errors will be prefixed by the instance name if specified (the string `"domino"` otherwise).
+
+<h2 id="killing">Killing instances and modules <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
+
+### Killing modules:
+
+It is possible to destroy a module by calling the method `killModule()` of the related domino instance. It will basically destroy every ascending or descending connections between the module and the instance:
+
+```js
+// Kill the module:
+d.killModule(myModule);
+```
+
+### Killing a domino instance:
+
+Also, it is possible to kill a domino instance, by calling its method `kill()`. It will basically remove every external reference in the instance, and destroy every connections with eventually existing modules. Also, if the instance as a name, it will be possible again to call an instance with the same name.
+
+```js
+// Kill the instance:
+d.kill();
+```
 
 <h2 id="structures">Structures <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 

@@ -34,7 +34,7 @@
       </header>
       <section><h1 id="toc_0">domino.js</h1>
 
-<p>Current version: <strong>v1.2.2</strong></p>
+<p>Current version: <strong>v1.2.3</strong></p>
 
 <p><em>domino.js</em> is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by <a href="http://github.com/jacomyal">Alexis Jacomy</a> at <a href="http://github.com/linkfluence">Linkfluence</a>. It is released under the <a href="https://raw.github.com/jacomyal/domino.js/master/LICENSE.txt">MIT License</a>.</p>
 
@@ -72,6 +72,7 @@
 <li><a href="#main_loop_inside_domino_js">Main loop: Inside <em>domino.js</em></a></li>
 <li><a href="#scopes_management">Scopes management</a></li>
 <li><a href="#logs_and_global_settings">Logs and global settings</a></li>
+<li><a href="#killing">Killing instances and modules</a></li>
 <li><a href="#structures">Structures</a></li>
 </ul>
 
@@ -423,6 +424,11 @@
 <ul>
 <li>Eventually a function that will be executed when the hack is triggered. It takes the event that triggered the hack as only parameter. Its scope is described in the <strong><a href="#scopes_management">Scopes management</a></strong> section.</li>
 </ul></li>
+<li><code>{?string}</code> <strong>description</strong>:
+
+<ul>
+<li>Eventually a descriptions string that will be logged when the hack is triggered.</li>
+</ul></li>
 </ul>
 
 <h2 id="services">Services <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
@@ -738,6 +744,7 @@
 <li><code>{string|array}</code> <strong>triggers</strong></li>
 <li><code>{?(string|array)}</code> <strong>dispatch</strong></li>
 <li><code>{?function}</code> <strong>method</strong></li>
+<li><code>{?string}</code> <strong>description</strong></li>
 </ul></li>
 <li><code>{?array}</code> <strong>services</strong>: Each element of the array must be an <code>object</code> with:
 
@@ -1108,6 +1115,7 @@
 <li><strong>verbose</strong>: If <code>true</code>, logs will be sent in <code>console.log</code> (default: <code>false</code>).</li>
 <li><strong>shortcutPrefix</strong>: Determines the shortcuts prefix (default: <code>&quot;:&quot;</code>).</li>
 <li><strong>displayTime</strong>: If <code>true</code>, logs will be prefixed by the time since <em>domino.js</em> initialization, in milliseconds (default: <code>false</code>).</li>
+<li><strong>logDescriptions</strong>: If <code>true</code>, hacks description will be logged when the related hacks are triggered (default: <code>true</code>).</li>
 <li><strong>maxDepth</strong>: If a positive number (say <code>N</code>), if a loop exceeds the <code>N</code>-th iteration, domino throws an error (default: <code>0</code>).</li>
 <li><strong>mergeRequests</strong>:
 
@@ -1136,6 +1144,24 @@
 </ul>
 
 <p>Finally, all the logs/warns/errors will be prefixed by the instance name if specified (the string <code>&quot;domino&quot;</code> otherwise).</p>
+
+<h2 id="killing">Killing instances and modules <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
+
+<h3 id="toc_11">Killing modules:</h3>
+
+<p>It is possible to destroy a module by calling the method <code>killModule()</code> of the related domino instance. It will basically destroy every ascending or descending connections between the module and the instance:</p>
+<div class="highlight"><pre><span class="c1">// Kill the module:</span>
+<span class="nx">d</span><span class="p">.</span><span class="nx">killModule</span><span class="p">(</span><span class="nx">myModule</span><span class="p">);</span>
+</pre>
+</div>
+
+<h3 id="toc_12">Killing a domino instance:</h3>
+
+<p>Also, it is possible to kill a domino instance, by calling its method <code>kill()</code>. It will basically remove every external reference in the instance, and destroy every connections with eventually existing modules. Also, if the instance as a name, it will be possible again to call an instance with the same name.</p>
+<div class="highlight"><pre><span class="c1">// Kill the instance:</span>
+<span class="nx">d</span><span class="p">.</span><span class="nx">kill</span><span class="p">();</span>
+</pre>
+</div>
 
 <h2 id="structures">Structures <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
