@@ -152,6 +152,21 @@ asyncTest('Services', function() {
           this.prop_8 = 'def';
         }
       }
+    },
+    {
+      data: 'abc',
+      expected: 'def',
+      label: 'Dispatch an event with data',
+      params: {
+        type: 'POST',
+        contentType: 'application/json',
+        data: { value: 'def' },
+        success: function(data) {
+          this.dispatchEvent('update_prop_9', {
+            prop_9: data.prop_9
+          });
+        }
+      }
     }
   ];
 
@@ -167,6 +182,7 @@ asyncTest('Services', function() {
       return {
         id: 'prop_' + i,
         dispatch: 'prop_' + i + '_updated',
+        triggers: 'update_prop_' + i,
         type: '?*'
       };
     }),

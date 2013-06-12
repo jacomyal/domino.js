@@ -264,10 +264,7 @@
           });
 
           scope.dispatchEvent = function(type, data) {
-            this._events.push({
-              type: type,
-              data: data
-            });
+            this._events.push(_self.getEvent(type, data));
 
             return this;
           };
@@ -796,7 +793,7 @@
             a = _utils.array(obj['events']);
             for (k in a) {
               reiterate = true;
-              dispatch[a[k].type] = 1;
+              dispatch[a[k].type] = a[k];
             }
 
             for (k in obj['update'])
@@ -820,8 +817,14 @@
 
           // Check events to dispatch:
           events = [];
-          for (event in dispatch)
-            events.push(_self.getEvent(event));
+          console.log(dispatch);
+          for (event in dispatch) {
+            events.push(
+              dispatch[event] === 1 ?
+                _self.getEvent(event) :
+                dispatch[event]
+            );
+          }
 
           // Start looping:
           if (reiterate)
