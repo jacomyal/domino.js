@@ -2003,7 +2003,7 @@
     }
 
     return {
-      add: function(a1, a2, a3) {
+      add: function(a1, a2) {
         var k, a, id, tmp, struct, o;
 
         // Check errors:
@@ -2091,9 +2091,10 @@
           String(obj) :
           class2type[Object.prototype.toString.call(obj)] || 'object';
       },
-      check: function(type, obj) {
+      check: function(type, obj, params) {
         var a, i,
-            typeOf = this.get(obj);
+            typeOf = this.get(obj),
+            p = params || {};
 
         if (this.get(type) === 'string') {
           a = type.replace(/^\?/, '').split(/\|/);
@@ -2111,9 +2112,9 @@
           for (i in a)
             if (customs[a[i]])
               if (
-                (this.get(customs[a[i]].struct) === 'function') &&
-                (customs[a[i]].struct(obj) === true) ||
-                this.check(customs[a[i]].struct, obj)
+                (this.get(customs[a[i]].struct) === 'function') ?
+                (customs[a[i]].struct(obj) === true) :
+                this.check(customs[a[i]].struct, obj, customs[a[i]])
               )
                 return true;
 
@@ -2127,9 +2128,10 @@
             if (!this.check(type[k], obj[k]))
               return false;
 
-          for (k in obj)
-            if (type[k] === undefined)
-              return false;
+          if (!p.includes)
+            for (k in obj)
+              if (type[k] === undefined)
+                return false;
 
           return true;
         } else if (this.get(type) === 'array') {

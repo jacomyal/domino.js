@@ -138,6 +138,9 @@ test('domino.struct.check', function() {
     /Error\: \[[^\]]*\] Invalid type/,
     'Deep invalid type 1 detected'
   );
+  deepEqual(domino.struct.check({a: 'number'}, {a: 42}, {includes: true}), true, '{a: "number"}, {a: 42} matches (with "includes" flag on)');
+  deepEqual(domino.struct.check({a: 'number'}, {a: 42, b: 1337}), false, '{a: "number"}, {a: 42, b: 1337} does not match (with "includes" flag off)');
+  deepEqual(domino.struct.check({a: 'number'}, {a: 42, b: 1337}, {includes: true}), true, '{a: "number"}, {a: 42, b: 1337} matches (with "includes" flag on)');
 });
 
 // domino.struct.deepScalar():
@@ -216,6 +219,30 @@ test('Custom structures', function() {
     },
     e: 2.4
   }), false, 'domino.struct.check("template", ...) works again');
+
+  // Create an advanced structure with the "includes" flag:
+  domino.struct.add({
+    id: 'includesTest',
+    includes: true,
+    struct: {
+      a: 'number'
+    }
+  });
+
+  deepEqual(domino.struct.check('includesTest', {
+    a: 42
+  }), true, '"includes"-like structures do not need other attributes.');
+  deepEqual(domino.struct.check('includesTest', {
+    a: 42,
+    b: 'toto'
+  }), true, '"includes"-like structures can have other attributes.');
+  deepEqual(domino.struct.check('includesTest', {
+    a: 'NotANumber'
+  }), false, '"includes"-like structures need to have their values valid when they have no other attribute.');
+  deepEqual(domino.struct.check('includesTest', {
+    a: 'NotANumber',
+    b: 'toto'
+  }), false, '"includes"-like structures need to have their values valid when they have other attributes.');
 
   // Create a recursive structure:
   domino.struct.add({
