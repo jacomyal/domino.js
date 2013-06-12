@@ -83,6 +83,15 @@
     var _modules = [],
         _referencedModules = {};
 
+    // Descriptions (for the "help()" method):
+    //   (hacks descriptions are managed through ascending events, in
+    //    _hackAscDescription and _hackDescDescription)
+    var _descriptions = {
+      properties: {},
+      shortcuts: {},
+      services: {}
+    };
+
     // Incremental loops id:
     var _loopId = 0;
 
@@ -95,7 +104,9 @@
     // Hacks management:
     var _hackMethods = {},
         _hackDispatch = {},
-        _hackDescription = {};
+        _hackDescription = [],
+        _hackAscDescription = {},
+        _hackDescDescription = {};
 
     // AJAX management:
     var _services = {},
@@ -160,7 +171,7 @@
         _addService(_o.services[i]);
 
       for (i in _o.shortcuts || [])
-        _addShortcut(_o.shortcuts[i]['id'], _o.shortcuts[i]['method']);
+        _addShortcut(_o.shortcuts[i]);
     })();
 
     _config = _utils.clone(_o);
@@ -200,6 +211,7 @@
       // features. This scope is basically the "public view" of the domino
       // instance:
       if (o.full) {
+        scope.help = _help;
         scope.kill = _kill;
         scope.update = _update;
         scope.request = _request;
@@ -372,6 +384,10 @@
       // Label:
       _labels[id] = o['label'] || id;
 
+      // Description:
+      if (o['description'])
+        _descriptions.properties[o['id']] = o['description'];
+
       // Type:
       if (o['type'] !== undefined)
         if (!_struct.isValid(o['type']))
@@ -497,15 +513,18 @@
           'A hack requires at least one trigger to be bound'
         );
 
+      if (o['description'])
+        _hackDescription.push(o['description']);
+
       a = _utils.array(o['triggers']);
       for (i in a) {
-        _hackDescription[a[i]] = _hackDescription[a[i]] || [];
+        _hackAscDescription[a[i]] = _hackAscDescription[a[i]] || [];
         _hackDispatch[a[i]] = _hackDispatch[a[i]] || [];
         _hackMethods[a[i]] = _hackMethods[a[i]] || [];
 
         // Descriptions to log:
         if (o['description'])
-          _hackDescription[a[i]] = _hackDescription[a[i]].concat(
+          _hackAscDescription[a[i]] = _hackAscDescription[a[i]].concat(
             o['description']
           );
 
@@ -517,6 +536,16 @@
         if (o['dispatch'])
           _hackDispatch[a[i]] = _hackDispatch[a[i]].concat(
             _utils.array(o['dispatch'])
+          );
+      }
+
+      a = _utils.array(o['dispatch']);
+      for (i in a) {
+        _hackDescDescription[a[i]] = _hackDescDescription[a[i]] || [];
+
+        if (o['description'])
+          _hackDescDescription[a[i]] = _hackDescDescription[a[i]].concat(
+            o['description']
           );
       }
 
@@ -600,6 +629,10 @@
         _die(
           'The service "' + o['id'] + '" already exists.'
         );
+
+      // Description:
+      if (o['description'])
+        _descriptions.services[o['id']] = o['description'];
 
       _services[o['id']] = function(params) {
         _log('Calling service "' + o['id'] + '".');
@@ -867,12 +900,22 @@
      * Any property is already registered as shortcut (that returns then the
      * value when called), but can be overridden safely.
      *
-     * @param   {string}   id     The string to use to call the shortcut.
-     * @param   {function} method The method to call.
+     * @param   {?Object} options An object containing some more precise
+     *                            indications about the service.
+     *
+     * Here is the list of options that are interpreted:
+     *
+     * @param   {string}   id          The string to use to call the shortcut.
+     * @param   {function} method      The method to call.
+     * @param   {?string}  description The description of the shortcut.
      *
      * @return {domino} Returns the domino instance itself.
      */
-    function _addShortcut(id, method) {
+    function _addShortcut(options) {
+      var o = options || {},
+          id = o['id'],
+          method = o['method'];
+
       // Check errors:
       if (id === undefined)
         _die('Shortcut ID not specified.');
@@ -882,6 +925,10 @@
 
       if (method === undefined)
         _die('Shortcut method not specified.');
+
+      // Description:
+      if (o['description'])
+        _descriptions.shortcuts[id] = o['description'];
 
       // Add shortcut:
       _shortcuts[id] = method;
@@ -962,7 +1009,7 @@
       for (event in _hackDispatch || {})
         bind[event] = 1;
 
-      for (event in _hackDescription || {})
+      for (event in _hackAscDescription || {})
         bind[event] = 1;
 
       for (event in bind)
@@ -1059,7 +1106,7 @@
       for (event in _hackDispatch || {})
         unbind[event] = 1;
 
-      for (event in _hackDescription || {})
+      for (event in _hackAscDescription || {})
         unbind[event] = 1;
 
       for (event in unbind)
@@ -1291,8 +1338,8 @@
         }
 
         if (_settings('logDescriptions'))
-          for (j in _hackDescription[event.type] || [])
-            _log('[HACK]', _hackDescription[event.type][j]);
+          for (j in _hackAscDescription[event.type] || [])
+            _log('[HACK]', _hackAscDescription[event.type][j]);
       }
 
       for (event in dispatch) {
@@ -1726,6 +1773,121 @@
         return _utils.clone(_config[key]);
       else
         return _utils.clone(_config);
+    }
+
+    /**
+     * This method returns descriptions about some/every shortcuts, properties,
+     * hacks and/or services. Here are some use examples:
+     *
+     *   > // The two following test cases work exactly samely for shortcuts
+     *   > // and services:
+     *   >
+     *   > domInst.help('properties', 'myProperty1');
+     *   > // Returns something like: 'Description of myProperty1'
+     *   >
+     *   > domInst.help('properties');
+     *   > // Returns something like:
+     *   > // {
+     *   > //   myProperty1: 'Description of myProperty1',
+     *   > //   myProperty2: 'Description of myProperty2',
+     *   > //   myProperty3: '[no description is specified]'
+     *   > // }
+     *
+     *   > // Here is how it works for hacks:
+     *   > domInst.help('hacks', 'trigger', 'myEvent1');
+     *   > // Returns something like:
+     *   > // [
+     *   > //   'Description of my hack n°1',
+     *   > //   'Description of my hack n°2'
+     *   > // ]
+     *   > domInst.help('hacks', 'dispatch', 'myEvent2');
+     *   > // Returns something like: 'Description of my hack n°1'
+     *   > domInst.help('hacks');
+     *   > // Returns something like:
+     *   > // [
+     *   > //   'Description of my hack n°1',
+     *   > //   'Description of my hack n°2',
+     *   > //   'Description of my hack n°3'
+     *   > // ]
+     *
+     *   > // Finally, it is possible to display everything:
+     *   > domInst.help('full');
+     *   > // Returns something like:
+     *   > // {
+     *   > //   properties: {
+     *   > //     myProperty1: 'Description of myProperty1',
+     *   > //     myProperty2: 'Description of myProperty2',
+     *   > //     myProperty3: '[no description is specified]'
+     *   > //   },
+     *   > //   services: {
+     *   > //     myService1: 'Description of myService1',
+     *   > //     myService2: 'Description of myService2',
+     *   > //     myService3: '[no description is specified]'
+     *   > //   },
+     *   > //   shortcuts: {
+     *   > //     myShortcut1: 'Description of myShortcut1',
+     *   > //     myShortcut2: 'Description of myShortcut2',
+     *   > //     myShortcut3: '[no description is specified]'
+     *   > //   },
+     *   > //   hacks: [
+     *   > //     'Description of my hack n°1',
+     *   > //     'Description of my hack n°2',
+     *   > //     'Description of my hack n°3'
+     *   > //   ]
+     *   > // }
+     *
+     */
+    function _help(v1, v2, v3) {
+      var k,
+          o = {},
+          defaultMessage = '[no description is specified]';
+
+
+      switch (v1) {
+        case 'properties':
+          if (arguments.length === 1) {
+            for (k in _properties)
+              o[k] = _descriptions.properties[k] || defaultMessage;
+            return o;
+          } else {
+            return _descriptions.properties[v2] || defaultMessage;
+          }
+        case 'services':
+          if (arguments.length === 1) {
+            for (k in _services)
+              o[k] = _descriptions.services[k] || defaultMessage;
+            return o;
+          } else {
+            return _descriptions.services[v2] || defaultMessage;
+          }
+        case 'shortcuts':
+          if (arguments.length === 1) {
+            for (k in _shortcuts)
+              o[k] = _descriptions.shortcuts[k] || defaultMessage;
+            return o;
+          } else {
+            return _descriptions.shortcuts[v2] || defaultMessage;
+          }
+        case 'hacks':
+          if (arguments.length === 1)
+            return _hackDescription;
+          else if (arguments.length === 3) {
+            o = [];
+            if (v2 === 'trigger')
+              o = _hackAscDescription[v3];
+            else if (v2 === 'dispatch')
+              o = _hackDescDescription[v3];
+
+            return o.length === 1 ? o[0] : o;
+          }
+        case 'full':
+          return {
+            properties: _help('properties'),
+            shortcuts: _help('shortcuts'),
+            services: _help('services'),
+            hacks: _help('hacks')
+          };
+      }
     }
 
     /**
