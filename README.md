@@ -32,6 +32,16 @@ The whole source code is validated by the [Google Closure Linter](https://develo
 
 ### ChangeLog
 
+#### 1.2.4 (June 12, 2013)
+
+ - Fixed #29: Version info in development file
+ - Fixed #26: Descriptions management and `help()` instance method
+ - Fixed #32 (`dispatchEvent` not dispatching data when called from a service)
+ - Fixed #23: Referencing modules with unique IDs
+ - Fixed #28 (Uncaught error when `expect` callback fails)
+ - Fixed #27: Fixed "force" property parameter
+ - Fixed #30: Enabled "includes" flag in custom structures
+
 #### 1.2.3 (June 7, 2013)
 
  - Added the  `killModule` method to cleanly remove every bindings between a module and its related `domino` instance.
