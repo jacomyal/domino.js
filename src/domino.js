@@ -694,7 +694,7 @@
           }
 
         // Success management:
-        ajaxObj.success = function(data) {
+        ajaxObj.success = function(data, xhr) {
           var i, a, pushEvents, event, property,
               pathArray, d,
               dispatch = {},
@@ -715,7 +715,7 @@
             !expect.call(_getScope(), data, p, o)
           ) {
             _log('"expect" test failed for service "' + o['id'] + '".');
-            ajaxObj.error.call(this, 'Unexpected data received.', this.xhr());
+            ajaxObj.error.call(this, 'Unexpected data received.', xhr);
             return;
           }
 
