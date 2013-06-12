@@ -72,6 +72,14 @@ test('Properties management', function() {
   o.d.kill();
 
   // Test 4
+  o = init([{ id: 's', type: 'string', value: 'abc', triggers: 'updateS', dispatch: 'sUpdated', force: true}]);
+
+  // Here we update the property, but with the same value (and with the "force" flags), and we want to check that domino does trigger:
+  o.m.s.dispatch('abc');
+  deepEqual(o.m.s.historic.length, 2, 'Updating the string property with the same value does trigger the events when the flag "force" is on.');
+  o.d.kill();
+
+  // Test 5
   o = init([{ id: 's', type: {a: 'number', b: '?number'}, value: {a: 1}, triggers: 'updateS', dispatch: 'sUpdated'}]);
 
   // Here we simply update the value:
@@ -79,7 +87,7 @@ test('Properties management', function() {
   deepEqual(o.m.s.historic[o.m.s.historic.length-1], {a: 2, b: 1}, 'The complex property ("deeply atomic") has been successfully updated.');
   o.d.kill();
 
-  // Test 5
+  // Test 6
   o = init([{ id: 's', type: {a: 'number', b: '?number'}, value: {a: 1}, triggers: 'updateS', dispatch: 'sUpdated'}]);
 
   // Here we update the property, but with a different value, and we want to check that domino has triggered:
@@ -87,7 +95,7 @@ test('Properties management', function() {
   deepEqual(o.m.s.historic.length, 2, 'Updating the complex property ("deeply atomic") with a new value effectively triggers the events.');
   o.d.kill();
 
-  // Test 6
+  // Test 7
   o = init([{ id: 's', type: {a: 'number', b: '?number'}, value: {a: 1}, triggers: 'updateS', dispatch: 'sUpdated'}]);
 
   // Here we update the property, but with the same value, and we want to check that domino does not trigger:
@@ -95,7 +103,7 @@ test('Properties management', function() {
   deepEqual(o.m.s.historic.length, 1, 'Updating the complex property ("deeply atomic") with the same value does not trigger the events.');
   o.d.kill();
 
-  // Test 7
+  // Test 8
   o = init([{ id: 's', type: 'object', value: {a: 1}, triggers: 'updateS', dispatch: 'sUpdated'}]);
 
   // Here we simply update the value:
@@ -103,7 +111,7 @@ test('Properties management', function() {
   deepEqual(o.m.s.historic[o.m.s.historic.length-1], {a: 2, b: 1}, 'The object property has been successfully updated.');
   o.d.kill();
 
-  // Test 8
+  // Test 9
   o = init([{ id: 's', type: 'object', value: {a: 1}, triggers: 'updateS', dispatch: 'sUpdated'}]);
 
   // Here we update the property, but with a different value, and we want to check that domino has triggered:
@@ -111,7 +119,7 @@ test('Properties management', function() {
   deepEqual(o.m.s.historic.length, 2, 'Updating the object property with a new value effectively triggers the events.');
   o.d.kill();
 
-  // Test 9
+  // Test 10
   o = init([{ id: 's', type: 'object', value: {a: 1}, triggers: 'updateS', dispatch: 'sUpdated'}]);
 
   // Here we update the property, but with the same value, and we want to check that domino triggers anyway ('object' typed):
@@ -119,7 +127,7 @@ test('Properties management', function() {
   deepEqual(o.m.s.historic.length, 2, 'Updating the object property with the same value actually triggers the events.');
   o.d.kill();
 
-  // Test 10
+  // Test 11
   o = init([{
     id: 's',
     type: 'string',

@@ -1165,7 +1165,8 @@
         else {
           push =
             _set(property, updateObject[property]) ||
-            !!o['force'];
+            o['force'] ||
+            _checkPropertyParameter(property, 'force');
 
           if (push) {
             for (i in _propertyListeners[property])
@@ -1199,7 +1200,7 @@
         data = event.data || {};
 
         // Properties:
-        if (data || o['force']) {
+        if (data) {
           a = _ascending[event.type] || [];
           for (j in a) {
             if (data[a[j]] !== undefined) {
@@ -1313,11 +1314,11 @@
             inputValues: inputs
           });
 
-          return _doClone(property) ?
+          return _checkPropertyParameter(property, 'clone') ?
             _utils.clone(res['returned']) :
             res['returned'];
         } else
-          return _doClone(property) ?
+          return _checkPropertyParameter(property, 'clone') ?
             _utils.clone(_getters[property]()) :
             _getters[property]();
       } else
@@ -1342,7 +1343,7 @@
               arg = [],
               inputs = {};
 
-          if (_doClone(property))
+          if (_checkPropertyParameter(property, 'clone'))
             value = _utils.clone(value);
 
           inputs[property] = _get(property);
@@ -1366,7 +1367,7 @@
         } else
           return _setters[property].call(
             _getScope(),
-            _doClone(property) ?
+            _checkPropertyParameter(property, 'clone') ?
               _utils.clone(value) :
               value
           );
@@ -1686,9 +1687,9 @@
     /**
      * An helper to know if the property must be cloned or not:
      */
-    function _doClone(property) {
-      var c = (_propertyParameters[property] || {}).clone;
-      return c !== undefined ? !!c : _settings('clone');
+    function _checkPropertyParameter(property, parameter) {
+      var c = (_propertyParameters[property] || {})[parameter];
+      return c !== undefined ? !!c : _settings(parameter);
     }
 
     /**
