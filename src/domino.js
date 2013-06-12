@@ -80,7 +80,8 @@
         _overriddenSetters = {};
 
     // Modules:
-    var _modules = [];
+    var _modules = [],
+        _referencedModules = {};
 
     // Incremental loops id:
     var _loopId = 0;
@@ -203,6 +204,7 @@
         scope.update = _update;
         scope.request = _request;
         scope.settings = _settings;
+        scope.modules = _getModule;
         scope.addModule = _addModule;
         scope.killModule = _killModule;
         scope.getEvent = function() {
@@ -894,8 +896,7 @@
      *                             make it easier to find labels or events
      *                             related to any property.
      * @param   {?object}  options An object containing some more precise
-     *                             indications about the service (currently not
-     *                             used).
+     *                             indications about the service.
      *
      * @return {*} Returns the module just created.
      */
@@ -915,6 +916,9 @@
 
       if (_struct.get(klass) !== 'function')
         _die('First parameter must be a function.');
+
+      if (('id' in o) && (o.id in _referencedModules))
+        _die('The module with id "' + o.id + '" already exists.');
 
       // Instanciate the module:
       klass.apply(module, (params || []).concat(_getScope()));
@@ -962,8 +966,20 @@
         module.addEventListener(event, _triggerMainLoop);
 
       // Finalize:
+      if ('id' in o)
+        _referencedModules[o.id] = module;
+
       _modules.push(module);
       return module;
+    }
+
+    /**
+     * This method returns the module referenced by the specified id.
+     * @param  {string} id The id of the requested module.
+     * @return {*} Returns the module, if it exists.
+     */
+    function _getModule(id) {
+      return _referencedModules[id];
     }
 
     /**
@@ -971,22 +987,23 @@
      * descending bindings, and remove the reference of the module. Although,
      * it will not remove other eventual bindings.
      *
-     * @param   {*}       klass   The module instance.
-     * @param   {?object} options An object containing some more precise
-     *                            indications about the service (currently not
-     *                            used).
+     * @param   {*|string} module The module instance or its id.
      *
      * @return {*} Returns the module just unreferenced.
      */
     function _killModule(module) {
       var i,
           l,
+          k,
           a,
           f,
           event,
           property,
           triggers,
           unbind = {};
+
+      if (_struct.check('string', module))
+        module = _referencedModules[module];
 
       // First, let's check that the module is referenced:
       if (_modules.indexOf(module) < 0) {
@@ -1047,6 +1064,12 @@
 
       // Remove the module reference:
       _modules.splice(_modules.indexOf(module), 1);
+
+      for (k in _referencedModules)
+        if (_referencedModules[k] === module) {
+          delete _referencedModules[k];
+          break;
+        }
 
       return module;
     }

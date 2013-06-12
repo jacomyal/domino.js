@@ -6,6 +6,10 @@ domino.settings({
 
 module('domino instance');
 test('Modules management', function() {
+  var module,
+      module2,
+      domInstance;
+
   function moduleConstructor(d) {
     domino.module.call(this);
     var self = this,
@@ -37,7 +41,7 @@ test('Modules management', function() {
     }
   }
 
-  var domInstance = new domino({
+  domInstance = new domino({
     name: 'modules',
     properties: [
       {
@@ -65,7 +69,7 @@ test('Modules management', function() {
   });
 
   // Instanciate the module:
-  var module = domInstance.addModule(moduleConstructor);
+  module = domInstance.addModule(moduleConstructor);
 
   // Test bindings:
   deepEqual(module.p1(), 'p1:abc', 'Descending properties bindings are automatically called at the creation of the module.');
@@ -91,4 +95,35 @@ test('Modules management', function() {
 
   module.dispatch('p3:ghi');
   deepEqual(domInstance.get('p3'), 'p3:def', 'Ascending bindings are not received by domino instance when the module is killed.');
+
+  // Re-create a module, with id "myModule":
+  module = domInstance.addModule(moduleConstructor, null, {
+    id: 'myModule'
+  });
+
+  // Access the module through its id:
+  deepEqual(module, domInstance.modules('myModule'), 'Accessing referenced modules through the ".modules()" method works.');
+
+  // Try to create another module with the same id:
+  throws(
+    function() {
+      module2 = domInstance.addModule(moduleConstructor, null, {
+        id: 'myModule'
+      });
+    },
+    /The module with id "myModule" already exists/,
+    'Adding two modules with the same ID is not allowed.'
+  );
+
+  // Kill the module from its id:
+  domInstance.killModule('myModule');
+  ok(!domInstance.modules('myModule'), 'Killing a module with its id works.');
+
+  // Creates another module with the same id:
+  module2 = null;
+  module2 = domInstance.addModule(moduleConstructor, null, {
+    id: 'myModule'
+  });
+
+  ok(module2, 'Reference a module with the ID of a previously killed module works.');
 });
