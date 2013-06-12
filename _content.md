@@ -1,7 +1,7 @@
 domino.js
 =========
 
-Current version: **v1.2.3**
+Current version: **v1.2.4**
 
 *domino.js* is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by [Alexis Jacomy](http://github.com/jacomyal) at [Linkfluence](http://github.com/linkfluence). It is released under the [MIT License](https://raw.github.com/jacomyal/domino.js/master/LICENSE.txt).
 
@@ -35,6 +35,7 @@ You can contribute by submitting [issues tickets](http://github.com/jacomyal/dom
  - [Modules](#modules)
  - [Hacks](#hacks)
  - [Services](#services)
+ - [Help](#help)
  - [Specifications summary](#specifications)
  - [Main loop: Inside *domino.js*](#main_loop_inside_domino_js)
  - [Scopes management](#scopes_management)
@@ -198,6 +199,8 @@ The minimal declaration of a property is just a unique string **id**. Here is th
    * The list of events that can modify the property. Can be an array or the list of events separated by spaces.
  - `{?(string|array)}` **dispatch**:
    * The list of events that must be triggered after modification of the property. Can be an array or the list of events separated by spaces.
+ - `{?string}` **description**:
+   * Eventually a descriptions string that can be accessed through the `help()` instance method.
 
 Here is a more complete example on how to declare string:
 
@@ -291,6 +294,18 @@ myCheckbox.html.appendTo(dom);
 ```
 
 And that's it, the module is here and connected. And you can even create two instances or more, and there will not be any conflict, and they will all stay synchronized, of course.
+
+Also, it is possible to specify an id for a module. It is not possible to add two modules with the same id, the oldest one will have to be killed before. Also, the instance method `.modules()` can retrieve modules identified by the specified id.
+
+Here is how to add a module with a specified id:
+
+```js
+var myModule = d.addModule(MyModuleConstructor, null, { id: 'myModuleId' });
+
+// Then, it is possible to get a reference to that module through
+// the domino instance like that:
+myModule === d.modules('myModuleId'); // returns true
+```
 
 <h2 id="hacks">Hacks <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
@@ -465,6 +480,8 @@ Here is how *domino.js* resolves shortcuts:
  - Then, if still not resolved, it will check if there is a shortcut declared in the instance with the same name, and use the returned value if it exists.
  - Finally, if the shortcut can not be resolved, then an error is thrown.
 
+*Note*: It is possible to specify a `description` attribute for shortcuts, that can be accessed exactly as properties and services descriptions, through the `help()` instance method.
+
 Here is an example with shortcuts declared directly in *domino.js* instance:
 
 ```js
@@ -530,6 +547,8 @@ Here is the list of attributes to precise a service:
    * Indicates the path of the data to give to the setter, if specified (Example: `"a.b.c"`). Shortcuts will be resolved.
  - `{?(string|array)}` **events**:
    * The events to dispatch in case of success.
+ - `{?string}` **description**:
+   * Eventually a descriptions string that can be accessed through the `help()` instance method.
 
 ### Request specifications:
 
@@ -564,6 +583,67 @@ Finally, here is a precise description of the options given to the `request` met
  - `{?string}` **type**:
    * Overrides the AJAX call type (GET|POST|DELETE).
 
+<h2 id="help">Help <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
+
+When descriptions are specified for properties, shortcuts, hacks and/or services, the method `help()` of the domino instance can retrieve these descriptions. Here are some use cases of this method:
+
+````javascript
+// The two following test cases work exactly samely for shortcuts
+// and services:
+domInst.help('properties', 'myProperty1');
+// Returns something like: 'Description of myProperty1'
+domInst.help('properties');
+// Returns something like:
+// {
+//   myProperty1: 'Description of myProperty1',
+//   myProperty2: 'Description of myProperty2',
+//   myProperty3: '[no description is specified]'
+// }
+
+// Here is how it works for hacks:
+domInst.help('hacks', 'trigger', 'myEvent1');
+// Returns something like:
+// [
+//   'Description of my hack n°1',
+//   'Description of my hack n°2'
+// ]
+domInst.help('hacks', 'dispatch', 'myEvent2');
+// Returns something like: 'Description of my hack n°1'
+domInst.help('hacks');
+// Returns something like:
+// [
+//   'Description of my hack n°1',
+//   'Description of my hack n°2',
+//   'Description of my hack n°3'
+// ]
+
+// Finally, it is possible to display everything:
+domInst.help('full');
+// Returns something like:
+// {
+//   properties: {
+//     myProperty1: 'Description of myProperty1',
+//     myProperty2: 'Description of myProperty2',
+//     myProperty3: '[no description is specified]'
+//   },
+//   services: {
+//     myService1: 'Description of myService1',
+//     myService2: 'Description of myService2',
+//     myService3: '[no description is specified]'
+//   },
+//   shortcuts: {
+//     myShortcut1: 'Description of myShortcut1',
+//     myShortcut2: 'Description of myShortcut2',
+//     myShortcut3: '[no description is specified]'
+//   },
+//   hacks: [
+//     'Description of my hack n°1',
+//     'Description of my hack n°2',
+//     'Description of my hack n°3'
+//   ]
+// }
+````
+
 <h2 id="specifications">Specifications summary <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 Here is a summary of the specifications of <em>domino.js</em> instanciation:
@@ -578,6 +658,7 @@ Here is a summary of the specifications of <em>domino.js</em> instanciation:
    + `{?function}` **getter**
    + `{?(string|array)}` **triggers**
    + `{?(string|array)}` **dispatch**
+   + `{?string}` **description**
  - `{?array}` **hacks**: Each element of the array must be an `object` with:
    + `{string|array}` **triggers**
    + `{?(string|array)}` **dispatch**
@@ -597,9 +678,11 @@ Here is a summary of the specifications of <em>domino.js</em> instanciation:
    + `{?string}` **setter**
    + `{?(string|array)}` **path**
    + `{?(string|array)}` **events**
+   + `{?string}` **description**
  - `{?array}` **shortcuts**: Each element of the array must be an `object` with:
    + `{string}` **id**
    + `{function}` **method**
+   + `{?string}` **description**
 
 <h2 id="main_loop_inside_domino_js">Main loop: Inside <em>domino.js</em> <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
@@ -851,6 +934,13 @@ It is possible to destroy a module by calling the method `killModule()` of the r
 ```js
 // Kill the module:
 d.killModule(myModule);
+```
+
+If the module has an `id` field specified, it is also possible to kill it through its id:
+
+```js
+// Kill the module:
+d.killModule('myModuleId');
 ```
 
 ### Killing a domino instance:

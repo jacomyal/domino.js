@@ -35,7 +35,7 @@
       <section>
 <h1 id="toc_0">domino.js</h1>
 
-<p>Current version: <strong>v1.2.3</strong></p>
+<p>Current version: <strong>v1.2.4</strong></p>
 
 <p><em>domino.js</em> is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by <a href="http://github.com/jacomyal">Alexis Jacomy</a> at <a href="http://github.com/linkfluence">Linkfluence</a>. It is released under the <a href="https://raw.github.com/jacomyal/domino.js/master/LICENSE.txt">MIT License</a>.</p>
 
@@ -69,6 +69,7 @@
 <li><a href="#modules">Modules</a></li>
 <li><a href="#hacks">Hacks</a></li>
 <li><a href="#services">Services</a></li>
+<li><a href="#help">Help</a></li>
 <li><a href="#specifications">Specifications summary</a></li>
 <li><a href="#main_loop_inside_domino_js">Main loop: Inside <em>domino.js</em></a></li>
 <li><a href="#scopes_management">Scopes management</a></li>
@@ -258,6 +259,11 @@
 <ul>
 <li>The list of events that must be triggered after modification of the property. Can be an array or the list of events separated by spaces.</li>
 </ul></li>
+<li><code>{?string}</code> <strong>description</strong>:
+
+<ul>
+<li>Eventually a descriptions string that can be accessed through the <code>help()</code> instance method.</li>
+</ul></li>
 </ul>
 
 <p>Here is a more complete example on how to declare string:</p>
@@ -349,6 +355,17 @@
 </div>
 
 <p>And that&#39;s it, the module is here and connected. And you can even create two instances or more, and there will not be any conflict, and they will all stay synchronized, of course.</p>
+
+<p>Also, it is possible to specify an id for a module. It is not possible to add two modules with the same id, the oldest one will have to be killed before. Also, the instance method <code>.modules()</code> can retrieve modules identified by the specified id.</p>
+
+<p>Here is how to add a module with a specified id:</p>
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">myModule</span> <span class="o">=</span> <span class="nx">d</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="nx">MyModuleConstructor</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="p">{</span> <span class="nx">id</span><span class="o">:</span> <span class="s1">&#39;myModuleId&#39;</span> <span class="p">});</span>
+
+<span class="c1">// Then, it is possible to get a reference to that module through</span>
+<span class="c1">// the domino instance like that:</span>
+<span class="nx">myModule</span> <span class="o">===</span> <span class="nx">d</span><span class="p">.</span><span class="nx">modules</span><span class="p">(</span><span class="s1">&#39;myModuleId&#39;</span><span class="p">);</span> <span class="c1">// returns true</span>
+</pre>
+</div>
 
 <h2 id="hacks">Hacks <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
@@ -538,6 +555,8 @@
 <li>Finally, if the shortcut can not be resolved, then an error is thrown.</li>
 </ul>
 
+<p><em>Note</em>: It is possible to specify a <code>description</code> attribute for shortcuts, that can be accessed exactly as properties and services descriptions, through the <code>help()</code> instance method.</p>
+
 <p>Here is an example with shortcuts declared directly in <em>domino.js</em> instance:</p>
 <div class="highlight"><pre><span class="kd">var</span> <span class="nx">d</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">domino</span><span class="p">({</span>
   <span class="nx">properties</span><span class="o">:</span> <span class="p">[</span>
@@ -642,6 +661,11 @@
 <ul>
 <li>The events to dispatch in case of success.</li>
 </ul></li>
+<li><code>{?string}</code> <strong>description</strong>:
+
+<ul>
+<li>Eventually a descriptions string that can be accessed through the <code>help()</code> instance method.</li>
+</ul></li>
 </ul>
 
 <h3 id="toc_7">Request specifications:</h3>
@@ -721,6 +745,66 @@
 </ul></li>
 </ul>
 
+<h2 id="help">Help <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
+
+<p>When descriptions are specified for properties, shortcuts, hacks and/or services, the method <code>help()</code> of the domino instance can retrieve these descriptions. Here are some use cases of this method:</p>
+<div class="highlight"><pre><span class="c1">// The two following test cases work exactly samely for shortcuts</span>
+<span class="c1">// and services:</span>
+<span class="nx">domInst</span><span class="p">.</span><span class="nx">help</span><span class="p">(</span><span class="s1">&#39;properties&#39;</span><span class="p">,</span> <span class="s1">&#39;myProperty1&#39;</span><span class="p">);</span>
+<span class="c1">// Returns something like: &#39;Description of myProperty1&#39;</span>
+<span class="nx">domInst</span><span class="p">.</span><span class="nx">help</span><span class="p">(</span><span class="s1">&#39;properties&#39;</span><span class="p">);</span>
+<span class="c1">// Returns something like:</span>
+<span class="c1">// {</span>
+<span class="c1">//   myProperty1: &#39;Description of myProperty1&#39;,</span>
+<span class="c1">//   myProperty2: &#39;Description of myProperty2&#39;,</span>
+<span class="c1">//   myProperty3: &#39;[no description is specified]&#39;</span>
+<span class="c1">// }</span>
+
+<span class="c1">// Here is how it works for hacks:</span>
+<span class="nx">domInst</span><span class="p">.</span><span class="nx">help</span><span class="p">(</span><span class="s1">&#39;hacks&#39;</span><span class="p">,</span> <span class="s1">&#39;trigger&#39;</span><span class="p">,</span> <span class="s1">&#39;myEvent1&#39;</span><span class="p">);</span>
+<span class="c1">// Returns something like:</span>
+<span class="c1">// [</span>
+<span class="c1">//   &#39;Description of my hack n°1&#39;,</span>
+<span class="c1">//   &#39;Description of my hack n°2&#39;</span>
+<span class="c1">// ]</span>
+<span class="nx">domInst</span><span class="p">.</span><span class="nx">help</span><span class="p">(</span><span class="s1">&#39;hacks&#39;</span><span class="p">,</span> <span class="s1">&#39;dispatch&#39;</span><span class="p">,</span> <span class="s1">&#39;myEvent2&#39;</span><span class="p">);</span>
+<span class="c1">// Returns something like: &#39;Description of my hack n°1&#39;</span>
+<span class="nx">domInst</span><span class="p">.</span><span class="nx">help</span><span class="p">(</span><span class="s1">&#39;hacks&#39;</span><span class="p">);</span>
+<span class="c1">// Returns something like:</span>
+<span class="c1">// [</span>
+<span class="c1">//   &#39;Description of my hack n°1&#39;,</span>
+<span class="c1">//   &#39;Description of my hack n°2&#39;,</span>
+<span class="c1">//   &#39;Description of my hack n°3&#39;</span>
+<span class="c1">// ]</span>
+
+<span class="c1">// Finally, it is possible to display everything:</span>
+<span class="nx">domInst</span><span class="p">.</span><span class="nx">help</span><span class="p">(</span><span class="s1">&#39;full&#39;</span><span class="p">);</span>
+<span class="c1">// Returns something like:</span>
+<span class="c1">// {</span>
+<span class="c1">//   properties: {</span>
+<span class="c1">//     myProperty1: &#39;Description of myProperty1&#39;,</span>
+<span class="c1">//     myProperty2: &#39;Description of myProperty2&#39;,</span>
+<span class="c1">//     myProperty3: &#39;[no description is specified]&#39;</span>
+<span class="c1">//   },</span>
+<span class="c1">//   services: {</span>
+<span class="c1">//     myService1: &#39;Description of myService1&#39;,</span>
+<span class="c1">//     myService2: &#39;Description of myService2&#39;,</span>
+<span class="c1">//     myService3: &#39;[no description is specified]&#39;</span>
+<span class="c1">//   },</span>
+<span class="c1">//   shortcuts: {</span>
+<span class="c1">//     myShortcut1: &#39;Description of myShortcut1&#39;,</span>
+<span class="c1">//     myShortcut2: &#39;Description of myShortcut2&#39;,</span>
+<span class="c1">//     myShortcut3: &#39;[no description is specified]&#39;</span>
+<span class="c1">//   },</span>
+<span class="c1">//   hacks: [</span>
+<span class="c1">//     &#39;Description of my hack n°1&#39;,</span>
+<span class="c1">//     &#39;Description of my hack n°2&#39;,</span>
+<span class="c1">//     &#39;Description of my hack n°3&#39;</span>
+<span class="c1">//   ]</span>
+<span class="c1">// }</span>
+</pre>
+</div>
+
 <h2 id="specifications">Specifications summary <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
 
 <p>Here is a summary of the specifications of <em>domino.js</em> instanciation:</p>
@@ -738,6 +822,7 @@
 <li><code>{?function}</code> <strong>getter</strong></li>
 <li><code>{?(string|array)}</code> <strong>triggers</strong></li>
 <li><code>{?(string|array)}</code> <strong>dispatch</strong></li>
+<li><code>{?string}</code> <strong>description</strong></li>
 </ul></li>
 <li><code>{?array}</code> <strong>hacks</strong>: Each element of the array must be an <code>object</code> with:
 
@@ -763,12 +848,14 @@
 <li><code>{?string}</code> <strong>setter</strong></li>
 <li><code>{?(string|array)}</code> <strong>path</strong></li>
 <li><code>{?(string|array)}</code> <strong>events</strong></li>
+<li><code>{?string}</code> <strong>description</strong></li>
 </ul></li>
 <li><code>{?array}</code> <strong>shortcuts</strong>: Each element of the array must be an <code>object</code> with:
 
 <ul>
 <li><code>{string}</code> <strong>id</strong></li>
 <li><code>{function}</code> <strong>method</strong></li>
+<li><code>{?string}</code> <strong>description</strong></li>
 </ul></li>
 </ul>
 
@@ -1153,6 +1240,12 @@
 <p>It is possible to destroy a module by calling the method <code>killModule()</code> of the related domino instance. It will basically destroy every ascending or descending connections between the module and the instance:</p>
 <div class="highlight"><pre><span class="c1">// Kill the module:</span>
 <span class="nx">d</span><span class="p">.</span><span class="nx">killModule</span><span class="p">(</span><span class="nx">myModule</span><span class="p">);</span>
+</pre>
+</div>
+
+<p>If the module has an <code>id</code> field specified, it is also possible to kill it through its id:</p>
+<div class="highlight"><pre><span class="c1">// Kill the module:</span>
+<span class="nx">d</span><span class="p">.</span><span class="nx">killModule</span><span class="p">(</span><span class="s1">&#39;myModuleId&#39;</span><span class="p">);</span>
 </pre>
 </div>
 
