@@ -851,7 +851,6 @@
 
           // Check events to dispatch:
           events = [];
-          console.log(dispatch);
           for (event in dispatch) {
             events.push(
               dispatch[event] === 1 ?
