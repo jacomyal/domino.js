@@ -28,7 +28,7 @@
  * from, out of or in connection with the software or the use or other dealings
  * in the Software.
  */
-;(function(window, undefined) {
+;(function(undefined) {
   'use strict';
 
   // This RegExp determines which property names are valid or not:
@@ -40,8 +40,11 @@
   // Here is an object containing a reference to any named unkilled instance:
   var _instances = {};
 
+  // Establish the _root object, `window` in the browser, or `global` on the server.
+  var _root = this;
+
   // Check domino.js existance:
-  if (window.domino) {
+  if (_root.domino) {
     throw new Error('domino already exists');
   }
 
@@ -52,7 +55,7 @@
    * @extends domino.EventDispatcher
    * @this {domino}
    */
-  window.domino = function() {
+  _root.domino = function() {
     // Inheritance:
     (function() {
       dispatcher.call(this);
@@ -2000,7 +2003,7 @@
     // Return the full scope:
     return _reference;
   };
-  var domino = window.domino;
+  var domino = _root.domino;
 
 
   /**
@@ -2611,4 +2614,4 @@
     };
   };
   var module = domino.module;
-})(window);
+}).call(this);
