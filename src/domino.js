@@ -2010,6 +2010,11 @@
    * Utils classes:
    */
 
+  // Check if XMLHttpRequest is present or not:
+  function __hasXhr__() {
+    return !!__settings__.xhr;
+  }
+
   // Logs:
   function __warn__() {
     if (__settings__['strict'])
@@ -2092,6 +2097,13 @@
       return result;
     },
     ajax: function(o, fn) {
+      if (!__hasXhr__())
+        __die__(
+          '[domino.global] ' +
+          'XMLHttpRequest not found. You can specify which XMLHttpRequest ' +
+          'you want to use by using domino.settings("xhr", myXhr).'
+        );
+
       if (typeof o === 'string')
         o = { url: o, ok: fn };
       else if (struct.get(o) !== 'object')
@@ -2101,7 +2113,7 @@
           url = o.url || '',
           ctyp = o.contentType || 'application/x-www-form-urlencoded',
           dtyp = o.dataType || 'json',
-          xhr = new XMLHttpRequest(),
+          xhr = new __settings__.xhr(),
           timer,
           d, n;
 
@@ -2426,6 +2438,7 @@
     shortcutPrefix: ':',
     mergeRequests: true,
     logDescriptions: true,
+    xhr: _root.XMLHttpRequest,
     clone: false
   };
 
