@@ -21,7 +21,7 @@ You can also minify your own version with [Grunt](http://gruntjs.com/):
 
  - First, install [Node.js](http://nodejs.org/), [NPM](https://npmjs.org/) and [Grunt](http://gruntjs.com/installing-grunt).
  - Use `npm install` to install domino.js development dependencies.
- - Use `grunt` to successively lint sources, launch unit tests, and minify the code.
+ - Use `grunt` to successively lint sources, launch unit tests, and minify the code with [Uglify](https://github.com/mishoo/UglifyJS).
 
 ### Contributing
 
@@ -32,6 +32,12 @@ The whole source code is validated by the [Google Closure Linter](https://develo
 ---
 
 ### ChangeLog
+
+#### 1.3.0 (June 21, 2013)
+
+ - Switched from the Makefile to [Grunt](http://gruntjs.com/installing-grunt)
+ - Switched from Closure Compiler to [Uglify](https://github.com/mishoo/UglifyJS)
+ - Lot of minor changes to make domino.js become usable on Node.js
 
 #### 1.2.4 (June 12, 2013)
 
@@ -70,7 +76,7 @@ The whole source code is validated by the [Google Closure Linter](https://develo
    * the `request` method is called several time in the same callback (hack, success, etc...)
    * the `request` method is called with an array of services descriptions
 
-#### 1.2 (February 18, 2013)
+#### 1.2.0 (February 18, 2013)
 
  - Added `expect` feature to filter successful service calls.
  - Added unit tests for services.
@@ -82,7 +88,7 @@ The whole source code is validated by the [Google Closure Linter](https://develo
  - Fixed #4: `request` and `dispatchEvent` from scopes are disabled when the scopes are analyzed.
  - Improved a bit environment.
 
-#### 1.1 (November 28, 2012)
+#### 1.1.0 (November 28, 2012)
 
  - Fixed shortcuts priority: custom objects > properties > shortcuts
  - `update(key, value)` now works
@@ -92,7 +98,7 @@ The whole source code is validated by the [Google Closure Linter](https://develo
  - Adding a hack with only a `triggers` property allows transversal communication between modules
  - Custom structures (see [documentation](http://dominojs.org/#structures))
 
-#### 1.0 (November 8, 2012)
+#### 1.0.0 (November 8, 2012)
 
  - *domino.js* first release
  - project web page also released at [http://dominojs.org](http://dominojs.org) (branch `gh-pages`)

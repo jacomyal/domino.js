@@ -2,7 +2,7 @@
  * domino.js is a JavaScript cascading controller for quick interaction
  * prototyping.
  *
- * Version: 1.2.4
+ * Version: 1.3.0
  * Sources: http://github.com/jacomyal/domino.js
  * Doc:     http://dominojs.org
  *
