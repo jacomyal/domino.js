@@ -40,7 +40,8 @@
   // Here is an object containing a reference to any named unkilled instance:
   var _instances = {};
 
-  // Establish the _root object, `window` in the browser, or `global` on the server.
+  // Establish the _root object, `window` in the browser, or `global` on the
+  // server.
   var _root = this;
 
   // Check domino.js existance:
@@ -1080,7 +1081,7 @@
 
         // Unreference the event if no more bindings:
         if (a && !a.length)
-          delete _eventListeners[event]
+          delete _eventListeners[event];
       }
 
       // Remove properties bindings:
@@ -1096,7 +1097,7 @@
 
         // Unreference the property if no more bindings:
         if (a && !a.length)
-          delete _propertyListeners[property]
+          delete _propertyListeners[property];
       }
 
       // Remove ascending bindings:
@@ -1970,8 +1971,8 @@
       if (!_settings('strict'))
         a.push('WARNING');
 
-      for (var k in arguments)
-        a.push(arguments[k]);
+      for (var i = 0, l = arguments.length; i < l; i++)
+        a.push(arguments[i]);
 
       if (_settings('strict'))
         __die__.apply(this, a);
@@ -1982,8 +1983,8 @@
     function _die() {
       var a = ['[' + (_name || 'domino') + ']'];
 
-      for (var k in arguments)
-        a.push(arguments[k]);
+      for (var i = 0, l = arguments.length; i < l; i++)
+        a.push(arguments[i]);
 
       __die__.apply(this, a);
     };
@@ -1994,8 +1995,8 @@
       if (!_settings('verbose'))
         return;
 
-      for (var k in arguments)
-        a.push(arguments[k]);
+      for (var i = 0, l = arguments.length; i < l; i++)
+        a.push(arguments[i]);
 
       __say__.apply(this, a);
     };
@@ -2024,12 +2025,7 @@
   }
 
   function __die__() {
-    var m = '';
-    for (var k in arguments)
-      m += (!!m ? ' ' : '') +
-        arguments[k];
-
-    throw (new Error(m));
+    throw (new Error(Array.prototype.join.call(arguments, ' ')));
   }
 
   function __log__() {
@@ -2041,8 +2037,8 @@
 
   function __say__() {
     var a = [];
-    for (var k in arguments)
-      a.push(arguments[k]);
+    for (var i = 0, l = arguments.length; i < l; i++)
+      a.push(arguments[i]);
 
     if (__settings__['displayTime'])
       a.unshift(('00000000' + (new Date().getTime() - _startTime)).substr(-8));
@@ -2470,7 +2466,7 @@
       );
     else
       return _instances[name];
-  }
+  };
 
   // Event dispatcher:
   domino.EventDispatcher = function() {
