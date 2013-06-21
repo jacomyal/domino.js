@@ -1,0 +1,31 @@
+{
+  "name": "domino",
+  "version": "1.2.4",
+  "description": "A cascading controller for fast interactive Web interfaces prototyping.",
+  "homepage": "http://dominojs.org",
+  "keywords": [
+    "interaction",
+    "controller"
+  ],
+  "bugs": "http://github.com/jacomyal/domino.js/issues",
+  "author": {
+    "name": "Alexis Jacomy",
+    "url": "http://github.com/jacomyal"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/jacomyal/domino.js.git"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/jacomyal/domino.js/blob/master/LICENSE.txt"
+    }
+  ],
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-qunit": "~0.2.0",
+    "grunt-contrib-uglify": "~0.2.2",
+    "grunt-closure-linter": "~0.1.0"
+  }
+}

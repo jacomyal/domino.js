@@ -17,14 +17,15 @@ The latest minified version is available here:
 
 [https://raw.github.com/jacomyal/domino.js/master/build/domino.min.js](https://raw.github.com/jacomyal/domino.js/master/build/domino.min.js)
 
-You can also minify your own version:
+You can also minify your own version with [Grunt](http://gruntjs.com/):
 
- - First, download the [Google Closure Compiler](https://developers.google.com/closure/compiler/) and copy it to `build/compiler.jar`.
- - Then, use `make` and you will find the file `domino.min.js` in the `build` directory.
+ - First, install [Node.js](http://nodejs.org/), [NPM](https://npmjs.org/) and [Grunt](http://gruntjs.com/installing-grunt).
+ - Use `npm install` to install domino.js development dependencies.
+ - Use `grunt` to successively lint sources, launch unit tests, and minify the code.
 
 ### Contributing
 
-You can contribute by submitting [issues tickets](http://github.com/jacomyal/domino.js/issues) and proposing [pull requests](http://github.com/jacomyal/domino.js/pulls).
+You can contribute by submitting [issues tickets](http://github.com/jacomyal/domino.js/issues) and proposing [pull requests](http://github.com/jacomyal/domino.js/pulls). Be sure to successfully run `grunt closureLint` and `grunt qunit` before submitting any pull request.
 
 The whole source code is validated by the [Google Closure Linter](https://developers.google.com/closure/utilities/), and the comments are written in [JSDoc](http://en.wikipedia.org/wiki/JSDoc) (tags description is available [here](https://developers.google.com/closure/compiler/docs/js-for-compiler)).
 
