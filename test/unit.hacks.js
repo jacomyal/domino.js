@@ -1,12 +1,12 @@
 // Domino settings:
 domino.settings({
-  verbose: true,
+  verbose: false,
   strict: true
 });
 
 // Hacks:
-module('domino instance');
-test('Hacks', function() {
+QUnit.module('domino instance');
+QUnit.test('Hacks', function() {
   var o = new domino({
     properties: [
       {
@@ -54,7 +54,7 @@ test('Hacks', function() {
 
   // Hack with single trigger and single dispatch
   o.addEventListener('dispatch_0', function() {
-    ok(true, 'Hack with single trigger and single dispatch works.')
+    QUnit.ok(true, 'Hack with single trigger and single dispatch works.')
 
     o.dispatchEvent('trigger_1_0');
     o.dispatchEvent('trigger_1_1');
@@ -64,7 +64,7 @@ test('Hacks', function() {
   var c1 = 0;
   o.addEventListener('dispatch_1', function() {
     if (++c1 === 2) {
-      ok(true, 'Hack with multiple triggers works.')
+      QUnit.ok(true, 'Hack with multiple triggers works.')
 
       o.dispatchEvent('trigger_2');
     }
@@ -74,7 +74,7 @@ test('Hacks', function() {
   var c2 = 0;
   o.addEventListener('dispatch_2_0 dispatch_2_1', function() {
     if (++c2 === 2) {
-      ok(true, 'Hack with multiple dispatches works.')
+      QUnit.ok(true, 'Hack with multiple dispatches works.')
 
       o.dispatchEvent('trigger_3', {
         value: 42
@@ -84,7 +84,7 @@ test('Hacks', function() {
 
   // Hack with event data reception
   function method_3(event) {
-    equal(event.data.value, 42, 'Hack with event data reception works.');
+    QUnit.equal(event.data.value, 42, 'Hack with event data reception works.');
 
     o.dispatchEvent('trigger_4');
   }
@@ -95,7 +95,7 @@ test('Hacks', function() {
   }
 
   o.addEventListener('p1Updated', function() {
-    equal(o.get('p1'), true, 'Hack with scope alteration works.');
+    QUnit.equal(o.get('p1'), true, 'Hack with scope alteration works.');
 
     o.dispatchEvent('trigger_5');
   });
@@ -106,7 +106,7 @@ test('Hacks', function() {
   }
 
   o.addEventListener('p2Updated', function() {
-    equal(o.get('p2'), true, 'Hack with "update" works.');
+    QUnit.equal(o.get('p2'), true, 'Hack with "update" works.');
 
     o.dispatchEvent('trigger_6');
   });
@@ -117,7 +117,7 @@ test('Hacks', function() {
   }
 
   o.addEventListener('dispatch_6', function() {
-    ok(true, 'Hack with "dispatchEvent" works.');
+    QUnit.ok(true, 'Hack with "dispatchEvent" works.');
   });
 
   // Init the testing chain:

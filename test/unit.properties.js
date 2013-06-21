@@ -1,6 +1,6 @@
 // Domino settings:
 domino.settings({
-  verbose: true,
+  verbose: false,
   strict: true
 });
 
@@ -43,8 +43,8 @@ function init(properties) {
 }
 
 // Properties:
-module('domino instance');
-test('Properties management', function() {
+QUnit.module('domino instance');
+QUnit.test('Properties management', function() {
   var o;
 
   // Test 1
@@ -52,7 +52,7 @@ test('Properties management', function() {
 
   // Here we simply update the value:
   o.m.s.dispatch('def');
-  deepEqual(o.m.s.historic[o.m.s.historic.length-1], 'def', 'The string property has been successfully updated.');
+  QUnit.deepEqual(o.m.s.historic[o.m.s.historic.length-1], 'def', 'The string property has been successfully updated.');
   o.d.kill();
 
   // Test 2
@@ -60,7 +60,7 @@ test('Properties management', function() {
 
   // Here we update the property, but with a different value, and we want to check that domino has triggered:
   o.m.s.dispatch('def');
-  deepEqual(o.m.s.historic.length, 2, 'Updating the string property with a new value effectively triggers the events.');
+  QUnit.deepEqual(o.m.s.historic.length, 2, 'Updating the string property with a new value effectively triggers the events.');
   o.d.kill();
 
   // Test 3
@@ -68,7 +68,7 @@ test('Properties management', function() {
 
   // Here we update the property, but with the same value, and we want to check that domino does not trigger:
   o.m.s.dispatch('abc');
-  deepEqual(o.m.s.historic.length, 1, 'Updating the string property with the same value does not trigger the events.');
+  QUnit.deepEqual(o.m.s.historic.length, 1, 'Updating the string property with the same value does not trigger the events.');
   o.d.kill();
 
   // Test 4
@@ -76,7 +76,7 @@ test('Properties management', function() {
 
   // Here we update the property, but with the same value (and with the "force" flags), and we want to check that domino does trigger:
   o.m.s.dispatch('abc');
-  deepEqual(o.m.s.historic.length, 2, 'Updating the string property with the same value does trigger the events when the flag "force" is on.');
+  QUnit.deepEqual(o.m.s.historic.length, 2, 'Updating the string property with the same value does trigger the events when the flag "force" is on.');
   o.d.kill();
 
   // Test 5
@@ -84,7 +84,7 @@ test('Properties management', function() {
 
   // Here we simply update the value:
   o.m.s.dispatch({a: 2, b: 1});
-  deepEqual(o.m.s.historic[o.m.s.historic.length-1], {a: 2, b: 1}, 'The complex property ("deeply atomic") has been successfully updated.');
+  QUnit.deepEqual(o.m.s.historic[o.m.s.historic.length-1], {a: 2, b: 1}, 'The complex property ("deeply atomic") has been successfully updated.');
   o.d.kill();
 
   // Test 6
@@ -92,7 +92,7 @@ test('Properties management', function() {
 
   // Here we update the property, but with a different value, and we want to check that domino has triggered:
   o.m.s.dispatch({a: 2, b: 1});
-  deepEqual(o.m.s.historic.length, 2, 'Updating the complex property ("deeply atomic") with a new value effectively triggers the events.');
+  QUnit.deepEqual(o.m.s.historic.length, 2, 'Updating the complex property ("deeply atomic") with a new value effectively triggers the events.');
   o.d.kill();
 
   // Test 7
@@ -100,7 +100,7 @@ test('Properties management', function() {
 
   // Here we update the property, but with the same value, and we want to check that domino does not trigger:
   o.m.s.dispatch({a: 1});
-  deepEqual(o.m.s.historic.length, 1, 'Updating the complex property ("deeply atomic") with the same value does not trigger the events.');
+  QUnit.deepEqual(o.m.s.historic.length, 1, 'Updating the complex property ("deeply atomic") with the same value does not trigger the events.');
   o.d.kill();
 
   // Test 8
@@ -108,7 +108,7 @@ test('Properties management', function() {
 
   // Here we simply update the value:
   o.m.s.dispatch({a: 2, b: 1});
-  deepEqual(o.m.s.historic[o.m.s.historic.length-1], {a: 2, b: 1}, 'The object property has been successfully updated.');
+  QUnit.deepEqual(o.m.s.historic[o.m.s.historic.length-1], {a: 2, b: 1}, 'The object property has been successfully updated.');
   o.d.kill();
 
   // Test 9
@@ -116,7 +116,7 @@ test('Properties management', function() {
 
   // Here we update the property, but with a different value, and we want to check that domino has triggered:
   o.m.s.dispatch({a: 2, b: 1});
-  deepEqual(o.m.s.historic.length, 2, 'Updating the object property with a new value effectively triggers the events.');
+  QUnit.deepEqual(o.m.s.historic.length, 2, 'Updating the object property with a new value effectively triggers the events.');
   o.d.kill();
 
   // Test 10
@@ -124,7 +124,7 @@ test('Properties management', function() {
 
   // Here we update the property, but with the same value, and we want to check that domino triggers anyway ('object' typed):
   o.m.s.dispatch({a: 1});
-  deepEqual(o.m.s.historic.length, 2, 'Updating the object property with the same value actually triggers the events.');
+  QUnit.deepEqual(o.m.s.historic.length, 2, 'Updating the object property with the same value actually triggers the events.');
   o.d.kill();
 
   // Test 11
@@ -140,7 +140,7 @@ test('Properties management', function() {
   }]);
 
   o.m.s.dispatch('AbCdE');
-  deepEqual(o.m.s.historic[o.m.s.historic.length-1], 'abcde', 'Basic setters overriding works well.');
+  QUnit.deepEqual(o.m.s.historic[o.m.s.historic.length-1], 'abcde', 'Basic setters overriding works well.');
   o.d.kill();
 
   // Test 11
@@ -156,11 +156,11 @@ test('Properties management', function() {
   }]);
 
   o.m.s.dispatch('def');
-  deepEqual(o.m.s.historic[o.m.s.historic.length-1], 'abcdef', 'Setters overriding with current value reading works well.');
+  QUnit.deepEqual(o.m.s.historic[o.m.s.historic.length-1], 'abcdef', 'Setters overriding with current value reading works well.');
   o.d.kill();
 });
 
-test('Shortcuts management', function() {
+QUnit.test('Shortcuts management', function() {
   // Test 1:
   var d = new domino({
     shortcuts: [
@@ -173,7 +173,7 @@ test('Shortcuts management', function() {
     ]
   });
 
-  deepEqual(d.expand('a'), 'ahah', 'The shortcut expanding works.');
+  QUnit.deepEqual(d.expand('a'), 'ahah', 'The shortcut expanding works.');
   d.kill();
 
   // Test 2:
@@ -194,7 +194,7 @@ test('Shortcuts management', function() {
     ]
   });
 
-  deepEqual(d.expand('a'), 'ahahohoh', 'The recursive shortcut expanding works.');
+  QUnit.deepEqual(d.expand('a'), 'ahahohoh', 'The recursive shortcut expanding works.');
   d.kill();
 
   // Test 3:
@@ -216,12 +216,12 @@ test('Shortcuts management', function() {
     ]
   });
 
-  deepEqual(d.expand('a', {a: 'custom'}), 'custom', 'Priorities: Custom objects are resolved before properties and shortcuts.');
-  deepEqual(d.expand('a'), 'property', 'Priorities: Properties are resolved before shortcuts.');
+  QUnit.deepEqual(d.expand('a', {a: 'custom'}), 'custom', 'Priorities: Custom objects are resolved before properties and shortcuts.');
+  QUnit.deepEqual(d.expand('a'), 'property', 'Priorities: Properties are resolved before shortcuts.');
   d.kill();
 });
 
-test('Properties cloning', function() {
+QUnit.test('Properties cloning', function() {
   // Test 1:
   (function() {
     var d = new domino({
@@ -246,7 +246,7 @@ test('Properties cloning', function() {
     var o2 = d.get('o');
     o1.a = 42;
 
-    deepEqual(o1, o2, 'Not cloning properties work.');
+    QUnit.deepEqual(o1, o2, 'Not cloning properties work.');
     d.kill();
   })();
 
@@ -274,7 +274,7 @@ test('Properties cloning', function() {
     var o2 = d.get('o');
     o1.a = 42;
 
-    notDeepEqual(o1, o2, 'Cloning properties works.');
+    QUnit.notDeepEqual(o1, o2, 'Cloning properties works.');
     d.kill();
   })();
 
@@ -303,7 +303,7 @@ test('Properties cloning', function() {
     var o2 = d.get('o');
     o1.a = 42;
 
-    deepEqual(o1, o2, 'Not cloning properties work (overriden in the property).');
+    QUnit.deepEqual(o1, o2, 'Not cloning properties work (overriden in the property).');
     d.kill();
   })();
 
@@ -332,7 +332,7 @@ test('Properties cloning', function() {
     var o2 = d.get('o');
     o1.a = 42;
 
-    notDeepEqual(o1, o2, 'Cloning properties works (overriden in the property).');
+    QUnit.notDeepEqual(o1, o2, 'Cloning properties works (overriden in the property).');
     d.kill();
   })();
 });

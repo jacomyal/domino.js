@@ -3,13 +3,13 @@
 
   // Domino settings:
   domino.settings({
-    verbose: true,
+    verbose: false,
     strict: true
   });
 
   // domino.help():
-  module('domino misc');
-  test('domino.help', function() {
+  QUnit.module('domino misc');
+  QUnit.test('domino.help', function() {
     var d = new domino({
       properties: [
         {
@@ -113,43 +113,43 @@
     });
 
     // Tests with properties:
-    deepEqual(d.help('properties', 'myProperty1'), 'Description of myProperty1', 'Properties help() test 1.');
-    deepEqual(d.help('properties'), {
+    QUnit.deepEqual(d.help('properties', 'myProperty1'), 'Description of myProperty1', 'Properties help() test 1.');
+    QUnit.deepEqual(d.help('properties'), {
       myProperty1: 'Description of myProperty1',
       myProperty2: 'Description of myProperty2',
       myProperty3: '[no description is specified]'
     }, 'Properties help() test 2.');
 
     // Tests with services:
-    deepEqual(d.help('services', 'myService1'), 'Description of myService1', 'Services help() test 1.');
-    deepEqual(d.help('services'), {
+    QUnit.deepEqual(d.help('services', 'myService1'), 'Description of myService1', 'Services help() test 1.');
+    QUnit.deepEqual(d.help('services'), {
       myService1: 'Description of myService1',
       myService2: 'Description of myService2',
       myService3: '[no description is specified]'
     }, 'Services help() test 2.');
 
     // Tests with shortcuts:
-    deepEqual(d.help('shortcuts', 'myShortcut1'), 'Description of myShortcut1', 'Shortcuts help() test 1.');
-    deepEqual(d.help('shortcuts'), {
+    QUnit.deepEqual(d.help('shortcuts', 'myShortcut1'), 'Description of myShortcut1', 'Shortcuts help() test 1.');
+    QUnit.deepEqual(d.help('shortcuts'), {
       myShortcut1: 'Description of myShortcut1',
       myShortcut2: 'Description of myShortcut2',
       myShortcut3: '[no description is specified]'
     }, 'Shortcuts help() test 2.');
 
     // Tests with hacks:
-    deepEqual(d.help('hacks', 'trigger', 'myEvent1'), [
+    QUnit.deepEqual(d.help('hacks', 'trigger', 'myEvent1'), [
       'Description of my hack n°1',
       'Description of my hack n°2'
     ], 'Hacks help() test 1.');
-    deepEqual(d.help('hacks', 'dispatch', 'myEvent2'), 'Description of my hack n°1', 'Hacks help() test 2.');
-    deepEqual(d.help('hacks'), [
+    QUnit.deepEqual(d.help('hacks', 'dispatch', 'myEvent2'), 'Description of my hack n°1', 'Hacks help() test 2.');
+    QUnit.deepEqual(d.help('hacks'), [
       'Description of my hack n°1',
       'Description of my hack n°2',
       'Description of my hack n°3'
     ], 'Hacks help() test 3.');
 
     // Full test:
-    deepEqual(d.help('full'), {
+    QUnit.deepEqual(d.help('full'), {
       properties: {
         myProperty1: 'Description of myProperty1',
         myProperty2: 'Description of myProperty2',

@@ -1,178 +1,178 @@
 // Domino settings:
 domino.settings({
-  verbose: true,
+  verbose: false,
   strict: true
 });
 
 // domino.utils.array():
-module('domino.utils');
-test('domino.utils.array', function() {
-  deepEqual(domino.utils.array('a'), ['a'], '"a" makes ["a"]');
-  deepEqual(domino.utils.array('a b'), ['a', 'b'], '"a b" makes ["a", "b"]');
-  deepEqual(domino.utils.array(['a']), ['a'], '["a"] makes ["a"]');
-  deepEqual(domino.utils.array(['a', 'b']), ['a', 'b'], '["a", "b"] makes ["a", "b"]');
-  deepEqual(domino.utils.array({a:1, b:2}), [{a:1, b:2}], '{a:1, b:2} makes [{a:1, b:2}]');
-  deepEqual(domino.utils.array(undefined), [], 'undefined makes []');
-  deepEqual(domino.utils.array(null), [], 'null makes []');
+QUnit.module('domino.utils');
+QUnit.test('domino.utils.array', function() {
+  QUnit.deepEqual(domino.utils.array('a'), ['a'], '"a" makes ["a"]');
+  QUnit.deepEqual(domino.utils.array('a b'), ['a', 'b'], '"a b" makes ["a", "b"]');
+  QUnit.deepEqual(domino.utils.array(['a']), ['a'], '["a"] makes ["a"]');
+  QUnit.deepEqual(domino.utils.array(['a', 'b']), ['a', 'b'], '["a", "b"] makes ["a", "b"]');
+  QUnit.deepEqual(domino.utils.array({a:1, b:2}), [{a:1, b:2}], '{a:1, b:2} makes [{a:1, b:2}]');
+  QUnit.deepEqual(domino.utils.array(undefined), [], 'undefined makes []');
+  QUnit.deepEqual(domino.utils.array(null), [], 'null makes []');
 });
 
 // domino.utils.clone():
-test('domino.utils.clone', function() {
+QUnit.test('domino.utils.clone', function() {
   var o1 = {a: 1},
       o2 = domino.utils.clone(o1);
 
-  deepEqual(o1, o2, 'Object is deeply equal');
+  QUnit.deepEqual(o1, o2, 'Object is deeply equal');
 
   o2.a = 2;
-  notDeepEqual(o1, o2, 'Object does not contain any reference');
+  QUnit.notDeepEqual(o1, o2, 'Object does not contain any reference');
 });
 
 // domino.struct.get():
-module('domino.struct');
-test('domino.struct.get', function() {
-  deepEqual(domino.struct.get(true), 'boolean', 'Boolean succeeds');
-  deepEqual(domino.struct.get(42), 'number', 'Number succeeds');
-  deepEqual(domino.struct.get('abc'), 'string', 'String succeeds');
-  deepEqual(domino.struct.get(function() {}), 'function', 'Function succeeds');
-  deepEqual(domino.struct.get([]), 'array', 'Array succeeds');
-  deepEqual(domino.struct.get(new Date()), 'date', 'Date succeeds');
-  deepEqual(domino.struct.get(/abd/), 'regexp', 'RegExp succeeds');
-  deepEqual(domino.struct.get({a: 1, b: 2}), 'object', 'Object succeeds');
-  deepEqual(domino.struct.get(null), 'null', 'Null succeeds');
-  deepEqual(domino.struct.get(undefined), 'undefined', 'Undefined succeeds');
+QUnit.module('domino.struct');
+QUnit.test('domino.struct.get', function() {
+  QUnit.deepEqual(domino.struct.get(true), 'boolean', 'Boolean succeeds');
+  QUnit.deepEqual(domino.struct.get(42), 'number', 'Number succeeds');
+  QUnit.deepEqual(domino.struct.get('abc'), 'string', 'String succeeds');
+  QUnit.deepEqual(domino.struct.get(function() {}), 'function', 'Function succeeds');
+  QUnit.deepEqual(domino.struct.get([]), 'array', 'Array succeeds');
+  QUnit.deepEqual(domino.struct.get(new Date()), 'date', 'Date succeeds');
+  QUnit.deepEqual(domino.struct.get(/abd/), 'regexp', 'RegExp succeeds');
+  QUnit.deepEqual(domino.struct.get({a: 1, b: 2}), 'object', 'Object succeeds');
+  QUnit.deepEqual(domino.struct.get(null), 'null', 'Null succeeds');
+  QUnit.deepEqual(domino.struct.get(undefined), 'undefined', 'Undefined succeeds');
 });
 
 // domino.struct.isValid():
-test('domino.struct.isValid', function() {
-  deepEqual(domino.struct.isValid('boolean'), true, '"boolean" validity succeeds');
-  deepEqual(domino.struct.isValid('number'), true, '"number" validity succeeds');
-  deepEqual(domino.struct.isValid('string'), true, '"string" validity succeeds');
-  deepEqual(domino.struct.isValid('function'), true, '"function" validity succeeds');
-  deepEqual(domino.struct.isValid('array'), true, '"array" validity succeeds');
-  deepEqual(domino.struct.isValid('date'), true, '"date" validity succeeds');
-  deepEqual(domino.struct.isValid('regexp'), true, '"regexp" validity succeeds');
-  deepEqual(domino.struct.isValid('object'), true, '"object" validity succeeds');
-  deepEqual(domino.struct.isValid('*'), true, '"*" validity succeeds');
-  deepEqual(domino.struct.isValid('?string'), true, '"?string" validity succeeds');
-  deepEqual(domino.struct.isValid('string|array'), true, '"string|array" validity succeeds');
-  deepEqual(domino.struct.isValid('?string|array'), true, '"?string|array" validity succeeds');
-  deepEqual(domino.struct.isValid('boolean'), true, '"boolean" validity succeeds');
-  deepEqual(domino.struct.isValid({a: 'string', b: 'object'}), true, '{a: "string", b: "object"} validity succeeds');
-  deepEqual(domino.struct.isValid({a: 'string', b: {a: 'string'}}), true, '{a: "string", b: {a: "string"}} validity succeeds');
-  deepEqual(domino.struct.isValid({a: '?string|array', b: '?*'}), true, '{a: "?string|array", b: "?*"} validity succeeds');
-  deepEqual(domino.struct.isValid({a: '?string|array', b: ['?*']}), true, '{a: "?string|array", b: ["?*"]} validity succeeds');
-  deepEqual(domino.struct.isValid([{a: '?string|array', b: '?*'}]), true, '[{a: "?string|array", b: "?*"}] validity succeeds');
-  deepEqual(domino.struct.isValid('null'), false, '"null" invalidity succeeds');
-  deepEqual(domino.struct.isValid('undefined'), false, '"undefined" invalidity succeeds');
-  deepEqual(domino.struct.isValid('string?'), false, '"string?" invalidity succeeds');
-  deepEqual(domino.struct.isValid('string|'), false, '"string|" invalidity succeeds');
-  deepEqual(domino.struct.isValid('|string'), false, '"|string" invalidity succeeds');
-  deepEqual(domino.struct.isValid('sstring'), false, '"sstring" invalidity succeeds');
-  deepEqual(domino.struct.isValid({a: 'sstring'}), false, '{a: "sstring"} invalidity succeeds');
-  deepEqual(domino.struct.isValid('string|?array'), false, '"string|?array" invalidity succeeds');
-  deepEqual(domino.struct.isValid([]), false, '[] invalidity succeeds');
-  deepEqual(domino.struct.isValid(['string', 'number']), false, '["string", "number"] invalidity succeeds');
+QUnit.test('domino.struct.isValid', function() {
+  QUnit.deepEqual(domino.struct.isValid('boolean'), true, '"boolean" validity succeeds');
+  QUnit.deepEqual(domino.struct.isValid('number'), true, '"number" validity succeeds');
+  QUnit.deepEqual(domino.struct.isValid('string'), true, '"string" validity succeeds');
+  QUnit.deepEqual(domino.struct.isValid('function'), true, '"function" validity succeeds');
+  QUnit.deepEqual(domino.struct.isValid('array'), true, '"array" validity succeeds');
+  QUnit.deepEqual(domino.struct.isValid('date'), true, '"date" validity succeeds');
+  QUnit.deepEqual(domino.struct.isValid('regexp'), true, '"regexp" validity succeeds');
+  QUnit.deepEqual(domino.struct.isValid('object'), true, '"object" validity succeeds');
+  QUnit.deepEqual(domino.struct.isValid('*'), true, '"*" validity succeeds');
+  QUnit.deepEqual(domino.struct.isValid('?string'), true, '"?string" validity succeeds');
+  QUnit.deepEqual(domino.struct.isValid('string|array'), true, '"string|array" validity succeeds');
+  QUnit.deepEqual(domino.struct.isValid('?string|array'), true, '"?string|array" validity succeeds');
+  QUnit.deepEqual(domino.struct.isValid('boolean'), true, '"boolean" validity succeeds');
+  QUnit.deepEqual(domino.struct.isValid({a: 'string', b: 'object'}), true, '{a: "string", b: "object"} validity succeeds');
+  QUnit.deepEqual(domino.struct.isValid({a: 'string', b: {a: 'string'}}), true, '{a: "string", b: {a: "string"}} validity succeeds');
+  QUnit.deepEqual(domino.struct.isValid({a: '?string|array', b: '?*'}), true, '{a: "?string|array", b: "?*"} validity succeeds');
+  QUnit.deepEqual(domino.struct.isValid({a: '?string|array', b: ['?*']}), true, '{a: "?string|array", b: ["?*"]} validity succeeds');
+  QUnit.deepEqual(domino.struct.isValid([{a: '?string|array', b: '?*'}]), true, '[{a: "?string|array", b: "?*"}] validity succeeds');
+  QUnit.deepEqual(domino.struct.isValid('null'), false, '"null" invalidity succeeds');
+  QUnit.deepEqual(domino.struct.isValid('undefined'), false, '"undefined" invalidity succeeds');
+  QUnit.deepEqual(domino.struct.isValid('string?'), false, '"string?" invalidity succeeds');
+  QUnit.deepEqual(domino.struct.isValid('string|'), false, '"string|" invalidity succeeds');
+  QUnit.deepEqual(domino.struct.isValid('|string'), false, '"|string" invalidity succeeds');
+  QUnit.deepEqual(domino.struct.isValid('sstring'), false, '"sstring" invalidity succeeds');
+  QUnit.deepEqual(domino.struct.isValid({a: 'sstring'}), false, '{a: "sstring"} invalidity succeeds');
+  QUnit.deepEqual(domino.struct.isValid('string|?array'), false, '"string|?array" invalidity succeeds');
+  QUnit.deepEqual(domino.struct.isValid([]), false, '[] invalidity succeeds');
+  QUnit.deepEqual(domino.struct.isValid(['string', 'number']), false, '["string", "number"] invalidity succeeds');
 });
 
 // domino.struct.check():
-test('domino.struct.check', function() {
-  deepEqual(domino.struct.check('boolean', true), true, '"boolean", true" succeeds');
-  deepEqual(domino.struct.check('boolean', true), true, '"boolean", true" succeeds');
-  deepEqual(domino.struct.check('number', 42), true, '"number", 42" succeeds');
-  deepEqual(domino.struct.check('string', 'abc'), true, '"string", "abc" succeeds');
-  deepEqual(domino.struct.check('function', function() {}), true, '"function", function() {}" succeeds');
-  deepEqual(domino.struct.check('array', [1, 2, 3]), true, '"array", [1, 2, 3]" succeeds');
-  deepEqual(domino.struct.check('date', new Date()), true, '"date", new Date()" succeeds');
-  deepEqual(domino.struct.check('regexp', /rhqq2/), true, '"regexp", /rhqq2/" succeeds');
-  deepEqual(domino.struct.check('object', {a: 1, b: 2}), true, '"object", {a: 1, b: 2}" succeeds');
-  deepEqual(domino.struct.check('*', '42'), true, '"*", "42" succeeds');
-  deepEqual(domino.struct.check('?string', 'abc'), true, '"?string", "abc" succeeds');
-  deepEqual(domino.struct.check('?string', null), true, '"?string", null succeeds');
-  deepEqual(domino.struct.check('?string', undefined), true, '"?string", undefined succeeds');
-  deepEqual(domino.struct.check('string|array', 'abc'), true, '"string|array", "abc" succeeds');
-  deepEqual(domino.struct.check('string|array', [1, 2, 3]), true, '"string|array", [1, 2, 3] succeeds');
-  deepEqual(domino.struct.check('?string|array', 'abc'), true, '"?string|array", "abc" succeeds');
-  deepEqual(domino.struct.check('?string|array', [1, 2, 3]), true, '"?string|array", [1, 2, 3] succeeds');
-  deepEqual(domino.struct.check('?string|array', null), true, '"?string|array", null succeeds');
-  deepEqual(domino.struct.check({a: '?string|array', b: '?*'}, {b: 'def'}), true, '{a: "?string|array", b: "?*"}, {b: "def"} succeeds');
-  deepEqual(domino.struct.check({a: 'string', b: 'object'}, {a: 'abc', b: {a: 1, b: 2}}), true, '{a: "string", b: "object"}, {a: "abc", b: {a: 1, b: 2}} succeeds');
-  deepEqual(domino.struct.check({a: 'string', b: {a: 'string'}}, {a: 'abc', b: {a: 'def'}}), true, '{a: "string", b: {a: "string"}}, {a: "abc", b: {a: "def"}} succeeds');
-  deepEqual(domino.struct.check({a: '?string|array', b: '?*'}, {a: null, b: 'def'}), true, '{a: "?string|array", b: "?*"}, {a: null, b: "def"} succeeds');
-  deepEqual(domino.struct.check({a: '?string|array', b: '?*'}, {a: 'abc', b: 'def'}), true, '{a: "?string|array", b: "?*"}, {a: "abc", b: "def"} succeeds');
-  deepEqual(domino.struct.check({a: '?string|array', b: '?*'}, {a: [1, 2, 3], b: 'def'}), true, '{a: "?string|array", b: "?*"}, {a: [1, 2, 3], b: "def"} succeeds');
-  deepEqual(domino.struct.check(['boolean'], []), true, '["boolean"], [] succeeds');
-  deepEqual(domino.struct.check(['boolean'], [true]), true, '["boolean"], [true] succeeds');
-  deepEqual(domino.struct.check(['boolean'], [true, false, true]), true, '["boolean"], [true, false, true] succeeds');
-  deepEqual(domino.struct.check([{a: '?boolean'}], [{}, {a: false}]), true, '[{a: "?boolean"}], [{}, {a: false}] succeeds');
-  deepEqual(domino.struct.check('boolean', 42), false, '"boolean", 42 does not match');
-  deepEqual(domino.struct.check('number', 'abc'), false, '"number", "abc" does not match');
-  deepEqual(domino.struct.check('string', function() {}), false, '"string", function() {} does not match');
-  deepEqual(domino.struct.check('function', [1, 2, 3]), false, '"function", [1, 2, 3] does not match');
-  deepEqual(domino.struct.check('array', new Date()), false, '"array", new Date() does not match');
-  deepEqual(domino.struct.check('date', /rhqq2/), false, '"date", /rhqq2/ does not match');
-  deepEqual(domino.struct.check('regexp', {a: 1, b: 2}), false, '"regexp", {a: 1, b: 2} does not match');
-  deepEqual(domino.struct.check('object', true), false, '"object", true does not match');
-  deepEqual(domino.struct.check('*', null), false, '"*", null does not match');
-  deepEqual(domino.struct.check('string|array', null), false, '"string|array", null does not match');
-  deepEqual(domino.struct.check('?string', 42), false, '"?string", 42 does not match');
-  deepEqual(domino.struct.check(['boolean'], null), false, '["boolean"], null does not match');
-  deepEqual(domino.struct.check(['boolean'], [false, 1]), false, '["boolean"], [false, 1] does not match');
-  deepEqual(domino.struct.check({a: 'string'}, {a: 'abc', b: '12'}), false, '{a: "string"}, {a: "abc", b: "12"} does not match');
-  deepEqual(domino.struct.check({a: 'string', b: 'object'}, {a: 'abc', b: 42}), false, '{a: "string", b: "object"}, {a: "abc", b: 42} does not match');
-  deepEqual(domino.struct.check({a: 'string', b: 'object'}, {b: {a: 1, b: 2}}), false, '{a: "string", b: "object"}, {b: {a: 1, b: 2}} does not match');
-  deepEqual(domino.struct.check({a: 'string', b: 'object'}, {a: 'abc'}), false, '{a: "string", b: "object"}, {a: "abc"} does not match');
-  deepEqual(domino.struct.check({a: 'string', b: {a: 'string'}}, {a: 'abc', b: {a: 1, b: 2}}), false, '{a: "string", b: {a: "string"}}, {a: "abc", b: {a: 1, b: 2}} does not match');
-  deepEqual(domino.struct.check({a: 'string', b: {a: 'string'}}, {a: 'abc', b: 'def'}), false, '{a: "string", b: {a: "string"}}, {a: "abc", b: "def"} does not match');
-  deepEqual(domino.struct.check({a: '?string|array', b: '?*'}, 42), false, '{a: "?string|array", b: "?*"}, 42 does not match');
-  throws(
+QUnit.test('domino.struct.check', function() {
+  QUnit.deepEqual(domino.struct.check('boolean', true), true, '"boolean", true" succeeds');
+  QUnit.deepEqual(domino.struct.check('boolean', true), true, '"boolean", true" succeeds');
+  QUnit.deepEqual(domino.struct.check('number', 42), true, '"number", 42" succeeds');
+  QUnit.deepEqual(domino.struct.check('string', 'abc'), true, '"string", "abc" succeeds');
+  QUnit.deepEqual(domino.struct.check('function', function() {}), true, '"function", function() {}" succeeds');
+  QUnit.deepEqual(domino.struct.check('array', [1, 2, 3]), true, '"array", [1, 2, 3]" succeeds');
+  QUnit.deepEqual(domino.struct.check('date', new Date()), true, '"date", new Date()" succeeds');
+  QUnit.deepEqual(domino.struct.check('regexp', /rhqq2/), true, '"regexp", /rhqq2/" succeeds');
+  QUnit.deepEqual(domino.struct.check('object', {a: 1, b: 2}), true, '"object", {a: 1, b: 2}" succeeds');
+  QUnit.deepEqual(domino.struct.check('*', '42'), true, '"*", "42" succeeds');
+  QUnit.deepEqual(domino.struct.check('?string', 'abc'), true, '"?string", "abc" succeeds');
+  QUnit.deepEqual(domino.struct.check('?string', null), true, '"?string", null succeeds');
+  QUnit.deepEqual(domino.struct.check('?string', undefined), true, '"?string", undefined succeeds');
+  QUnit.deepEqual(domino.struct.check('string|array', 'abc'), true, '"string|array", "abc" succeeds');
+  QUnit.deepEqual(domino.struct.check('string|array', [1, 2, 3]), true, '"string|array", [1, 2, 3] succeeds');
+  QUnit.deepEqual(domino.struct.check('?string|array', 'abc'), true, '"?string|array", "abc" succeeds');
+  QUnit.deepEqual(domino.struct.check('?string|array', [1, 2, 3]), true, '"?string|array", [1, 2, 3] succeeds');
+  QUnit.deepEqual(domino.struct.check('?string|array', null), true, '"?string|array", null succeeds');
+  QUnit.deepEqual(domino.struct.check({a: '?string|array', b: '?*'}, {b: 'def'}), true, '{a: "?string|array", b: "?*"}, {b: "def"} succeeds');
+  QUnit.deepEqual(domino.struct.check({a: 'string', b: 'object'}, {a: 'abc', b: {a: 1, b: 2}}), true, '{a: "string", b: "object"}, {a: "abc", b: {a: 1, b: 2}} succeeds');
+  QUnit.deepEqual(domino.struct.check({a: 'string', b: {a: 'string'}}, {a: 'abc', b: {a: 'def'}}), true, '{a: "string", b: {a: "string"}}, {a: "abc", b: {a: "def"}} succeeds');
+  QUnit.deepEqual(domino.struct.check({a: '?string|array', b: '?*'}, {a: null, b: 'def'}), true, '{a: "?string|array", b: "?*"}, {a: null, b: "def"} succeeds');
+  QUnit.deepEqual(domino.struct.check({a: '?string|array', b: '?*'}, {a: 'abc', b: 'def'}), true, '{a: "?string|array", b: "?*"}, {a: "abc", b: "def"} succeeds');
+  QUnit.deepEqual(domino.struct.check({a: '?string|array', b: '?*'}, {a: [1, 2, 3], b: 'def'}), true, '{a: "?string|array", b: "?*"}, {a: [1, 2, 3], b: "def"} succeeds');
+  QUnit.deepEqual(domino.struct.check(['boolean'], []), true, '["boolean"], [] succeeds');
+  QUnit.deepEqual(domino.struct.check(['boolean'], [true]), true, '["boolean"], [true] succeeds');
+  QUnit.deepEqual(domino.struct.check(['boolean'], [true, false, true]), true, '["boolean"], [true, false, true] succeeds');
+  QUnit.deepEqual(domino.struct.check([{a: '?boolean'}], [{}, {a: false}]), true, '[{a: "?boolean"}], [{}, {a: false}] succeeds');
+  QUnit.deepEqual(domino.struct.check('boolean', 42), false, '"boolean", 42 does not match');
+  QUnit.deepEqual(domino.struct.check('number', 'abc'), false, '"number", "abc" does not match');
+  QUnit.deepEqual(domino.struct.check('string', function() {}), false, '"string", function() {} does not match');
+  QUnit.deepEqual(domino.struct.check('function', [1, 2, 3]), false, '"function", [1, 2, 3] does not match');
+  QUnit.deepEqual(domino.struct.check('array', new Date()), false, '"array", new Date() does not match');
+  QUnit.deepEqual(domino.struct.check('date', /rhqq2/), false, '"date", /rhqq2/ does not match');
+  QUnit.deepEqual(domino.struct.check('regexp', {a: 1, b: 2}), false, '"regexp", {a: 1, b: 2} does not match');
+  QUnit.deepEqual(domino.struct.check('object', true), false, '"object", true does not match');
+  QUnit.deepEqual(domino.struct.check('*', null), false, '"*", null does not match');
+  QUnit.deepEqual(domino.struct.check('string|array', null), false, '"string|array", null does not match');
+  QUnit.deepEqual(domino.struct.check('?string', 42), false, '"?string", 42 does not match');
+  QUnit.deepEqual(domino.struct.check(['boolean'], null), false, '["boolean"], null does not match');
+  QUnit.deepEqual(domino.struct.check(['boolean'], [false, 1]), false, '["boolean"], [false, 1] does not match');
+  QUnit.deepEqual(domino.struct.check({a: 'string'}, {a: 'abc', b: '12'}), false, '{a: "string"}, {a: "abc", b: "12"} does not match');
+  QUnit.deepEqual(domino.struct.check({a: 'string', b: 'object'}, {a: 'abc', b: 42}), false, '{a: "string", b: "object"}, {a: "abc", b: 42} does not match');
+  QUnit.deepEqual(domino.struct.check({a: 'string', b: 'object'}, {b: {a: 1, b: 2}}), false, '{a: "string", b: "object"}, {b: {a: 1, b: 2}} does not match');
+  QUnit.deepEqual(domino.struct.check({a: 'string', b: 'object'}, {a: 'abc'}), false, '{a: "string", b: "object"}, {a: "abc"} does not match');
+  QUnit.deepEqual(domino.struct.check({a: 'string', b: {a: 'string'}}, {a: 'abc', b: {a: 1, b: 2}}), false, '{a: "string", b: {a: "string"}}, {a: "abc", b: {a: 1, b: 2}} does not match');
+  QUnit.deepEqual(domino.struct.check({a: 'string', b: {a: 'string'}}, {a: 'abc', b: 'def'}), false, '{a: "string", b: {a: "string"}}, {a: "abc", b: "def"} does not match');
+  QUnit.deepEqual(domino.struct.check({a: '?string|array', b: '?*'}, 42), false, '{a: "?string|array", b: "?*"}, 42 does not match');
+  QUnit.throws(
     function() {
       domino.struct.check('string|?array', 'abc');
     },
     /Error\: \[[^\]]*\] Invalid type/,
-    'Invalid type 1 detected'
+    'Invalid type detected'
   );
-  throws(
+  QUnit.throws(
     function() {
       domino.struct.check({a: 'sstring'}, {a: 'abc', b: '12'});
     },
     /Error\: \[[^\]]*\] Invalid type/,
-    'Deep invalid type 1 detected'
+    'Deep invalid type detected'
   );
-  deepEqual(domino.struct.check({a: 'number'}, {a: 42}, {includes: true}), true, '{a: "number"}, {a: 42} matches (with "includes" flag on)');
-  deepEqual(domino.struct.check({a: 'number'}, {a: 42, b: 1337}), false, '{a: "number"}, {a: 42, b: 1337} does not match (with "includes" flag off)');
-  deepEqual(domino.struct.check({a: 'number'}, {a: 42, b: 1337}, {includes: true}), true, '{a: "number"}, {a: 42, b: 1337} matches (with "includes" flag on)');
+  QUnit.deepEqual(domino.struct.check({a: 'number'}, {a: 42}, {includes: true}), true, '{a: "number"}, {a: 42} matches (with "includes" flag on)');
+  QUnit.deepEqual(domino.struct.check({a: 'number'}, {a: 42, b: 1337}), false, '{a: "number"}, {a: 42, b: 1337} does not match (with "includes" flag off)');
+  QUnit.deepEqual(domino.struct.check({a: 'number'}, {a: 42, b: 1337}, {includes: true}), true, '{a: "number"}, {a: 42, b: 1337} matches (with "includes" flag on)');
 });
 
 // domino.struct.deepScalar():
-test('domino.struct.deepScalar', function() {
-  deepEqual(domino.struct.deepScalar('boolean'), true, '"boolean" succeeds');
-  deepEqual(domino.struct.deepScalar('number'), true, '"number" succeeds');
-  deepEqual(domino.struct.deepScalar('null'), true, '"null" succeeds');
-  deepEqual(domino.struct.deepScalar('undefined'), true, '"undefined" succeeds');
-  deepEqual(domino.struct.deepScalar('string'), true, '"string" succeeds');
-  deepEqual(domino.struct.deepScalar('?string'), true, '"?string" succeeds');
-  deepEqual(domino.struct.deepScalar('string|number'), true, '"string|number" succeeds');
-  deepEqual(domino.struct.deepScalar('?string|number'), true, '"?string|number" succeeds');
-  deepEqual(domino.struct.deepScalar({a: 'string'}), true, '"{a: "string"}" succeeds');
-  deepEqual(domino.struct.deepScalar([{a: 'string'}]), true, '"[{a: "string"}]" succeeds');
-  deepEqual(domino.struct.deepScalar([{a: 'string'}, 'number']), true, '"[{a: "string"}, "number"]" succeeds');
-  deepEqual(domino.struct.deepScalar('object'), false, '"object" succeeds');
-  deepEqual(domino.struct.deepScalar('array'), false, '"array" succeeds');
-  deepEqual(domino.struct.deepScalar('*'), false, '"*" succeeds');
-  deepEqual(domino.struct.deepScalar('date'), false, '"date" succeeds');
-  deepEqual(domino.struct.deepScalar('regexp'), false, '"regexp" succeeds');
-  deepEqual(domino.struct.deepScalar('?object'), false, '"?object" succeeds');
-  deepEqual(domino.struct.deepScalar(['object']), false, '["object"] succeeds');
-  deepEqual(domino.struct.deepScalar('object|number'), false, '"object|number" succeeds');
-  deepEqual(domino.struct.deepScalar('?object|number'), false, '"?object|number" succeeds');
-  deepEqual(domino.struct.deepScalar({a: 'object'}), false, '"{a: object}" succeeds');
-  deepEqual(domino.struct.deepScalar('abcde'), false, '"abcde" succeeds');
+QUnit.test('domino.struct.deepScalar', function() {
+  QUnit.deepEqual(domino.struct.deepScalar('boolean'), true, '"boolean" succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar('number'), true, '"number" succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar('null'), true, '"null" succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar('undefined'), true, '"undefined" succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar('string'), true, '"string" succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar('?string'), true, '"?string" succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar('string|number'), true, '"string|number" succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar('?string|number'), true, '"?string|number" succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar({a: 'string'}), true, '"{a: "string"}" succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar([{a: 'string'}]), true, '"[{a: "string"}]" succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar([{a: 'string'}, 'number']), true, '"[{a: "string"}, "number"]" succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar('object'), false, '"object" succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar('array'), false, '"array" succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar('*'), false, '"*" succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar('date'), false, '"date" succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar('regexp'), false, '"regexp" succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar('?object'), false, '"?object" succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar(['object']), false, '["object"] succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar('object|number'), false, '"object|number" succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar('?object|number'), false, '"?object|number" succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar({a: 'object'}), false, '"{a: object}" succeeds');
+  QUnit.deepEqual(domino.struct.deepScalar('abcde'), false, '"abcde" succeeds');
 });
 
 // Custom structures:
-test('Custom structures', function() {
+QUnit.test('Custom structures', function() {
   // Check wrong calls to struct.add:
-  throws(
+  QUnit.throws(
     function() {
       domino.struct.add('number', function(v) {
         return v === +v;
@@ -187,10 +187,10 @@ test('Custom structures', function() {
     return (v === +v) && ((v % 1) === 0);
   });
 
-  deepEqual(domino.struct.isValid('integer'), true, 'domino.struct.isValid("integer") is true');
-  deepEqual(domino.struct.check('integer', 1), true, 'domino.struct.check("integer", 1) is true');
-  deepEqual(domino.struct.check('integer', 1.2), false, 'domino.struct.check("integer", 1.2) is false');
-  deepEqual(domino.struct.check({a: 'integer'}, {a: 1}), true, 'domino.struct.check({a: "integer"}, {a: 1}) is true');
+  QUnit.deepEqual(domino.struct.isValid('integer'), true, 'domino.struct.isValid("integer") is true');
+  QUnit.deepEqual(domino.struct.check('integer', 1), true, 'domino.struct.check("integer", 1) is true');
+  QUnit.deepEqual(domino.struct.check('integer', 1.2), false, 'domino.struct.check("integer", 1.2) is false');
+  QUnit.deepEqual(domino.struct.check({a: 'integer'}, {a: 1}), true, 'domino.struct.check({a: "integer"}, {a: 1}) is true');
 
   // Create an advanced structure and use it:
   domino.struct.add('template', {
@@ -202,8 +202,8 @@ test('Custom structures', function() {
     e: '?integer'
   });
 
-  deepEqual(domino.struct.isValid('template'), true, 'domino.struct.isValid("template") is true');
-  deepEqual(domino.struct.check('template', {
+  QUnit.deepEqual(domino.struct.isValid('template'), true, 'domino.struct.isValid("template") is true');
+  QUnit.deepEqual(domino.struct.check('template', {
     a: 42,
     b: 'toto',
     c: {
@@ -211,7 +211,7 @@ test('Custom structures', function() {
     },
     e: 2
   }), true, 'domino.struct.check("template", ...) works');
-  deepEqual(domino.struct.check('template', {
+  QUnit.deepEqual(domino.struct.check('template', {
     a: 42,
     b: 'toto',
     c: {
@@ -229,17 +229,17 @@ test('Custom structures', function() {
     }
   });
 
-  deepEqual(domino.struct.check('includesTest', {
+  QUnit.deepEqual(domino.struct.check('includesTest', {
     a: 42
   }), true, '"includes"-like structures do not need other attributes.');
-  deepEqual(domino.struct.check('includesTest', {
+  QUnit.deepEqual(domino.struct.check('includesTest', {
     a: 42,
     b: 'toto'
   }), true, '"includes"-like structures can have other attributes.');
-  deepEqual(domino.struct.check('includesTest', {
+  QUnit.deepEqual(domino.struct.check('includesTest', {
     a: 'NotANumber'
   }), false, '"includes"-like structures need to have their values valid when they have no other attribute.');
-  deepEqual(domino.struct.check('includesTest', {
+  QUnit.deepEqual(domino.struct.check('includesTest', {
     a: 'NotANumber',
     b: 'toto'
   }), false, '"includes"-like structures need to have their values valid when they have other attributes.');
@@ -252,17 +252,17 @@ test('Custom structures', function() {
     }
   });
 
-  deepEqual(domino.struct.isValid('s'), true, 'domino.struct.isValid("s") is true (recursive)');
-  deepEqual(domino.struct.check('s', {}), true, 'recursive structures work (level 0)');
-  deepEqual(domino.struct.check('s', {
+  QUnit.deepEqual(domino.struct.isValid('s'), true, 'domino.struct.isValid("s") is true (recursive)');
+  QUnit.deepEqual(domino.struct.check('s', {}), true, 'recursive structures work (level 0)');
+  QUnit.deepEqual(domino.struct.check('s', {
     k: {}
   }), true, 'recursive structures work (level 1)');
-  deepEqual(domino.struct.check('s', {
+  QUnit.deepEqual(domino.struct.check('s', {
     k: {
       k: {}
     }
   }), true, 'recursive structures work (level 2)');
-  deepEqual(domino.struct.check('s', {
+  QUnit.deepEqual(domino.struct.check('s', {
     k: {
       k: {},
       a: 42
@@ -282,18 +282,18 @@ test('Custom structures', function() {
     k: '?s1'
   });
 
-  deepEqual(domino.struct.isValid('s1'), true, 'domino.struct.isValid("s1") is true (recursive)');
-  deepEqual(domino.struct.isValid('s2'), true, 'domino.struct.isValid("s2") is true');
-  deepEqual(domino.struct.check('s1', {}), true, 'double recursive structures work (level 0)');
-  deepEqual(domino.struct.check('s1', {
+  QUnit.deepEqual(domino.struct.isValid('s1'), true, 'domino.struct.isValid("s1") is true (recursive)');
+  QUnit.deepEqual(domino.struct.isValid('s2'), true, 'domino.struct.isValid("s2") is true');
+  QUnit.deepEqual(domino.struct.check('s1', {}), true, 'double recursive structures work (level 0)');
+  QUnit.deepEqual(domino.struct.check('s1', {
     k: {}
   }), true, 'double recursive structures work (level 1)');
-  deepEqual(domino.struct.check('s1', {
+  QUnit.deepEqual(domino.struct.check('s1', {
     k: {
       k: {}
     }
   }), true, 'double recursive structures work (level 2)');
-  deepEqual(domino.struct.check('s1', {
+  QUnit.deepEqual(domino.struct.check('s1', {
     k: {
       k: {},
       a: 42
