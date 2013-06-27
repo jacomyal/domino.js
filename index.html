@@ -35,7 +35,7 @@
       <section>
 <h1 id="toc_0">domino.js</h1>
 
-<p>Current version: <strong>v1.2.4</strong></p>
+<p>Current version: <strong>v1.3.0</strong></p>
 
 <p><em>domino.js</em> is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by <a href="http://github.com/jacomyal">Alexis Jacomy</a> at <a href="http://github.com/linkfluence">Linkfluence</a>. It is released under the <a href="https://raw.github.com/jacomyal/domino.js/master/LICENSE.txt">MIT License</a>.</p>
 
@@ -48,11 +48,12 @@
 
 <p><a href="https://raw.github.com/jacomyal/domino.js/master/build/domino.min.js">https://raw.github.com/jacomyal/domino.js/master/build/domino.min.js</a></p>
 
-<p>You can also minify your own version:</p>
+<p>You can also minify your own version with <a href="http://gruntjs.com/">Grunt</a>:</p>
 
 <ul>
-<li>First, download the <a href="https://developers.google.com/closure/compiler/">Google Closure Compiler</a> and copy it to <code>build/compiler.jar</code>.</li>
-<li>Then, use <code>make</code> and you will find the file <code>domino.min.js</code> in the <code>build</code> directory.</li>
+<li>First, install <a href="http://nodejs.org/">Node.js</a>, <a href="https://npmjs.org/">NPM</a> and <a href="http://gruntjs.com/installing-grunt">Grunt</a>.</li>
+<li>Use <code>npm install</code> to install domino.js development dependencies.</li>
+<li>Use <code>grunt</code> to successively lint sources, launch unit tests, and minify the code with <a href="https://github.com/mishoo/UglifyJS">Uglify</a>.</li>
 </ul>
 
 <h3 id="toc_2">Contributing:</h3>

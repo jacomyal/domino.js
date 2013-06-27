@@ -1,7 +1,7 @@
 domino.js
 =========
 
-Current version: **v1.2.4**
+Current version: **v1.3.0**
 
 *domino.js* is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by [Alexis Jacomy](http://github.com/jacomyal) at [Linkfluence](http://github.com/linkfluence). It is released under the [MIT License](https://raw.github.com/jacomyal/domino.js/master/LICENSE.txt).
 
@@ -17,10 +17,11 @@ The latest minified version is available here:
 
 [https://raw.github.com/jacomyal/domino.js/master/build/domino.min.js](https://raw.github.com/jacomyal/domino.js/master/build/domino.min.js)
 
-You can also minify your own version:
+You can also minify your own version with [Grunt](http://gruntjs.com/):
 
- - First, download the [Google Closure Compiler](https://developers.google.com/closure/compiler/) and copy it to `build/compiler.jar`.
- - Then, use `make` and you will find the file `domino.min.js` in the `build` directory.
+ - First, install [Node.js](http://nodejs.org/), [NPM](https://npmjs.org/) and [Grunt](http://gruntjs.com/installing-grunt).
+ - Use `npm install` to install domino.js development dependencies.
+ - Use `grunt` to successively lint sources, launch unit tests, and minify the code with [Uglify](https://github.com/mishoo/UglifyJS).
 
 ### Contributing:
 
