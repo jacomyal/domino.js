@@ -45,9 +45,8 @@
   var _root = this;
 
   // Check domino.js existance:
-  if (_root.domino) {
+  if (_root.domino)
     throw new Error('domino already exists');
-  }
 
   /**
    * The constructor of any domino.js instance.
@@ -56,7 +55,7 @@
    * @extends domino.EventDispatcher
    * @this {domino}
    */
-  _root.domino = function() {
+  var domino = function() {
     // Inheritance:
     (function() {
       dispatcher.call(this);
@@ -2004,7 +2003,17 @@
     // Return the full scope:
     return _reference;
   };
-  var domino = _root.domino;
+
+  // Current version.
+  domino.version = '1.3.0';
+
+  // Export domino (for both browser and Node.js):
+  if (typeof exports !== 'undefined') {
+    if (typeof module !== 'undefined' && module.exports)
+      exports = module.exports = domino;
+    exports.domino = domino;
+  } else
+    _root.domino = domino;
 
 
   /**
@@ -2622,5 +2631,4 @@
       events: {}
     };
   };
-  var module = domino.module;
 }).call(this);
