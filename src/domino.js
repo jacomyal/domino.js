@@ -2078,18 +2078,20 @@
         return item;
       }
 
-      var result, k;
+      var result, i, k, l;
 
       if (struct.get(item) === 'array') {
         result = [];
-        for (var k in item)
-          result[k] = this.clone(item[k]);
+        for (i = 0, l = item.length; i < l; i++)
+          result.push(this.clone(item[i]));
       } else if (struct.get(item) === 'date') {
         result = new Date(item.getTime());
       } else if (struct.get(item) === 'object') {
-        if (!item.prototype) {
+        if (item.nodeType && typeof item.cloneNode === 'function')
+          result = item;
+        else if (!item.prototype) {
           result = {};
-          for (var i in item) {
+          for (i in item) {
             result[i] = this.clone(item[i]);
           }
         } else {
