@@ -234,8 +234,16 @@
         };
         scope.configuration = _configuration;
         scope.dispatchEvent = function(type, data) {
+          var a = _utils.array(type),
+              i,
+              l,
+              events = [];
+
+          for (i = 0, l = a.length; i < l; i++)
+            events.push(_self.getEvent(a[i], data));
+
           _mainLoop({
-            events: _self.getEvent(type, data)
+            events: events
           });
 
           return this;
@@ -280,7 +288,13 @@
           });
 
           scope.dispatchEvent = function(type, data) {
-            this._events.push(_self.getEvent(type, data));
+            var a = _utils.array(type),
+                i,
+                l,
+                events = [];
+
+            for (i = 0, l = a.length; i < l; i++)
+              this._events.push(_self.getEvent(a[i], data));
 
             return this;
           };
