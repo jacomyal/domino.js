@@ -883,7 +883,7 @@
           }
 
           // Start looping:
-          if (reiterate)
+          if (reiterate || p['loop'])
             (p['loop'] || _mainLoop)({
               events: events,
               update: update,
@@ -1588,6 +1588,9 @@
                   res.events = res.events.concat(o.events || []);
                   res.services = res.services.concat(o.services || []);
                 }
+
+                if (p2['success'])
+                  p2['success'](returned);
 
                 _mainLoop(res);
               };

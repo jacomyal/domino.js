@@ -282,4 +282,43 @@
     }, 50);
     domInst.request('beforeTest1');
   });
+
+  QUnit.asyncTest('Services: "multiple simultaneous calls"', function() {
+    var usefulVar,
+        domInst = new domino({
+          services: [
+            {
+              id: 'multiTest1',
+              url: '/multiTest1',
+              type: 'POST',
+              contentType: 'application/json',
+              data: {
+                value: 'toto'
+              }
+            },
+            {
+              id: 'multiTest2',
+              url: '/multiTest2',
+              type: 'POST',
+              contentType: 'application/json',
+              data: {
+                value: 'tutu'
+              }
+            }
+          ]
+        });
+
+    domInst.request(['multiTest1', 'multiTest2'], {
+      success: function(data) {
+        QUnit.start();
+        QUnit.deepEqual([
+          _root.servicesTestsData.multiTest1,
+          _root.servicesTestsData.multiTest2
+        ], [
+          'toto',
+          'tutu'
+        ], 'Success triggered when all calls are ended');
+      }
+    });
+  });
 }).call(this);
