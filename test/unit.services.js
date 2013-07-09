@@ -29,6 +29,7 @@
 
         o[p] = _root.servicesTestsData[p];
         this.responseText = o;
+        _root.lastXHR = this;
       }
     });
 
@@ -43,6 +44,7 @@
 
         o[p] = _root.servicesTestsData[p] = settings.data.value;
         this.responseText = JSON.stringify(o);
+        _root.lastXHR = this;
       }
     });
   })(this);
@@ -205,7 +207,6 @@
       this.triggers.events = tests.reduce(function(res, obj, i) {
         res['prop_' + i + '_updated'] = function(d) {
           QUnit.start();
-// if (obj.label !== 'POST call (with "setter")')
           QUnit.deepEqual(d.get('prop_' + i), obj.expected, obj.label);
           if (i < tests.length - 1) {
             QUnit.stop();
@@ -218,5 +219,67 @@
     });
 
     dGlobal.request('service_0');
+  });
+
+  QUnit.asyncTest('Services: "before"', function() {
+    var usefulVar,
+        domInst = new domino({
+          services: [
+            {
+              id: 'beforeTest1',
+              url: '/beforeTest1',
+              type: 'POST',
+              contentType: 'application/json',
+              data: {
+                value: 'beforeTest1'
+              },
+              before: function() {
+                return true;
+              }
+            },
+            {
+              id: 'beforeTest2',
+              url: '/beforeTest2',
+              type: 'POST',
+              contentType: 'application/json',
+              data: {
+                value: 'beforeTest2'
+              },
+              before: function() {
+                return false;
+              }
+            },
+            {
+              id: 'beforeTest3',
+              url: '/beforeTest3',
+              before: function(_, xhr) {
+                xhr.setRequestHeader('beforeTest3', 42);
+              }
+            }
+          ]
+        });
+
+    _root.servicesTestsData.beforeTest1 = 'none';
+    _root.servicesTestsData.beforeTest2 = 'none';
+
+    setTimeout(function() {
+      QUnit.start();
+      QUnit.deepEqual(_root.servicesTestsData.beforeTest1, 'beforeTest1', '"before" returning true does nothing');
+      QUnit.stop();
+
+      setTimeout(function() {
+        QUnit.start();
+        QUnit.deepEqual(_root.servicesTestsData.beforeTest2, 'none', '"before" returning false cancels the call');
+        QUnit.stop();
+
+        setTimeout(function() {
+          QUnit.start();
+          QUnit.deepEqual(_root.lastXHR.headers.beforeTest3, 42, '"before" can modify the XHR');
+        }, 50);
+        domInst.request('beforeTest3');
+      }, 50);
+      domInst.request('beforeTest2');
+    }, 50);
+    domInst.request('beforeTest1');
   });
 }).call(this);

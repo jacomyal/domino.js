@@ -871,18 +871,19 @@
             });
         };
 
-        // Check if there is anything to do before launching the call:
+        // Create:
         var before = p['before'] || o['before'];
-        if (before != null && _struct.get(before) === 'function') {
-          _execute(before, {
-            parameters: [p],
-            loop: true,
-            scope: {
-              dispatchEvent: true,
-              update: true
-            }
-          });
-        }
+        if (typeof before === 'function' && _struct.get(before) === 'function')
+          ajaxObj.beforeSend = function(xhr) {
+            return _execute(before, {
+              parameters: [p, xhr],
+              loop: true,
+              scope: {
+                dispatchEvent: true,
+                update: true
+              }
+            }).returned;
+          };
 
         // Abort:
         if (p['abort'] && _currentCalls[o['id']])
@@ -1693,9 +1694,9 @@
               o['loop'] :
               _mainLoop
           )(obj);
-      } else {
-        return obj;
       }
+
+      return obj;
     }
 
     /**
@@ -2181,6 +2182,12 @@
       if (o.headers)
         for (n in o.headers)
           xhr.setRequestHeader(n, o.headers[n]);
+
+      if (
+        typeof o.beforeSend === 'function' &&
+        o.beforeSend(xhr, o) === false
+      )
+        return xhr.abort();
 
       if (o.timeout)
         timer = setTimeout(function() {
