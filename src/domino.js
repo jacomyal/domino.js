@@ -343,6 +343,12 @@
           _die('This method is no longer available.');
           return this;
         };
+
+      if (scope.update !== undefined)
+        scope.update = function() {
+          _die('This method is no longer available.');
+          return this;
+        };
     }
 
     /**
