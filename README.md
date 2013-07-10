@@ -29,4 +29,4 @@ You can contribute by submitting [issues tickets](http://github.com/jacomyal/dom
 
 The whole source code is validated by the [Google Closure Linter](https://developers.google.com/closure/utilities/), and the comments are written in [JSDoc](http://en.wikipedia.org/wiki/JSDoc) (tags description is available [here](https://developers.google.com/closure/compiler/docs/js-for-compiler)).
 
-Also, the change log is available [here](http://github.com/jacomyal/domino.js/CHANGELOG.md).
+Also, the change log is available [here](https://github.com/jacomyal/domino.js/blob/master/CHANGELOG.md).
