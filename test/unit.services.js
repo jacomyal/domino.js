@@ -286,6 +286,23 @@
   QUnit.asyncTest('Services: "multiple simultaneous calls"', function() {
     var usefulVar,
         domInst = new domino({
+          hacks: [
+            {
+              triggers: 'triggerHack',
+              method: function() {
+                QUnit.start();
+                QUnit.ok(true, 'Event dispatching available from multicalls "success"');
+                QUnit.stop();
+
+                this.request(['multiTest1', 'multiTest2'], {
+                  success: function(data) {
+                    QUnit.start();
+                    QUnit.ok(true, 'Specific success for multiple calls works from hacks.');
+                  }
+                });
+              }
+            }
+          ],
           services: {
             multiTest1: {
               url: '/multiTest1',
@@ -316,6 +333,9 @@
           'toto',
           'tutu'
         ], 'Success triggered when all calls are ended');
+        QUnit.stop();
+
+        this.dispatchEvent('triggerHack');
       }
     });
   });

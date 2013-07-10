@@ -287,8 +287,15 @@
             } else if (_struct.check('object', p1)) {
               this._services.push(p1);
             } else if (_struct.check('array', p1)) {
-              for (i in p1)
-                this._services.push(p1[i]);
+              o = {
+                services: p1
+              };
+
+              if (_struct.check('object', p2))
+                for (i in p2)
+                  o[i] = p2[i];
+
+              this._services.push(o);
             }
 
             return this;
@@ -1311,12 +1318,25 @@
       }
 
       if (servicesArray.length) {
-      // Check services to call:
-        if (_settings('mergeRequests'))
-          _request(servicesArray);
-        else
-          for (j in servicesArray)
-            _request(servicesArray[j]);
+        // Check services to call:
+        if (_settings('mergeRequests')) {
+          a = [];
+          for (j in servicesArray) {
+            if (servicesArray[j]['services'])
+              _request(servicesArray[j]['services'], servicesArray[j]);
+            else
+              a.push(servicesArray[j]);
+
+            if (a.length)
+              _request(a);
+          }
+        } else
+          for (j in servicesArray) {
+            if (servicesArray[j]['services'])
+              _request(servicesArray[j]['services'], servicesArray[j]);
+            else
+              _request(servicesArray[j]);
+          }
       }
 
       // Check events to trigger:
@@ -1618,9 +1638,17 @@
                 }
 
                 if (p2['success'])
-                  p2['success'](returned);
-
-                _mainLoop(res);
+                  _execute(p2['success'], {
+                    parameters: [returned],
+                    loop: _mainLoop,
+                    scope: {
+                      request: true,
+                      dispatchEvent: true,
+                      update: true
+                    }
+                  });
+                else
+                  _mainLoop(res);
               };
 
           for (i = 0; i < l; i++) {
