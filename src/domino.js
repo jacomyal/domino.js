@@ -1039,6 +1039,19 @@
       for (event in bind)
         module.addEventListener(event, _triggerMainLoop);
 
+      // Add log, warn and die in the module, if possible:
+      module.log = ('id' in o) ?
+        _utils.partial(_log, '[module "' + o.id + '"]') :
+        _utils.partial(_log, '[module]');
+
+      module.warn = ('id' in o) ?
+        _utils.partial(_warn, '[module "' + o.id + '"]') :
+        _utils.partial(_warn, '[module]');
+
+      module.die = ('id' in o) ?
+        _utils.partial(_die, '[module "' + o.id + '"]') :
+        _utils.partial(_die, '[module]');
+
       // Finalize:
       if ('id' in o)
         _referencedModules[o.id] = module;
@@ -2127,6 +2140,15 @@
 
       return result;
     },
+    partial: function(fn) {
+      var args = Array.prototype.slice.call(arguments, 1);
+      return function() {
+        return fn.apply(
+          this,
+          args.concat(Array.prototype.slice.call(arguments))
+        );
+      };
+    },
     ajax: function(o, fn) {
       if (!__hasXhr__())
         __die__(
@@ -2662,5 +2684,8 @@
       properties: {},
       events: {}
     };
+
+    // We also prototype comunication methods:
+    this.log = this.warn = this.die = function() {};
   };
 }).call(this);

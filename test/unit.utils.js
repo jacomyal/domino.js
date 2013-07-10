@@ -16,6 +16,18 @@ QUnit.test('domino.utils.array', function() {
   QUnit.deepEqual(domino.utils.array(null), [], 'null makes []');
 });
 
+QUnit.test('domino.utils.partial', function() {
+  var fn = function() {
+        return this.name + ' ' +  Array.prototype.slice.call(arguments).join(' ');
+      };
+      obj = {
+        name: 'moe'
+      };
+
+  obj.fn = domino.utils.partial(fn, 'a', 'b');
+  QUnit.deepEqual(obj.fn('c', 'd'), 'moe a b c d', 'domino.utils.partial works');
+});
+
 // domino.utils.clone():
 QUnit.test('domino.utils.clone', function() {
   // Basic tests:
