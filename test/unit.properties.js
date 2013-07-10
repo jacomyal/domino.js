@@ -199,21 +199,17 @@ QUnit.test('Shortcuts management', function() {
 
   // Test 3:
   var d = new domino({
-    properties: [
-      {
-        id: 'a',
+    properties: {
+      a: {
         type: 'string',
         value: 'property'
       }
-    ],
-    shortcuts: [
-      {
-        id: 'a',
-        method: function() {
-          return 'shortcut';
-        }
+    },
+    shortcuts: {
+      a: function() {
+        return 'shortcut';
       }
-    ]
+    }
   });
 
   QUnit.deepEqual(d.expand('a', {a: 'custom'}), 'custom', 'Priorities: Custom objects are resolved before properties and shortcuts.');

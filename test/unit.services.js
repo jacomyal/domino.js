@@ -286,9 +286,8 @@
   QUnit.asyncTest('Services: "multiple simultaneous calls"', function() {
     var usefulVar,
         domInst = new domino({
-          services: [
-            {
-              id: 'multiTest1',
+          services: {
+            multiTest1: {
               url: '/multiTest1',
               type: 'POST',
               contentType: 'application/json',
@@ -296,8 +295,7 @@
                 value: 'toto'
               }
             },
-            {
-              id: 'multiTest2',
+            multiTest2: {
               url: '/multiTest2',
               type: 'POST',
               contentType: 'application/json',
@@ -305,7 +303,7 @@
                 value: 'tutu'
               }
             }
-          ]
+          }
         });
 
     domInst.request(['multiTest1', 'multiTest2'], {

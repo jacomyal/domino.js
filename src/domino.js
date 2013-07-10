@@ -165,17 +165,30 @@
 
     (function() {
       var i;
-      for (i in _o.properties || [])
-        _addProperty(_o.properties[i].id, _o.properties[i]);
+
+      if (_struct.get(_o.properties) === 'array')
+        for (i in _o.properties)
+          _addProperty(_o.properties[i].id, _o.properties[i]);
+      else if (_struct.get(_o.properties) === 'object')
+        for (i in _o.properties)
+          _addProperty(i, _o.properties[i]);
 
       for (i in _o.hacks || [])
         _addHack(_o.hacks[i]);
 
-      for (i in _o.services || [])
-        _addService(_o.services[i]);
+      if (_struct.get(_o.services) === 'array')
+        for (i in _o.services)
+          _addService(_o.services[i].id, _o.services[i]);
+      else if (_struct.get(_o.services) === 'object')
+        for (i in _o.services)
+          _addService(i, _o.services[i]);
 
-      for (i in _o.shortcuts || [])
-        _addShortcut(_o.shortcuts[i]);
+      if (_struct.get(_o.shortcuts) === 'array')
+        for (i in _o.shortcuts)
+          _addShortcut(_o.shortcuts[i].id, _o.shortcuts[i]);
+      else if (_struct.get(_o.shortcuts) === 'object')
+        for (i in _o.shortcuts)
+          _addShortcut(i, _o.shortcuts[i]);
     })();
 
     _config = _utils.clone(_o);
@@ -410,7 +423,7 @@
 
       // Description:
       if (o['description'])
-        _descriptions.properties[o['id']] = o['description'];
+        _descriptions.properties[id] = o['description'];
 
       // Type:
       if (o['type'] !== undefined)
@@ -581,15 +594,15 @@
      * server and your properties. This service will take itself as parameter
      * an object, whose most keys can override the default described bellow.
      *
-     * @param   {?Object} options An object containing some more precise
-     *                            indications about the service.
+     * @param {string}  id      The unique id of the service, used to specify
+     *                          which service to call.
+     * @param {?Object} options An object containing some more precise
+     *                          indications about the service.
      *
      * @return {domino} Returns the domino instance itself.
      *
      * Here is the list of options that are interpreted:
      *
-     *   {string}          id           The unique id of the service, used to
-     *                                  specify which service to call.
      *   {string|function} url          The URL of the service. If a string,
      *                                  then any shortcut in it will be
      *                                  resolved. If a function, will be
@@ -635,13 +648,13 @@
      * The properties followed by ++ are cumulative when the service is called.
      * The properties followed by "*" accept shortcut values.
      */
-    function _addService(options) {
+    function _addService(id, options) {
       var o = options || {};
 
       // Errors:
-      if (o['id'] === undefined || _struct.get(o['id']) !== 'string')
+      if (_struct.get(id) !== 'string')
         _die(
-          'The service id is not indicated.'
+          'The service id is not specified.'
         );
 
       if (!_struct.check('function|string', o['url']))
@@ -649,17 +662,17 @@
           'The service URL is not valid.'
         );
 
-      if (_services[o['id']] !== undefined)
+      if (_services[id] !== undefined)
         _die(
-          'The service "' + o['id'] + '" already exists.'
+          'The service "' + id + '" already exists.'
         );
 
       // Description:
       if (o['description'])
-        _descriptions.services[o['id']] = o['description'];
+        _descriptions.services[id] = o['description'];
 
-      _services[o['id']] = function(params) {
-        _log('Calling service "' + o['id'] + '".');
+      _services[id] = function(params) {
+        _log('Calling service "' + id + '".');
 
         var p = params || {},
             shortcuts = p['shortcuts'] || {},
@@ -681,7 +694,7 @@
                     a, k, property;
 
                 _log(
-                  'Loading service "' + o['id'] + '" ' +
+                  'Loading service "' + id + '" ' +
                   'failed with message "' + mes + '" ' +
                   'and status ' + xhr.status + '.'
                 );
@@ -770,13 +783,13 @@
             // instead of the success:
             !expect.call(_getScope(), data, p, o)
           ) {
-            _log('"expect" test failed for service "' + o['id'] + '".');
+            _log('"expect" test failed for service "' + id + '".');
             ajaxObj.error.call(this, 'Unexpected data received.', xhr);
             return;
           }
 
           // Log:
-          _log('Service "' + o['id'] + '" successfull.');
+          _log('Service "' + id + '" successfull.');
 
           // Expand different string params:
           if (
@@ -808,7 +821,7 @@
               d = d[pathArray[i]];
               if (d === undefined) {
                 _warn(
-                  'Wrong path "' + path + '" for service "' + o['id'] + '".'
+                  'Wrong path "' + path + '" for service "' + id + '".'
                 );
                 continue;
               }
@@ -906,7 +919,7 @@
           };
 
         // Abort:
-        if (p['abort'] && _currentCalls[o['id']])
+        if (p['abort'] && _currentCalls[id])
           _currentCalls[o['id']].abort();
 
         // Launch AJAX call:
@@ -924,21 +937,23 @@
      * Any property is already registered as shortcut (that returns then the
      * value when called), but can be overridden safely.
      *
+     * @param   {string}  id      The string to use to call the shortcut.
      * @param   {?Object} options An object containing some more precise
      *                            indications about the service.
      *
      * Here is the list of options that are interpreted:
      *
-     * @param   {string}   id          The string to use to call the shortcut.
      * @param   {function} method      The method to call.
      * @param   {?string}  description The description of the shortcut.
      *
      * @return {domino} Returns the domino instance itself.
      */
-    function _addShortcut(options) {
+    function _addShortcut(id, options) {
       var o = options || {},
-          id = o['id'],
-          method = o['method'];
+          fn = typeof o === 'function' ? o : o['method'],
+          d = (typeof o === 'object') && ('description' in o) ?
+            o['description'] :
+            null;
 
       // Check errors:
       if (id === undefined)
@@ -947,15 +962,15 @@
       if (_shortcuts[id])
         _die('Shortcut "' + id + '" already exists.');
 
-      if (method === undefined)
+      if (fn === undefined)
         _die('Shortcut method not specified.');
 
       // Description:
-      if (o['description'])
-        _descriptions.shortcuts[id] = o['description'];
+      if (d)
+        _descriptions.shortcuts[id] = d;
 
       // Add shortcut:
-      _shortcuts[id] = method;
+      _shortcuts[id] = fn;
 
       return _self;
     }

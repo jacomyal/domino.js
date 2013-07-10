@@ -11,29 +11,26 @@
   QUnit.module('domino misc');
   QUnit.test('domino.help', function() {
     var d = new domino({
-      properties: [
-        {
-          id: 'myProperty1',
+      properties: {
+        myProperty1: {
           description: 'Description of myProperty1',
           dispatch: 'myProperty1Updated',
           triggers: 'updateMyProperty1',
           type: 'object',
           value: { a: 1 }
         },
-        {
-          id: 'myProperty2',
+        myProperty2: {
           description: 'Description of myProperty2',
           dispatch: 'myProperty2Updated',
           triggers: 'updateMyProperty2',
           type: 'number',
           value: 42
         },
-        {
-          id: 'myProperty3',
+        myProperty3: {
           type: 'string',
           value: 'abc'
         }
-      ],
+      },
       hacks: [
         {
           description: 'Description of my hack n°1',
