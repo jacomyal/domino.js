@@ -35,7 +35,7 @@
       <section>
 <h1 id="toc_0">domino.js</h1>
 
-<p>Current version: <strong>v1.3.0</strong></p>
+<p>Current version: <strong>v1.3.1</strong></p>
 
 <p><em>domino.js</em> is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by <a href="http://github.com/jacomyal">Alexis Jacomy</a> at <a href="http://github.com/linkfluence">Linkfluence</a>. It is released under the <a href="https://raw.github.com/jacomyal/domino.js/master/LICENSE.txt">MIT License</a>.</p>
 
@@ -97,7 +97,7 @@
 
 <p>It might be easier with <strong>examples</strong>. In the following one, we just declare a <em>boolean</em> property, named &quot;flag&quot;, and bind two modules on it - one to update it, and one to know when it is updated:</p>
 <div class="highlight"><pre><span class="c1">// First, let&#39;s instanciate domino.js:</span>
-<span class="kd">var</span> <span class="nx">d</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">domino</span><span class="p">({</span>
+<span class="kd">var</span> <span class="nx">controller</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">domino</span><span class="p">({</span>
   <span class="nx">properties</span><span class="o">:</span> <span class="p">[</span>
     <span class="c1">// We only declare one property, named &quot;flag&quot;, that will contain</span>
     <span class="c1">// a boolean value:</span>
@@ -138,8 +138,8 @@
 <span class="p">}</span>
 
 <span class="c1">// Finally, we have to instanciate our modules:</span>
-<span class="kd">var</span> <span class="nx">emettor</span> <span class="o">=</span> <span class="nx">d</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="nx">emettorModule</span><span class="p">),</span>
-    <span class="nx">receptor</span> <span class="o">=</span> <span class="nx">d</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="nx">receptorModule</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">emettor</span> <span class="o">=</span> <span class="nx">controller</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="nx">emettorModule</span><span class="p">),</span>
+    <span class="nx">receptor</span> <span class="o">=</span> <span class="nx">controller</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="nx">receptorModule</span><span class="p">);</span>
 
 <span class="c1">// Now, let&#39;s test it:</span>
 <span class="nx">emettor</span><span class="p">.</span><span class="nx">updateFlag</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>  <span class="c1">// log: &quot;New flag value: true&quot;</span>
@@ -149,7 +149,7 @@
 
 <p>Now, the following example is basically the same than the previous one. But instead of a <em>boolean</em>, our property is a <em>string</em>, and we do not want it to exceed 5 characters. So, we add a <strong>hack</strong> bound on the output event of our property, and that will check the length of our string, and truncate it if it is too long:</p>
 <div class="highlight"><pre><span class="c1">// As previously, let&#39;s first instanciate domino.js:</span>
-<span class="kd">var</span> <span class="nx">d</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">domino</span><span class="p">({</span>
+<span class="kd">var</span> <span class="nx">controller</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">domino</span><span class="p">({</span>
   <span class="nx">properties</span><span class="o">:</span> <span class="p">[</span>
     <span class="c1">// We only declare one property, named &quot;string&quot;, that will</span>
     <span class="c1">// contain a string value:</span>
@@ -202,8 +202,8 @@
 <span class="p">}</span>
 
 <span class="c1">// Finally, we have to instanciate our modules:</span>
-<span class="kd">var</span> <span class="nx">emettor</span> <span class="o">=</span> <span class="nx">d</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="nx">emettorModule</span><span class="p">),</span>
-    <span class="nx">receptor</span> <span class="o">=</span> <span class="nx">d</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="nx">receptorModule</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">emettor</span> <span class="o">=</span> <span class="nx">controller</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="nx">emettorModule</span><span class="p">),</span>
+    <span class="nx">receptor</span> <span class="o">=</span> <span class="nx">controller</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="nx">receptorModule</span><span class="p">);</span>
 
 <span class="c1">// Now, let&#39;s test it:</span>
 <span class="nx">emettor</span><span class="p">.</span><span class="nx">updateString</span><span class="p">(</span><span class="s1">&#39;abc&#39;</span><span class="p">);</span>
@@ -349,8 +349,8 @@
 </div>
 
 <p>Once this module class is declared, if you want to add an instance to a DOM element, you just have to write:</p>
-<div class="highlight"><pre><span class="c1">// with &quot;d&quot; our domino.js instance, and &quot;dom&quot; the DOM parent:</span>
-<span class="kd">var</span> <span class="nx">myCheckbox</span> <span class="o">=</span> <span class="nx">d</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="nx">Checkbox</span><span class="p">);</span>
+<div class="highlight"><pre><span class="c1">// with &quot;controller&quot; our domino.js instance, and &quot;dom&quot; the DOM parent:</span>
+<span class="kd">var</span> <span class="nx">myCheckbox</span> <span class="o">=</span> <span class="nx">controller</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="nx">Checkbox</span><span class="p">);</span>
 <span class="nx">myCheckbox</span><span class="p">.</span><span class="nx">html</span><span class="p">.</span><span class="nx">appendTo</span><span class="p">(</span><span class="nx">dom</span><span class="p">);</span>
 </pre>
 </div>
@@ -360,11 +360,11 @@
 <p>Also, it is possible to specify an id for a module. It is not possible to add two modules with the same id, the oldest one will have to be killed before. Also, the instance method <code>.modules()</code> can retrieve modules identified by the specified id.</p>
 
 <p>Here is how to add a module with a specified id:</p>
-<div class="highlight"><pre><span class="kd">var</span> <span class="nx">myModule</span> <span class="o">=</span> <span class="nx">d</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="nx">MyModuleConstructor</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="p">{</span> <span class="nx">id</span><span class="o">:</span> <span class="s1">&#39;myModuleId&#39;</span> <span class="p">});</span>
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">myModule</span> <span class="o">=</span> <span class="nx">controller</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="nx">MyModuleConstructor</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="p">{</span> <span class="nx">id</span><span class="o">:</span> <span class="s1">&#39;myModuleId&#39;</span> <span class="p">});</span>
 
 <span class="c1">// Then, it is possible to get a reference to that module through</span>
 <span class="c1">// the domino instance like that:</span>
-<span class="nx">myModule</span> <span class="o">===</span> <span class="nx">d</span><span class="p">.</span><span class="nx">modules</span><span class="p">(</span><span class="s1">&#39;myModuleId&#39;</span><span class="p">);</span> <span class="c1">// returns true</span>
+<span class="nx">myModule</span> <span class="o">===</span> <span class="nx">controller</span><span class="p">.</span><span class="nx">modules</span><span class="p">(</span><span class="s1">&#39;myModuleId&#39;</span><span class="p">);</span> <span class="c1">// returns true</span>
 </pre>
 </div>
 
@@ -380,7 +380,7 @@
 </ul>
 
 <p>Let&#39;s consider the following practical case: You have three different flags (properties <code>flag1</code>, <code>flag2</code> and <code>flag3</code>), and you want to have the three values always stored in an array (property <code>list</code>).</p>
-<div class="highlight"><pre><span class="kd">var</span> <span class="nx">d</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">domino</span><span class="p">({</span>
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">controller</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">domino</span><span class="p">({</span>
   <span class="nx">properties</span><span class="o">:</span> <span class="p">[</span>
     <span class="p">{</span>
       <span class="nx">id</span><span class="o">:</span> <span class="s1">&#39;flag1&#39;</span><span class="p">,</span>
@@ -455,7 +455,7 @@
 <p><em>domino.js</em> provides an helper to interact with Web services. Basically, referencing a service will create a shortcut to call in an easy way you Web service.</p>
 
 <p>Here is a basic example:</p>
-<div class="highlight"><pre><span class="kd">var</span> <span class="nx">d</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">domino</span><span class="p">({</span>
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">controller</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">domino</span><span class="p">({</span>
   <span class="nx">properties</span><span class="o">:</span> <span class="p">[</span>
     <span class="p">{</span>
       <span class="nx">id</span><span class="o">:</span> <span class="s1">&#39;theProperty&#39;</span><span class="p">,</span>
@@ -477,12 +477,12 @@
 </pre>
 </div>
 
-<p>Then, executing <code>d.request(&#39;getTheProperty&#39;);</code> will make a GET call to the indicated URL, set the received data as <code>theProperty</code> value, and dispatch a <code>&quot;thePropertyUpdated&quot;</code> event.</p>
+<p>Then, executing <code>controller.request(&#39;getTheProperty&#39;);</code> will make a GET call to the indicated URL, set the received data as <code>theProperty</code> value, and dispatch a <code>&quot;thePropertyUpdated&quot;</code> event.</p>
 
 <h3 id="toc_5">Shortcuts:</h3>
 
 <p>Also, to help manipulating services, it is possible to use <strong>shortcuts</strong> to avoid declare explicitely lots of things. Here is an example:</p>
-<div class="highlight"><pre><span class="kd">var</span> <span class="nx">d</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">domino</span><span class="p">({</span>
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">controller</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">domino</span><span class="p">({</span>
   <span class="nx">properties</span><span class="o">:</span> <span class="p">[</span>
     <span class="p">{</span>
       <span class="nx">id</span><span class="o">:</span> <span class="s1">&#39;prop1&#39;</span><span class="p">,</span>
@@ -511,14 +511,14 @@
 <span class="p">});</span>
 
 <span class="c1">// Let&#39;s update prop1</span>
-<span class="nx">d</span><span class="p">.</span><span class="nx">request</span><span class="p">(</span><span class="s1">&#39;propN&#39;</span><span class="p">,</span> <span class="p">{</span>
+<span class="nx">controller</span><span class="p">.</span><span class="nx">request</span><span class="p">(</span><span class="s1">&#39;propN&#39;</span><span class="p">,</span> <span class="p">{</span>
   <span class="nx">shortcuts</span><span class="o">:</span> <span class="p">{</span>
     <span class="nx">property</span><span class="o">:</span> <span class="s1">&#39;prop1&#39;</span>
   <span class="p">}</span>
 <span class="p">});</span>
 
 <span class="c1">// Now, let&#39;s update prop2</span>
-<span class="nx">d</span><span class="p">.</span><span class="nx">request</span><span class="p">(</span><span class="s1">&#39;propN&#39;</span><span class="p">,</span> <span class="p">{</span>
+<span class="nx">controller</span><span class="p">.</span><span class="nx">request</span><span class="p">(</span><span class="s1">&#39;propN&#39;</span><span class="p">,</span> <span class="p">{</span>
   <span class="nx">shortcuts</span><span class="o">:</span> <span class="p">{</span>
     <span class="nx">property</span><span class="o">:</span> <span class="s1">&#39;prop2&#39;</span>
   <span class="p">}</span>
@@ -526,10 +526,10 @@
 
 <span class="c1">// Finally, the following line will throw an error, since :property</span>
 <span class="c1">// can not be resolved:</span>
-<span class="nx">d</span><span class="p">.</span><span class="nx">request</span><span class="p">(</span><span class="s1">&#39;propN&#39;</span><span class="p">);</span>
+<span class="nx">controller</span><span class="p">.</span><span class="nx">request</span><span class="p">(</span><span class="s1">&#39;propN&#39;</span><span class="p">);</span>
 
 <span class="c1">// Note that it is possible to throw several requests at the same time:</span>
-<span class="nx">d</span><span class="p">.</span><span class="nx">request</span><span class="p">([</span>
+<span class="nx">controller</span><span class="p">.</span><span class="nx">request</span><span class="p">([</span>
   <span class="p">{</span>
     <span class="nx">service</span><span class="o">:</span> <span class="s1">&#39;propN&#39;</span><span class="p">,</span>
     <span class="nx">shortcuts</span><span class="o">:</span> <span class="p">{</span>
@@ -559,7 +559,7 @@
 <p><em>Note</em>: It is possible to specify a <code>description</code> attribute for shortcuts, that can be accessed exactly as properties and services descriptions, through the <code>help()</code> instance method.</p>
 
 <p>Here is an example with shortcuts declared directly in <em>domino.js</em> instance:</p>
-<div class="highlight"><pre><span class="kd">var</span> <span class="nx">d</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">domino</span><span class="p">({</span>
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">controller</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">domino</span><span class="p">({</span>
   <span class="nx">properties</span><span class="o">:</span> <span class="p">[</span>
     <span class="p">{</span>
       <span class="nx">id</span><span class="o">:</span> <span class="s1">&#39;prop&#39;</span><span class="p">,</span>
@@ -1240,13 +1240,13 @@
 
 <p>It is possible to destroy a module by calling the method <code>killModule()</code> of the related domino instance. It will basically destroy every ascending or descending connections between the module and the instance:</p>
 <div class="highlight"><pre><span class="c1">// Kill the module:</span>
-<span class="nx">d</span><span class="p">.</span><span class="nx">killModule</span><span class="p">(</span><span class="nx">myModule</span><span class="p">);</span>
+<span class="nx">controller</span><span class="p">.</span><span class="nx">killModule</span><span class="p">(</span><span class="nx">myModule</span><span class="p">);</span>
 </pre>
 </div>
 
 <p>If the module has an <code>id</code> field specified, it is also possible to kill it through its id:</p>
 <div class="highlight"><pre><span class="c1">// Kill the module:</span>
-<span class="nx">d</span><span class="p">.</span><span class="nx">killModule</span><span class="p">(</span><span class="s1">&#39;myModuleId&#39;</span><span class="p">);</span>
+<span class="nx">controller</span><span class="p">.</span><span class="nx">killModule</span><span class="p">(</span><span class="s1">&#39;myModuleId&#39;</span><span class="p">);</span>
 </pre>
 </div>
 
@@ -1254,7 +1254,7 @@
 
 <p>Also, it is possible to kill a domino instance, by calling its method <code>kill()</code>. It will basically remove every external reference in the instance, and destroy every connections with eventually existing modules. Also, if the instance as a name, it will be possible again to call an instance with the same name.</p>
 <div class="highlight"><pre><span class="c1">// Kill the instance:</span>
-<span class="nx">d</span><span class="p">.</span><span class="nx">kill</span><span class="p">();</span>
+<span class="nx">controller</span><span class="p">.</span><span class="nx">kill</span><span class="p">();</span>
 </pre>
 </div>
 

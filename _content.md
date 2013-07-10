@@ -1,7 +1,7 @@
 domino.js
 =========
 
-Current version: **v1.3.0**
+Current version: **v1.3.1**
 
 *domino.js* is a JavaScript cascading controller for fast interactive Web interfaces prototyping, developped by [Alexis Jacomy](http://github.com/jacomyal) at [Linkfluence](http://github.com/linkfluence). It is released under the [MIT License](https://raw.github.com/jacomyal/domino.js/master/LICENSE.txt).
 
@@ -62,7 +62,7 @@ It might be easier with **examples**. In the following one, we just declare a *b
 
 ```js
 // First, let's instanciate domino.js:
-var d = new domino({
+var controller = new domino({
   properties: [
     // We only declare one property, named "flag", that will contain
     // a boolean value:
@@ -103,8 +103,8 @@ function receptorModule() {
 }
 
 // Finally, we have to instanciate our modules:
-var emettor = d.addModule(emettorModule),
-    receptor = d.addModule(receptorModule);
+var emettor = controller.addModule(emettorModule),
+    receptor = controller.addModule(receptorModule);
 
 // Now, let's test it:
 emettor.updateFlag(true);  // log: "New flag value: true"
@@ -115,7 +115,7 @@ Now, the following example is basically the same than the previous one. But inst
 
 ```js
 // As previously, let's first instanciate domino.js:
-var d = new domino({
+var controller = new domino({
   properties: [
     // We only declare one property, named "string", that will
     // contain a string value:
@@ -168,8 +168,8 @@ function receptorModule() {
 }
 
 // Finally, we have to instanciate our modules:
-var emettor = d.addModule(emettorModule),
-    receptor = d.addModule(receptorModule);
+var emettor = controller.addModule(emettorModule),
+    receptor = controller.addModule(receptorModule);
 
 // Now, let's test it:
 emettor.updateString('abc');
@@ -289,8 +289,8 @@ function Checkbox() {
 Once this module class is declared, if you want to add an instance to a DOM element, you just have to write:
 
 ```js
-// with "d" our domino.js instance, and "dom" the DOM parent:
-var myCheckbox = d.addModule(Checkbox);
+// with "controller" our domino.js instance, and "dom" the DOM parent:
+var myCheckbox = controller.addModule(Checkbox);
 myCheckbox.html.appendTo(dom);
 ```
 
@@ -301,11 +301,11 @@ Also, it is possible to specify an id for a module. It is not possible to add tw
 Here is how to add a module with a specified id:
 
 ```js
-var myModule = d.addModule(MyModuleConstructor, null, { id: 'myModuleId' });
+var myModule = controller.addModule(MyModuleConstructor, null, { id: 'myModuleId' });
 
 // Then, it is possible to get a reference to that module through
 // the domino instance like that:
-myModule === d.modules('myModuleId'); // returns true
+myModule === controller.modules('myModuleId'); // returns true
 ```
 
 <h2 id="hacks">Hacks <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
@@ -320,7 +320,7 @@ myModule === d.modules('myModuleId'); // returns true
 Let's consider the following practical case: You have three different flags (properties `flag1`, `flag2` and `flag3`), and you want to have the three values always stored in an array (property `list`).
 
 ```js
-var d = new domino({
+var controller = new domino({
   properties: [
     {
       id: 'flag1',
@@ -382,7 +382,7 @@ Each hack must be an `object`
 Here is a basic example:
 
 ```js
-var d = new domino({
+var controller = new domino({
   properties: [
     {
       id: 'theProperty',
@@ -403,14 +403,14 @@ var d = new domino({
 });
 ```
 
-Then, executing `d.request('getTheProperty');` will make a GET call to the indicated URL, set the received data as `theProperty` value, and dispatch a `"thePropertyUpdated"` event.
+Then, executing `controller.request('getTheProperty');` will make a GET call to the indicated URL, set the received data as `theProperty` value, and dispatch a `"thePropertyUpdated"` event.
 
 ### Shortcuts:
 
 Also, to help manipulating services, it is possible to use **shortcuts** to avoid declare explicitely lots of things. Here is an example:
 
 ```js
-var d = new domino({
+var controller = new domino({
   properties: [
     {
       id: 'prop1',
@@ -439,14 +439,14 @@ var d = new domino({
 });
 
 // Let's update prop1
-d.request('propN', {
+controller.request('propN', {
   shortcuts: {
     property: 'prop1'
   }
 });
 
 // Now, let's update prop2
-d.request('propN', {
+controller.request('propN', {
   shortcuts: {
     property: 'prop2'
   }
@@ -454,10 +454,10 @@ d.request('propN', {
 
 // Finally, the following line will throw an error, since :property
 // can not be resolved:
-d.request('propN');
+controller.request('propN');
 
 // Note that it is possible to throw several requests at the same time:
-d.request([
+controller.request([
   {
     service: 'propN',
     shortcuts: {
@@ -486,7 +486,7 @@ Here is how *domino.js* resolves shortcuts:
 Here is an example with shortcuts declared directly in *domino.js* instance:
 
 ```js
-var d = new domino({
+var controller = new domino({
   properties: [
     {
       id: 'prop',
@@ -934,14 +934,14 @@ It is possible to destroy a module by calling the method `killModule()` of the r
 
 ```js
 // Kill the module:
-d.killModule(myModule);
+controller.killModule(myModule);
 ```
 
 If the module has an `id` field specified, it is also possible to kill it through its id:
 
 ```js
 // Kill the module:
-d.killModule('myModuleId');
+controller.killModule('myModuleId');
 ```
 
 ### Killing a domino instance:
@@ -950,7 +950,7 @@ Also, it is possible to kill a domino instance, by calling its method `kill()`. 
 
 ```js
 // Kill the instance:
-d.kill();
+controller.kill();
 ```
 
 <h2 id="structures">Structures <a href="#" class="right" title="Back to the top">(&uarr;)</a></h2>
