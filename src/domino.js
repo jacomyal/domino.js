@@ -1670,6 +1670,9 @@
               o['loop'] = function(obj) {
                 returned[i] = obj;
 
+                // Start the basic loop
+                _mainLoop(obj);
+
                 // Check if it is time to trigger the main loop:
                 if (!--ended)
                   conclude();

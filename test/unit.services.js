@@ -284,8 +284,16 @@
   });
 
   QUnit.asyncTest('Services: "multiple simultaneous calls"', function() {
+    domino.settings('clone', true);
+
     var usefulVar,
         domInst = new domino({
+          properties: {
+            proof: {
+              type: 'object',
+              value: {}
+            }
+          },
           hacks: [
             {
               triggers: 'triggerHack',
@@ -294,10 +302,16 @@
                 QUnit.ok(true, 'Event dispatching available from multicalls "success"');
                 QUnit.stop();
 
+                this.update('proof', {});
+
                 this.request(['multiTest1', 'multiTest2'], {
                   success: function(data) {
                     QUnit.start();
                     QUnit.ok(true, 'Specific success for multiple calls works from hacks.');
+                    QUnit.deepEqual(this.get('proof'), {
+                      multiTest1: true,
+                      multiTest2: true
+                    }, 'The specific success did not override the original ones (called from a hack).');
                   }
                 });
               }
@@ -310,6 +324,11 @@
               contentType: 'application/json',
               data: {
                 value: 'toto'
+              },
+              success: function() {
+                var proof = this.get('proof');
+                proof.multiTest1 = true;
+                this.update('proof', proof);
               }
             },
             multiTest2: {
@@ -318,6 +337,11 @@
               contentType: 'application/json',
               data: {
                 value: 'tutu'
+              },
+              success: function() {
+                var proof = this.get('proof');
+                proof.multiTest2 = true;
+                this.update('proof', proof);
               }
             }
           }
@@ -333,6 +357,10 @@
           'toto',
           'tutu'
         ], 'Success triggered when all calls are ended');
+        QUnit.deepEqual(this.get('proof'), {
+          multiTest1: true,
+          multiTest2: true
+        }, 'The specific success did not override the original ones.');
         QUnit.stop();
 
         this.dispatchEvent('triggerHack');
