@@ -1647,8 +1647,6 @@
                       update: true
                     }
                   });
-                else
-                  _mainLoop(res);
               };
 
           for (i = 0; i < l; i++) {

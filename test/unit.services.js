@@ -367,4 +367,42 @@
       }
     });
   });
+
+  QUnit.module('domino instance');
+  QUnit.asyncTest('Services: Misc', function() {
+    var timesCalled = 0,
+        domInst = new domino({
+          hacks: [
+            {
+              triggers: 'myEvent1',
+              method: function() {
+                this.request({
+                  service: 'myService'
+                });
+              }
+            },
+            {
+              triggers: 'myEvent2',
+              method: function() {
+                timesCalled++;
+              }
+            }
+          ],
+          services: {
+            myService: {
+              url: '/misc',
+              type: 'GET',
+              success: function() {
+                this.dispatchEvent('myEvent2');
+              }
+            }
+          }
+        });
+
+    domInst.dispatchEvent('myEvent1');
+    window.setTimeout(function() {
+      start();
+      QUnit.deepEqual(timesCalled, 1, 'The success event has been dispatched once and only once - GitHub issue #47');
+    }, 20);
+  });
 }).call(this);
