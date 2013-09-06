@@ -926,7 +926,7 @@
           };
 
         // Abort:
-        if (p['abort'] && _currentCalls[id])
+        if (o['abort'] && _currentCalls[id])
           _currentCalls[o['id']].abort();
 
         // Launch AJAX call:
