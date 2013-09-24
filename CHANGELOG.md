@@ -2,7 +2,7 @@
 
 #### 1.3.3 (September 24, 2013)
 
- - Fixed [#48](https://github.com/jacomyal/domino.js/issues/48) ()
+ - Fixed [#48](https://github.com/jacomyal/domino.js/issues/48) (thanks [Anto2000](https://github.com/Anto2000)!)
 
 #### 1.3.2 (August 13, 2013)
 
