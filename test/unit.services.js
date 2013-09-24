@@ -369,6 +369,43 @@
   });
 
   QUnit.module('domino instance');
+  QUnit.asyncTest('Services: Abort', function() {
+    var timesCalled = 0,
+        domInst = new domino({
+          services: {
+            myService: {
+              url: '/abort',
+              type: 'GET',
+              abort: true,
+              success: function() {
+                timesCalled++;
+              }
+            }
+          }
+        });
+
+    domInst.request('myService');
+    domInst.request('myService');
+    window.setTimeout(function() {
+      start();
+      QUnit.deepEqual(timesCalled, 1, 'The "abort" flag works from the service definition - GitHub issue #48');
+      stop();
+
+      // Now, check that the local abort
+      timesCalled = 0;
+      domInst.request('myService');
+      domInst.request('myService', {
+        abort: 0
+      });
+
+      window.setTimeout(function() {
+        start();
+        QUnit.deepEqual(timesCalled, 2, 'The "abort" flag works from the service definition - GitHub issue #48');
+      }, 50);
+    }, 50);
+  });
+
+  QUnit.module('domino instance');
   QUnit.asyncTest('Services: Misc', function() {
     var timesCalled = 0,
         domInst = new domino({

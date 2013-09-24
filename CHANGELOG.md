@@ -1,5 +1,9 @@
 ## domino.js - changelog:
 
+#### 1.3.3 (September 24, 2013)
+
+ - Fixed [#48](https://github.com/jacomyal/domino.js/issues/48) ()
+
 #### 1.3.2 (August 13, 2013)
 
  - Fixed [#47](https://github.com/jacomyal/domino.js/issues/47) (the bug was actually related to a [recent quick fix](https://github.com/jacomyal/domino.js/commit/30e779eb443c281985945b3bd305a9d39cb37c09))
