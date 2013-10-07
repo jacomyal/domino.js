@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/ZorGleH/domino.js.png)](https://travis-ci.org/ZorGleH/domino.js)
+[![Build Status](https://travis-ci.org/jacomyal/domino.js.png)](https://travis-ci.org/jacomyal/domino.js)
 
 domino.js
 =========
