@@ -221,7 +221,8 @@
             warn: _warn,
             log: _log,
             die: _die,
-            get: _get
+            get: _get,
+            abortCall: _abortCall
           };
 
       // Here, we give to the scope direct possibility to activate domino
@@ -934,6 +935,11 @@
       };
 
       return _self;
+    }
+ 
+    function _abortCall(id) {
+      if (_currentCalls[id])
+        _currentCalls[id].abort();
     }
 
     /**
