@@ -2377,10 +2377,12 @@
             'function that test if an object matches the structure.'
           );
 
-        if (~types.indexOf(id))
+        if (~types.indexOf(id)) {
+          delete customs[id];
           __die__(
             '[domino.global] "' + id + '" is a reserved structure name'
           );
+        }
 
         // Effectively add the structure:
         customs[id] = (o === undefined) ?
@@ -2403,6 +2405,11 @@
         return obj == null ?
           String(obj) :
           class2type[Object.prototype.toString.call(obj)] || 'object';
+      },
+      existing: function(key) {
+        return typeof key === 'string' ?
+          (customs[key] || {}).struct :
+          domino.utils.clone(customs);
       },
       check: function(type, obj, params) {
         var a, i,

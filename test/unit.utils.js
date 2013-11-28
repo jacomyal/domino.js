@@ -325,4 +325,8 @@ QUnit.test('Custom structures', function() {
       a: 42
     }
   }), false, 'double recursive structures still check wrong keys (level 2)');
+
+  QUnit.deepEqual(domino.struct.existing('s1'), { k: '?s2' }, 'domino.struct.existing("s1") returns the previously defined structure');
+  QUnit.deepEqual(domino.struct.existing('s3'), undefined, 'domino.struct.existing("s3") returns undefined');
+  QUnit.deepEqual(Object.keys(domino.struct.existing()).sort(), ['includesTest', 'integer', 's', 's1', 's2', 'template'], 'domino.struct.existing() returns every existing custom structures.');
 });
