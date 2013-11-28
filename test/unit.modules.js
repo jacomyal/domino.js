@@ -127,3 +127,42 @@ QUnit.test('Modules management', function() {
 
   QUnit.ok(module2, 'Reference a module with the ID of a previously killed module works.');
 });
+
+QUnit.test('Modules instanciation and domino.module inheritance', function() {
+  function oldModule(d) {
+    domino.module.call(this);
+
+    var self = this;
+
+    this.triggers.properties.p = function(d) {
+      self.p = d.get('p');
+    };
+  }
+
+  function newModule(d) {
+    var self = this;
+
+    this.triggers.properties.p = function(d) {
+      self.p = d.get('p');
+    };
+  }
+
+  var dom = new domino({
+        name: 'modules 2',
+        properties: [
+          {
+            id: 'p',
+            triggers: 'updateP',
+            dispatch: 'pUpdated',
+            type: 'string',
+            value: 'abc'
+          }
+        ]
+      }),
+      m1 = dom.addModule(oldModule),
+      m2 = dom.addModule(newModule);
+
+  m1.dispatchEvent('updateP', { p: 'def' });
+  m2.dispatchEvent('updateP', { p: 'ghi' });
+  QUnit.deepEqual(m1.p, 'ghi', 'Modules now work wether or not they inheritate domino.module (GH issue #51).');
+});

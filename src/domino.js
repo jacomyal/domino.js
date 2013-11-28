@@ -936,7 +936,7 @@
 
       return _self;
     }
- 
+
     function _abortCall(id) {
       if (_currentCalls[id])
         _currentCalls[id].abort();
@@ -1004,8 +1004,8 @@
      */
     function _addModule(klass, params, options) {
       var i,
+          module = new domino.module(),
           o = options || {},
-          module = {},
           bind = {},
           triggers,
           property,
@@ -2724,18 +2724,23 @@
 
   // Default module template:
   domino.module = function() {
-    dispatcher.call(this);
+    // Check that the current object is not already a module - GH issue #51:
+    // The easiest way is to check if the _handlers object from the dispatcher
+    // class is not present yet.
+    if (!this._handlers) {
+      dispatcher.call(this);
 
-    for (var k in dispatcher.prototype)
-      this[k] = dispatcher.prototype[k];
+      for (var k in dispatcher.prototype)
+        this[k] = dispatcher.prototype[k];
 
-    // In this object will be stored the module's triggers:
-    this.triggers = {
-      properties: {},
-      events: {}
-    };
+      // In this object will be stored the module's triggers:
+      this.triggers = {
+        properties: {},
+        events: {}
+      };
 
-    // We also prototype comunication methods:
-    this.log = this.warn = this.die = function() {};
+      // We also prototype comunication methods:
+      this.log = this.warn = this.die = function() {};
+    }
   };
 }).call(this);
