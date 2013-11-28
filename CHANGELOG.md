@@ -1,5 +1,12 @@
 ## domino.js - changelog:
 
+#### 1.3.4 (November 28, 2013)
+
+ - Updated NPM dependencies to their latest versions
+ - Fixed [#49](https://github.com/jacomyal/domino.js/issues/49): Added `domino.struct.existing`
+ - Fixed [#51](https://github.com/jacomyal/domino.js/issues/51): `domino.module` inheritance facultative
+ - Fixed [#50](https://github.com/jacomyal/domino.js/issues/50) and [#52](https://github.com/jacomyal/domino.js/issues/52) (thanks [ZorGleH](https://github.com/ZorGleH)!)
+
 #### 1.3.3 (September 24, 2013)
 
  - Fixed [#48](https://github.com/jacomyal/domino.js/issues/48) (thanks [Anto2000](https://github.com/Anto2000)!)
