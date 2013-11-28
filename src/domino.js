@@ -52,7 +52,7 @@
    * The constructor of any domino.js instance.
    *
    * @constructor
-   * @extends domino.EventDispatcher
+   * @extends {domino.EventDispatcher}
    * @this {domino}
    */
   var domino = function() {
@@ -1812,9 +1812,9 @@
      * Checks the shortcuts and eventually arbitrary objects if they have
      * anything corresponding to the string, and returns the related value.
      *
-     * @param  {string}    v    The string to expand.
-     * @param  {...object} args The arbitraty objects to check before the
-     *                          shortcuts.
+     * @param  {string}    v        The string to expand.
+     * @param  {...object} var_args The arbitrary objects to check before the
+     *                              shortcuts.
      *
      * @return {*}         The expanded value.
      */

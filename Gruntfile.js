@@ -8,7 +8,8 @@ module.exports = function(grunt) {
         src: ['src/domino.js'],
         options: {
           stdout: true,
-          strict: true
+          strict: true,
+          opt: '--disable 6,13'
         }
       }
     },
