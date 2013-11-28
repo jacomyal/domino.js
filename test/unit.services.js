@@ -391,7 +391,7 @@
       QUnit.deepEqual(timesCalled, 1, 'The "abort" flag works from the service definition - GitHub issue #48');
       stop();
 
-      // Now, check that the local abort
+      // Now, check that the local abort works
       timesCalled = 0;
       domInst.request('myService');
       domInst.request('myService', {
@@ -401,6 +401,17 @@
       window.setTimeout(function() {
         start();
         QUnit.deepEqual(timesCalled, 2, 'The "abort" flag works from the service definition - GitHub issue #48');
+        stop();
+
+        // Finally, check that the abortCalls method works
+        timesCalled = 0;
+        domInst.request('myService');
+        domInst.abortCall('myService');
+
+        window.setTimeout(function() {
+          start();
+          QUnit.deepEqual(timesCalled, 0, 'Instance\'s method "abortCall" works.');
+        }, 50);
       }, 50);
     }, 50);
   });
