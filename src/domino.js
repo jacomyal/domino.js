@@ -1820,8 +1820,9 @@
      */
     function _expand(s) {
       var sc = s,
+          prefix = _settings('shortcutPrefix'),
           a = (s || '').toString().match(
-            new RegExp('^' + _settings('shortcutPrefix') + '(\\w+)$')
+            new RegExp('^' + prefix + '(\\w+)$')
           );
 
       if (a && a.length) {
@@ -1844,7 +1845,7 @@
 
       // If the shortcut is not resolved:
       _warn('The shortcut "', sc, '" has not been recognized.');
-      return sc;
+      return prefix + sc;
     }
 
     /**
