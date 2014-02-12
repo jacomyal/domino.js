@@ -11,10 +11,14 @@
     "type": "git",
     "url": "http://github.com/jacomyal/domino.js.git"
   },
-  "main": "build/domino.min.js",
+  "main": "./build/domino.min.js",
   "keywords": [
     "interaction",
     "controller"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "ignore": [
+    "./test",
+    "./examples"
+  ]
 }
