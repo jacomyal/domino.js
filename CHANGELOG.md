@@ -1,5 +1,9 @@
 ## domino.js - changelog:
 
+#### 1.3.6 (April 22, 2014)
+
+ - Updated EventDispatcher, added related unit tests
+
 #### 1.3.5 (January 11, 2014)
 
  - Fixed [#5](https://github.com/jacomyal/domino.js/issues/5): When failing at resolving a shortcut, domino will no more remove its prefix (thanks [Yomguithereal](https://github.com/Yomguithereal)!)
