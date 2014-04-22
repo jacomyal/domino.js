@@ -2607,23 +2607,29 @@
    * @return {EventDispatcher} Returns itself.
    */
   dispatcher.prototype.addEventListener = function(events, handler) {
-    if (!arguments.length)
-      return this;
-    else if (
-      arguments.length === 1 &&
-      utils.type.get(arguments[0]) === 'object'
-    )
-      for (var events in arguments[0])
-        this.addEventListener(events, arguments[0][events]);
-    else if (arguments.length > 1) {
-      var event,
-          events = arguments[0],
-          handler = arguments[1],
-          eArray = utils.array(events),
-          self = this;
+    var i,
+        l,
+        event,
+        eArray;
 
-      for (var i in eArray) {
+    if (
+      arguments.length === 1 &&
+      typeof arguments[0] === 'object'
+    )
+      for (events in arguments[0])
+        this.addEventListener(events, arguments[0][events]);
+    else if (
+      arguments.length === 2 &&
+      typeof arguments[1] === 'function'
+    ) {
+      eArray = typeof events === 'string' ? events.split(' ') : events;
+
+      for (i = 0, l = eArray.length; i !== l; i += 1) {
         event = eArray[i];
+
+        // Check that event is not '':
+        if (!event)
+          continue;
 
         if (!this._handlers[event])
           this._handlers[event] = [];
@@ -2634,7 +2640,8 @@
           handler: handler
         });
       }
-    }
+    } else
+      throw 'domino.EventDispatcher.addEventListener: Wrong arguments.';
 
     return this;
   };
@@ -2651,21 +2658,27 @@
    * @return {EventDispatcher} Returns itself.
    */
   dispatcher.prototype.removeEventListener = function(events, handler) {
-    var i, j, a, event,
-        eArray = utils.array(events);
+    var i,
+        n,
+        j,
+        m,
+        k,
+        a,
+        event,
+        eArray = typeof events === 'string' ? events.split(' ') : events;
 
     if (!arguments.length) {
-      for (i in this._handlers)
-        delete this._handlers[i];
+      for (k in this._handlers)
+        delete this._handlers[k];
       return this;
     }
 
     if (handler) {
-      for (i in eArray) {
+      for (i = 0, n = eArray.length; i !== n; i += 1) {
         event = eArray[i];
         if (this._handlers[event]) {
           a = [];
-          for (j in this._handlers[event])
+          for (j = 0, m = this._handlers[event].length; j !== m; j += 1)
             if (this._handlers[event][j].handler !== handler)
               a.push(this._handlers[event][j]);
 
@@ -2676,7 +2689,7 @@
           delete this._handlers[event];
       }
     } else
-      for (i in eArray)
+      for (i = 0, n = eArray.length; i !== n; i += 1)
         delete this._handlers[eArray[i]];
 
     return this;
@@ -2690,23 +2703,31 @@
    * @return {EventDispatcher} Returns itself.
    */
   dispatcher.prototype.dispatchEvent = function(events, data) {
-    var i, j, a, event, eventName,
-        eArray = utils.array(events),
-        self = this;
+    var i,
+        n,
+        j,
+        m,
+        a,
+        event,
+        handlers,
+        eventName,
+        self = this,
+        eArray = typeof events === 'string' ? events.split(' ') : events;
 
     data = data === undefined ? {} : data;
 
-    for (i in eArray) {
+    for (i = 0, n = eArray.length; i !== n; i += 1) {
       eventName = eArray[i];
+      handlers = this._handlers[eventName];
 
-      if (this._handlers[eventName]) {
+      if (handlers && handlers.length) {
         event = self.getEvent(eventName, data);
         a = [];
 
-        for (j in this._handlers[eventName]) {
-          this._handlers[eventName][j].handler(event);
-          if (!this._handlers[eventName][j]['one'])
-            a.push(this._handlers[eventName][j]);
+        for (j = 0, m = handlers.length; j !== m; j += 1) {
+          handlers[j].handler(event);
+          if (!handlers[j].one)
+            a.push(handlers[j]);
         }
 
         this._handlers[eventName] = a;
