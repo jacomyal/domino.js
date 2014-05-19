@@ -1,5 +1,9 @@
 ## domino.js - changelog:
 
+#### 1.3.7 (May 19, 2014)
+
+ - Fixed [#58](https://github.com/jacomyal/domino.js/issues/58): module `kill` method support, added related unit tests
+
 #### 1.3.6 (April 22, 2014)
 
  - Updated EventDispatcher, added related unit tests
