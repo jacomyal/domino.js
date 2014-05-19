@@ -1126,6 +1126,10 @@
         return module;
       }
 
+      // Now let's check if the module has a "kill" method:
+      if (typeof module.kill === 'function')
+        module.kill();
+
       // If referenced, let's remove the triggers:
       triggers = module.triggers || {};
 

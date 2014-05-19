@@ -6,8 +6,10 @@ domino.settings({
 
 QUnit.module('domino instance');
 QUnit.test('Modules management', function() {
-  var module,
+  var test,
+      module,
       module2,
+      module3,
       domInstance;
 
   function moduleConstructor(d) {
@@ -126,6 +128,16 @@ QUnit.test('Modules management', function() {
   });
 
   QUnit.ok(module2, 'Reference a module with the ID of a previously killed module works.');
+
+  // Test the "kill" method:
+  test = false;
+  module3 = domInstance.addModule(function() {
+    this.kill = function() {
+      test = true;
+    }
+  });
+  domInstance.killModule(module3);
+  QUnit.ok(test, 'The kill method of the module is called when the module is actually killed.');
 });
 
 QUnit.test('Modules instanciation and domino.module inheritance', function() {
