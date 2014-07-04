@@ -727,6 +727,15 @@
             oldURL = null,
             matches;
 
+        // Add keys that have not been happened yet:
+        for (k in p)
+          if (!(k in ajaxObj))
+            ajaxObj[k] = p[k];
+
+        for (k in o)
+          if (!(k in ajaxObj))
+            ajaxObj[k] = o[k];
+
         // Check that URL is still a string:
         if (_struct.get(ajaxObj['url']) !== 'string')
           _die(
