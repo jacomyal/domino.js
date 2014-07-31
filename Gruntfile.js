@@ -13,7 +13,7 @@ module.exports = function(grunt) {
       all: {
         command: 'gjslint',
         closureLinterPath: '/usr/local/bin',
-        src: [ './test/unit.html' ],
+        src: './src/*.js',
         options: {
           stdout: true,
           strict: true,
