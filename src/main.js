@@ -4,7 +4,7 @@
   var __root = this,
       __instances = {};
 
-  this.controler = function() {
+  __root.controler = function() {
     // Private properties:
     var _self = this,
 
@@ -60,26 +60,51 @@
 
       switch (order.type) {
         case 'update':
-          _update(
+          _updateProperty(
             order.property,
             order.value
           );
           break;
-        case 'trigger':
-          _trigger(
-            order.event,
-            order.data
-          );
-          break;
         case 'request':
-          _request(
+          _requestService(
             order.service,
             order.options
+          );
+          break;
+        case 'trigger':
+          _triggerEvent(
+            order.event,
+            order.data
           );
           break;
         default:
           _self.die('Unknown order type "' + order.type + '"');
       }
     }
+
+    // Data related functions:
+    function _addProperty(options) {
+      // TODO
+    }
+    function _updateProperty(property, value) {
+      // TODO
+    }
+    function _getProperty(property) {
+      // TODO
+    }
+
+    // Services related functions:
+    function _addService(options) {
+      // TODO
+    }
+    function _requestService(service, options) {
+      // TODO
+    }
+
+    // Events related functions:
+    function _triggerEvent(event, data) {
+      // TODO
+    }
+
   };
 }).call(this);
