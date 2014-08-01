@@ -1,8 +1,8 @@
 ;(function() {
   'use strict';
 
-  var controller = this.controller;
-  controller.types = (function() {
+  var domino = this.domino;
+  domino.types = (function() {
     var k,
         name,
 

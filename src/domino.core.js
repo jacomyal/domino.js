@@ -4,7 +4,7 @@
   var __root = this,
       __instances = {};
 
-  __root.controller = function() {
+  __root.domino = function() {
     // Private properties:
     var _self = this,
 

@@ -1,10 +1,10 @@
 module.exports = function(grunt) {
   var files = [
     // Core:
-    'src/main.core.js',
+    'src/domino.core.js',
 
     // Helpers:
-    'src/main.types.js'
+    'src/domino.types.js'
   ];
 
   // Project configuration.
@@ -39,11 +39,11 @@ module.exports = function(grunt) {
     },
     uglify: {
       options: {
-        banner: '/* main.js - Version: <%= pkg.version %> - Author:  Alexis Jacomy, Atelier Iceberg - License: MIT */\n'
+        banner: '/* domino.js - Version: <%= pkg.version %> - Author:  Alexis Jacomy, Atelier Iceberg - License: MIT */\n'
       },
       prod: {
         files: {
-          'build/main.min.js': files
+          'build/domino.min.js': files
         }
       }
     }
