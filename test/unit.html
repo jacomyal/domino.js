@@ -4,16 +4,16 @@
   <meta charset="utf-8">
   <title>Unit tests</title>
   <link rel="stylesheet" href="qunit/qunit.css">
-  <script src="../src/main.js"></script>
 </head>
 <body>
   <div id="qunit"></div>
+
+  <!-- Main files -->
+  <script src="../src/main.core.js"></script>
+  <script src="../src/main.types.js"></script>
+
+  <!-- QUnit -->
   <script src="qunit/qunit.js"></script>
-  <script>
-    QUnit.module('Testing QUnit');
-    QUnit.test('Very basic test', function() {
-      QUnit.ok(1, 'Testint QUnit.');
-    });
-  </script>
+  <script src="test.types.js"></script>
 </body>
 </html>

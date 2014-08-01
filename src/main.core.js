@@ -4,7 +4,7 @@
   var __root = this,
       __instances = {};
 
-  __root.controler = function() {
+  __root.controller = function() {
     // Private properties:
     var _self = this,
 
@@ -34,7 +34,7 @@
       if (_executionLock)
         _self.die('The execution is not unlocked yet');
 
-      // Set controler state
+      // Set state
       _timeout = null;
       _executionLock = true;
       _stackCurrents = _stackFuture;

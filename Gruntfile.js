@@ -1,7 +1,10 @@
 module.exports = function(grunt) {
   var files = [
     // Core:
-    'src/main.core.js'
+    'src/main.core.js',
+
+    // Helpers:
+    'src/main.types.js'
   ];
 
   // Project configuration.
