@@ -1,4 +1,9 @@
 module.exports = function(grunt) {
+  var files = [
+    // Core:
+    'src/main.core.js'
+  ];
+
   // Project configuration.
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -13,7 +18,7 @@ module.exports = function(grunt) {
       all: {
         command: 'gjslint',
         closureLinterPath: '/usr/local/bin',
-        src: './src/*.js',
+        src: files,
         options: {
           stdout: true,
           strict: true,
@@ -22,7 +27,7 @@ module.exports = function(grunt) {
       }
     },
     jshint: {
-      all: './src/*.js',
+      all: files,
       options: {
         '-W055': true,
         '-W040': true,
@@ -35,7 +40,7 @@ module.exports = function(grunt) {
       },
       prod: {
         files: {
-          'build/main.min.js': [ 'src/*.js' ]
+          'build/main.min.js': files
         }
       }
     }
