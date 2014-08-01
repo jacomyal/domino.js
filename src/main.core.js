@@ -16,14 +16,14 @@
 
         _data = {};
 
-    function _addOrder(order, force) {
+    function _addOrder(order, now) {
       // TODO:
       // Validate order's structure.
 
       _stackFuture.push(order);
 
       if (!_timeout && !_executionLock) {
-        if (force)
+        if (now)
           _execute();
         else
           _timeout = setTimeout(_execute, 0);
@@ -32,7 +32,7 @@
 
     function _execute() {
       if (_executionLock)
-        _self.die('The execution is not unlocked yet');
+        throw 'The execution is not unlocked yet';
 
       // Set state
       _timeout = null;
@@ -53,10 +53,10 @@
 
     function _executeOrder(order) {
       if (!order || typeof order !== 'object')
-        _self.die('Wrong parameter');
+        throw 'Wrong parameter';
 
       if (typeof order.type !== 'number')
-        _self.die('Order\'s type not specified');
+        throw 'Order\'s type not specified';
 
       switch (order.type) {
         case 'update':
@@ -78,7 +78,7 @@
           );
           break;
         default:
-          _self.die('Unknown order type "' + order.type + '"');
+          throw 'Unknown order type "' + order.type + '"';
       }
     }
 
