@@ -119,7 +119,6 @@ QUnit.test('Custom types', function() {
   QUnit.throws(
     function() {
       controller.types.add('number', function(v) {
-        console.log('LOOOL');
         return v === +v;
       });
     },
