@@ -1,110 +1,110 @@
-;(function() {
-  'use strict';
+'use strict';
 
-  var __root = this,
-      __instances = {};
+var types = require('./domino.types.js');
 
-  __root.domino = function() {
-    // Private properties:
-    var _self = this,
+var domino = function() {
+  // Private properties:
+  var _self = this,
 
-        _stackFuture = [],
-        _stackCurrents = [],
+      _stackFuture = [],
+      _stackCurrents = [],
 
-        _timeout,
-        _executionLock,
+      _timeout,
+      _executionLock,
 
-        _data = {};
+      _data = {};
 
-    function _addOrder(order, now) {
-      // TODO:
-      // Validate order's structure.
+  function _addOrder(order, now) {
+    // TODO:
+    // Validate order's structure.
 
-      _stackFuture.push(order);
+    _stackFuture.push(order);
 
-      if (!_timeout && !_executionLock) {
-        if (now)
-          _execute();
-        else
-          _timeout = setTimeout(_execute, 0);
-      }
-    }
-
-    function _execute() {
-      if (_executionLock)
-        throw 'The execution is not unlocked yet';
-
-      // Set state
-      _timeout = null;
-      _executionLock = true;
-      _stackCurrents = _stackFuture;
-      _stackFuture = [];
-
-      var order;
-      while ((order = _stackCurrents.pop()))
-        _executeOrder(order);
-
-      // Update lock flag
-      _executionLock = false;
-
-      if (_stackFuture.length)
+    if (!_timeout && !_executionLock) {
+      if (now)
+        _execute();
+      else
         _timeout = setTimeout(_execute, 0);
     }
+  }
 
-    function _executeOrder(order) {
-      if (!order || typeof order !== 'object')
-        throw 'Wrong parameter';
+  function _execute() {
+    if (_executionLock)
+      throw 'The execution is not unlocked yet';
 
-      if (typeof order.type !== 'number')
-        throw 'Order\'s type not specified';
+    // Set state
+    _timeout = null;
+    _executionLock = true;
+    _stackCurrents = _stackFuture;
+    _stackFuture = [];
 
-      switch (order.type) {
-        case 'update':
-          _updateProperty(
-            order.property,
-            order.value
-          );
-          break;
-        case 'request':
-          _requestService(
-            order.service,
-            order.options
-          );
-          break;
-        case 'trigger':
-          _triggerEvent(
-            order.event,
-            order.data
-          );
-          break;
-        default:
-          throw 'Unknown order type "' + order.type + '"';
-      }
-    }
+    var order;
+    while ((order = _stackCurrents.pop()))
+      _executeOrder(order);
 
-    // Data related functions:
-    function _addProperty(options) {
-      // TODO
-    }
-    function _updateProperty(property, value) {
-      // TODO
-    }
-    function _getProperty(property) {
-      // TODO
-    }
+    // Update lock flag
+    _executionLock = false;
 
-    // Services related functions:
-    function _addService(options) {
-      // TODO
-    }
-    function _requestService(service, options) {
-      // TODO
-    }
+    if (_stackFuture.length)
+      _timeout = setTimeout(_execute, 0);
+  }
 
-    // Events related functions:
-    function _triggerEvent(event, data) {
-      // TODO
-    }
+  function _executeOrder(order) {
+    if (!order || typeof order !== 'object')
+      throw 'Wrong parameter';
 
-  };
-}).call(this);
+    if (typeof order.type !== 'number')
+      throw 'Order\'s type not specified';
+
+    switch (order.type) {
+      case 'update':
+        _updateProperty(
+          order.property,
+          order.value
+        );
+        break;
+      case 'request':
+        _requestService(
+          order.service,
+          order.options
+        );
+        break;
+      case 'trigger':
+        _triggerEvent(
+          order.event,
+          order.data
+        );
+        break;
+      default:
+        throw 'Unknown order type "' + order.type + '"';
+    }
+  }
+
+  // Data related functions:
+  function _addProperty(options) {
+    // TODO
+  }
+  function _updateProperty(property, value) {
+    // TODO
+  }
+  function _getProperty(property) {
+    // TODO
+  }
+
+  // Services related functions:
+  function _addService(options) {
+    // TODO
+  }
+  function _requestService(service, options) {
+    // TODO
+  }
+
+  // Events related functions:
+  function _triggerEvent(event, data) {
+    // TODO
+  }
+
+};
+
+domino.types = types;
+module.exports = domino;

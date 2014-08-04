@@ -10,13 +10,6 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
-    qunit: {
-      all: {
-        options: {
-          urls: [ './test/unit.html' ]
-        }
-      }
-    },
     closureLint: {
       all: {
         command: 'gjslint',
@@ -25,7 +18,7 @@ module.exports = function(grunt) {
         options: {
           stdout: true,
           strict: true,
-          opt: '--disable 6,13'
+          opt: '--disable 6,13,220'
         }
       }
     },
@@ -34,21 +27,34 @@ module.exports = function(grunt) {
       options: {
         '-W055': true,
         '-W040': true,
-        '-W064': true
+        '-W064': true,
+        node: true,
+        browser: true
       }
     },
-    uglify: {
-      options: {
-        banner: '/* domino.js - Version: <%= pkg.version %> - Author:  Alexis Jacomy, Atelier Iceberg - License: MIT */\n'
-      },
-      prod: {
+    browserify: {
+      all: {
+        options: {
+          banner: '/* domino.js - Version: <%= pkg.version %> - Author:  Alexis Jacomy, Atelier Iceberg - License: MIT */\n',
+          transform: [ 'uglifyify' ],
+          bundleOptions: {
+            standalone: 'domino'
+          }
+        },
         files: {
-          'build/domino.min.js': files
+          'build/domino.min.js': ['src/domino.core.js']
+        }
+      }
+    },
+    qunit: {
+      all: {
+        options: {
+          urls: [ './test/tests.html' ]
         }
       }
     }
   });
 
   require('load-grunt-tasks')(grunt);
-  grunt.registerTask('default', ['closureLint', 'jshint', 'qunit', 'uglify']);
+  grunt.registerTask('default', ['closureLint', 'jshint', 'browserify', 'qunit']);
 };
