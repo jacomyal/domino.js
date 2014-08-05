@@ -2,6 +2,35 @@
 
 var types = require('./domino.types.js');
 
+/**
+ * Custom types related to domino:
+ */
+types.add('domino.events', function(val) {
+  return typeof val === 'string' || domino.types.check(val, ['string']);
+});
+
+types.add('domino.property', {
+  id: 'string',
+  namespace: '?string',
+  events: '?domino.events',
+  type: '?type'
+});
+
+types.add('domino.shortcut', {
+  id: 'string',
+  namespace: '?string',
+  get: 'function'
+});
+
+types.add('domino.service', {
+  id: 'string',
+  namespace: '?string',
+  property: '?string',
+  dataPath: '?string',
+  success: '?function',
+  error: '?function'
+});
+
 var domino = function() {
   // Private properties:
   var _self = this,
