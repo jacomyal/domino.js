@@ -182,6 +182,8 @@ var types = {
 };
 
 // Add a type "type" to shortcut the isValid method:
-types.add('type', types.isValid.bind(types));
+types.add('type', function(v) {
+  return types.isValid(v);
+});
 
 module.exports = types;
