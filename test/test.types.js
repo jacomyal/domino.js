@@ -45,75 +45,75 @@ QUnit.test('domino.types.isValid', function() {
   QUnit.deepEqual(domino.types.isValid([]), false, '[] invalidity succeeds');
   QUnit.deepEqual(domino.types.isValid(['string', 'number']), false, '["string", "number"] invalidity succeeds');
 
-  QUnit.deepEqual(domino.types.check('type', 'boolean'), true, 'domino.types.check("type", val) works with valid types.');
-  QUnit.deepEqual(domino.types.check('type', 'null'), false, 'domino.types.check("type", val) works with unvalid types.');
+  QUnit.deepEqual(domino.types.check('boolean', 'type'), true, 'domino.types.check(val, "type") works with valid types.');
+  QUnit.deepEqual(domino.types.check('null', 'type'), false, 'domino.types.check(val, "type") works with unvalid types.');
 });
 
 // domino.types.check():
 QUnit.test('domino.types.check', function() {
-  QUnit.deepEqual(domino.types.check('boolean', true), true, '"boolean", true" succeeds');
-  QUnit.deepEqual(domino.types.check('boolean', true), true, '"boolean", true" succeeds');
-  QUnit.deepEqual(domino.types.check('number', 42), true, '"number", 42" succeeds');
-  QUnit.deepEqual(domino.types.check('string', 'abc'), true, '"string", "abc" succeeds');
-  QUnit.deepEqual(domino.types.check('function', function() {}), true, '"function", function() {}" succeeds');
-  QUnit.deepEqual(domino.types.check('array', [1, 2, 3]), true, '"array", [1, 2, 3]" succeeds');
-  QUnit.deepEqual(domino.types.check('date', new Date()), true, '"date", new Date()" succeeds');
-  QUnit.deepEqual(domino.types.check('regexp', /rhqq2/), true, '"regexp", /rhqq2/" succeeds');
-  QUnit.deepEqual(domino.types.check('object', {a: 1, b: 2}), true, '"object", {a: 1, b: 2}" succeeds');
-  QUnit.deepEqual(domino.types.check('*', '42'), true, '"*", "42" succeeds');
-  QUnit.deepEqual(domino.types.check('?string', 'abc'), true, '"?string", "abc" succeeds');
-  QUnit.deepEqual(domino.types.check('?string', null), true, '"?string", null succeeds');
-  QUnit.deepEqual(domino.types.check('?string', undefined), true, '"?string", undefined succeeds');
-  QUnit.deepEqual(domino.types.check('string|array', 'abc'), true, '"string|array", "abc" succeeds');
-  QUnit.deepEqual(domino.types.check('string|array', [1, 2, 3]), true, '"string|array", [1, 2, 3] succeeds');
-  QUnit.deepEqual(domino.types.check('?string|array', 'abc'), true, '"?string|array", "abc" succeeds');
-  QUnit.deepEqual(domino.types.check('?string|array', [1, 2, 3]), true, '"?string|array", [1, 2, 3] succeeds');
-  QUnit.deepEqual(domino.types.check('?string|array', null), true, '"?string|array", null succeeds');
-  QUnit.deepEqual(domino.types.check({a: '?string|array', b: '?*'}, {b: 'def'}), true, '{a: "?string|array", b: "?*"}, {b: "def"} succeeds');
-  QUnit.deepEqual(domino.types.check({a: 'string', b: 'object'}, {a: 'abc', b: {a: 1, b: 2}}), true, '{a: "string", b: "object"}, {a: "abc", b: {a: 1, b: 2}} succeeds');
-  QUnit.deepEqual(domino.types.check({a: 'string', b: {a: 'string'}}, {a: 'abc', b: {a: 'def'}}), true, '{a: "string", b: {a: "string"}}, {a: "abc", b: {a: "def"}} succeeds');
-  QUnit.deepEqual(domino.types.check({a: '?string|array', b: '?*'}, {a: null, b: 'def'}), true, '{a: "?string|array", b: "?*"}, {a: null, b: "def"} succeeds');
-  QUnit.deepEqual(domino.types.check({a: '?string|array', b: '?*'}, {a: 'abc', b: 'def'}), true, '{a: "?string|array", b: "?*"}, {a: "abc", b: "def"} succeeds');
-  QUnit.deepEqual(domino.types.check({a: '?string|array', b: '?*'}, {a: [1, 2, 3], b: 'def'}), true, '{a: "?string|array", b: "?*"}, {a: [1, 2, 3], b: "def"} succeeds');
-  QUnit.deepEqual(domino.types.check(['boolean'], []), true, '["boolean"], [] succeeds');
-  QUnit.deepEqual(domino.types.check(['boolean'], [true]), true, '["boolean"], [true] succeeds');
-  QUnit.deepEqual(domino.types.check(['boolean'], [true, false, true]), true, '["boolean"], [true, false, true] succeeds');
-  QUnit.deepEqual(domino.types.check([{a: '?boolean'}], [{}, {a: false}]), true, '[{a: "?boolean"}], [{}, {a: false}] succeeds');
-  QUnit.deepEqual(domino.types.check('boolean', 42), false, '"boolean", 42 does not match');
-  QUnit.deepEqual(domino.types.check('number', 'abc'), false, '"number", "abc" does not match');
-  QUnit.deepEqual(domino.types.check('string', function() {}), false, '"string", function() {} does not match');
-  QUnit.deepEqual(domino.types.check('function', [1, 2, 3]), false, '"function", [1, 2, 3] does not match');
-  QUnit.deepEqual(domino.types.check('array', new Date()), false, '"array", new Date() does not match');
-  QUnit.deepEqual(domino.types.check('date', /rhqq2/), false, '"date", /rhqq2/ does not match');
-  QUnit.deepEqual(domino.types.check('regexp', {a: 1, b: 2}), false, '"regexp", {a: 1, b: 2} does not match');
-  QUnit.deepEqual(domino.types.check('object', true), false, '"object", true does not match');
-  QUnit.deepEqual(domino.types.check('*', null), false, '"*", null does not match');
-  QUnit.deepEqual(domino.types.check('string|array', null), false, '"string|array", null does not match');
-  QUnit.deepEqual(domino.types.check('?string', 42), false, '"?string", 42 does not match');
-  QUnit.deepEqual(domino.types.check(['boolean'], null), false, '["boolean"], null does not match');
-  QUnit.deepEqual(domino.types.check(['boolean'], [false, 1]), false, '["boolean"], [false, 1] does not match');
-  QUnit.deepEqual(domino.types.check({a: 'string'}, {a: 'abc', b: '12'}), false, '{a: "string"}, {a: "abc", b: "12"} does not match');
-  QUnit.deepEqual(domino.types.check({a: 'string', b: 'object'}, {a: 'abc', b: 42}), false, '{a: "string", b: "object"}, {a: "abc", b: 42} does not match');
-  QUnit.deepEqual(domino.types.check({a: 'string', b: 'object'}, {b: {a: 1, b: 2}}), false, '{a: "string", b: "object"}, {b: {a: 1, b: 2}} does not match');
-  QUnit.deepEqual(domino.types.check({a: 'string', b: 'object'}, {a: 'abc'}), false, '{a: "string", b: "object"}, {a: "abc"} does not match');
-  QUnit.deepEqual(domino.types.check({a: 'string', b: {a: 'string'}}, {a: 'abc', b: {a: 1, b: 2}}), false, '{a: "string", b: {a: "string"}}, {a: "abc", b: {a: 1, b: 2}} does not match');
-  QUnit.deepEqual(domino.types.check({a: 'string', b: {a: 'string'}}, {a: 'abc', b: 'def'}), false, '{a: "string", b: {a: "string"}}, {a: "abc", b: "def"} does not match');
-  QUnit.deepEqual(domino.types.check({a: '?string|array', b: '?*'}, 42), false, '{a: "?string|array", b: "?*"}, 42 does not match');
+  QUnit.deepEqual(domino.types.check(true, 'boolean'), true, 'true" matches "boolean"');
+  QUnit.deepEqual(domino.types.check(true, 'boolean'), true, 'true" matches "boolean"');
+  QUnit.deepEqual(domino.types.check(42, 'number'), true, '42" matches "number"');
+  QUnit.deepEqual(domino.types.check('abc', 'string'), true, '"abc" matches "string"');
+  QUnit.deepEqual(domino.types.check(function() {}, 'function'), true, 'function() {}" matches "function"');
+  QUnit.deepEqual(domino.types.check([1, 2, 3], 'array'), true, '[1, 2, 3]" matches "array"');
+  QUnit.deepEqual(domino.types.check(new Date(), 'date'), true, 'new Date()" matches "date"');
+  QUnit.deepEqual(domino.types.check(/rhqq2/, 'regexp'), true, '/rhqq2/" matches "regexp"');
+  QUnit.deepEqual(domino.types.check({a: 1, b: 2}, 'object'), true, '{a: 1, b: 2}" matches "object"');
+  QUnit.deepEqual(domino.types.check('42', '*'), true, '"42" matches "*"');
+  QUnit.deepEqual(domino.types.check('abc', '?string'), true, '"abc" matches "?string"');
+  QUnit.deepEqual(domino.types.check(null, '?string'), true, 'null matches "?string"');
+  QUnit.deepEqual(domino.types.check(undefined, '?string'), true, 'undefined matches "?string"');
+  QUnit.deepEqual(domino.types.check('abc', 'string|array'), true, '"abc" matches "string|array"');
+  QUnit.deepEqual(domino.types.check([1, 2, 3], 'string|array'), true, '[1, 2, 3] matches "string|array"');
+  QUnit.deepEqual(domino.types.check('abc', '?string|array'), true, '"abc" matches "?string|array"');
+  QUnit.deepEqual(domino.types.check([1, 2, 3], '?string|array'), true, '[1, 2, 3] matches "?string|array"');
+  QUnit.deepEqual(domino.types.check(null, '?string|array'), true, 'null matches "?string|array"');
+  QUnit.deepEqual(domino.types.check({b: 'def'}, {a: '?string|array', b: '?*'}), true, '{b: "def"} matches {a: "?string|array", b: "?*"}');
+  QUnit.deepEqual(domino.types.check({a: 'abc', b: {a: 1, b: 2}}, {a: 'string', b: 'object'}), true, '{a: "abc", b: {a: 1, b: 2}} matches {a: "string", b: "object"}');
+  QUnit.deepEqual(domino.types.check({a: 'abc', b: {a: 'def'}}, {a: 'string', b: {a: 'string'}}), true, '{a: "abc", b: {a: "def"}} matches {a: "string", b: {a: "string"}}');
+  QUnit.deepEqual(domino.types.check({a: null, b: 'def'}, {a: '?string|array', b: '?*'}), true, '{a: null, b: "def"} matches {a: "?string|array", b: "?*"}');
+  QUnit.deepEqual(domino.types.check({a: 'abc', b: 'def'}, {a: '?string|array', b: '?*'}), true, '{a: "abc", b: "def"} matches {a: "?string|array", b: "?*"}');
+  QUnit.deepEqual(domino.types.check({a: [1, 2, 3], b: 'def'}, {a: '?string|array', b: '?*'}), true, '{a: [1, 2, 3], b: "def"} matches {a: "?string|array", b: "?*"}');
+  QUnit.deepEqual(domino.types.check([], ['boolean']), true, '[] matches ["boolean"]');
+  QUnit.deepEqual(domino.types.check([true], ['boolean']), true, '[true] matches ["boolean"]');
+  QUnit.deepEqual(domino.types.check([true, false, true], ['boolean']), true, '[true, false, true] matches ["boolean"]');
+  QUnit.deepEqual(domino.types.check([{}, {a: false}], [{a: '?boolean'}]), true, '[{}, {a: false}] matches [{a: "?boolean"}]');
+  QUnit.deepEqual(domino.types.check(42, 'boolean'), false, '42 does not match "boolean"');
+  QUnit.deepEqual(domino.types.check('abc', 'number'), false, '"abc" does not match "number"');
+  QUnit.deepEqual(domino.types.check(function() {}, 'string'), false, 'function() {} does not match "string"');
+  QUnit.deepEqual(domino.types.check([1, 2, 3], 'function'), false, '[1, 2, 3] does not match "function"');
+  QUnit.deepEqual(domino.types.check(new Date(), 'array'), false, 'new Date() does not match "array"');
+  QUnit.deepEqual(domino.types.check(/rhqq2/, 'date'), false, '/rhqq2/ does not match "date"');
+  QUnit.deepEqual(domino.types.check({a: 1, b: 2}, 'regexp'), false, '{a: 1, b: 2} does not match "regexp"');
+  QUnit.deepEqual(domino.types.check(true, 'object'), false, 'true does not match "object"');
+  QUnit.deepEqual(domino.types.check(null, '*'), false, 'null does not match "*"');
+  QUnit.deepEqual(domino.types.check(null, 'string|array'), false, 'null does not match "string|array"');
+  QUnit.deepEqual(domino.types.check(42, '?string'), false, '42 does not match "?string"');
+  QUnit.deepEqual(domino.types.check(null, ['boolean']), false, 'null does not match ["boolean"]');
+  QUnit.deepEqual(domino.types.check([false, 1], ['boolean']), false, '[false, 1] does not match ["boolean"]');
+  QUnit.deepEqual(domino.types.check({a: 'abc', b: '12'}, {a: 'string'}), false, '{a: "abc", b: "12"} does not match {a: "string"}');
+  QUnit.deepEqual(domino.types.check({a: 'abc', b: 42}, {a: 'string', b: 'object'}), false, '{a: "abc", b: 42} does not match {a: "string", b: "object"}');
+  QUnit.deepEqual(domino.types.check({b: {a: 1, b: 2}}, {a: 'string', b: 'object'}), false, '{b: {a: 1, b: 2}} does not match {a: "string", b: "object"}');
+  QUnit.deepEqual(domino.types.check({a: 'abc'}, {a: 'string', b: 'object'}), false, '{a: "abc"} does not match {a: "string", b: "object"}');
+  QUnit.deepEqual(domino.types.check({a: 'abc', b: {a: 1, b: 2}}, {a: 'string', b: {a: 'string'}}), false, '{a: "abc", b: {a: 1, b: 2}} does not match {a: "string", b: {a: "string"}}');
+  QUnit.deepEqual(domino.types.check({a: 'abc', b: 'def'}, {a: 'string', b: {a: 'string'}}), false, '{a: "abc", b: "def"} does not match {a: "string", b: {a: "string"}}');
+  QUnit.deepEqual(domino.types.check(42, {a: '?string|array', b: '?*'}), false, '42 does not match {a: "?string|array", b: "?*"}');
+
   QUnit.throws(
     function() {
-      domino.types.check('string|?array', 'abc');
+      domino.types.check('abc', 'string|?array');
     },
     /Invalid type/,
     'Invalid type detected'
   );
   QUnit.throws(
     function() {
-      domino.types.check({a: 'sstring'}, {a: 'abc', b: '12'});
+      domino.types.check({a: 'abc', b: '12'}, {a: 'sstring'});
     },
     /Invalid type/,
     'Deep invalid type detected'
   );
-  QUnit.deepEqual(domino.types.check({a: 'number'}, {a: 42, b: 1337}), false, '{a: "number"}, {a: 42, b: 1337} does not match (with "includes" flag off)');
 });
 
 // Custom types:
@@ -135,9 +135,9 @@ QUnit.test('Custom types', function() {
   });
 
   QUnit.deepEqual(domino.types.isValid('integer'), true, 'domino.types.isValid("integer") is true');
-  QUnit.deepEqual(domino.types.check('integer', 1), true, 'domino.types.check("integer", 1) is true');
-  QUnit.deepEqual(domino.types.check('integer', 1.2), false, 'domino.types.check("integer", 1.2) is false');
-  QUnit.deepEqual(domino.types.check({a: 'integer'}, {a: 1}), true, 'domino.types.check({a: "integer"}, {a: 1}) is true');
+  QUnit.deepEqual(domino.types.check(1, 'integer'), true, 'domino.types.check(1, "integer") is true');
+  QUnit.deepEqual(domino.types.check(1.2, 'integer'), false, 'domino.types.check(1.2, "integer") is false');
+  QUnit.deepEqual(domino.types.check({a: 1}, {a: 'integer'}), true, 'domino.types.check({a: 1}, {a: "integer"}) is true');
 
   // Create an advanced type and use it:
   domino.types.add('template', {
@@ -150,22 +150,22 @@ QUnit.test('Custom types', function() {
   });
 
   QUnit.deepEqual(domino.types.isValid('template'), true, 'domino.types.isValid("template") is true');
-  QUnit.deepEqual(domino.types.check('template', {
+  QUnit.deepEqual(domino.types.check({
     a: 42,
     b: 'toto',
     c: {
       d: '42'
     },
     e: 2
-  }), true, 'domino.types.check("template", ...) works');
-  QUnit.deepEqual(domino.types.check('template', {
+  }, 'template'), true, 'domino.types.check(value, "template") works');
+  QUnit.deepEqual(domino.types.check({
     a: 42,
     b: 'toto',
     c: {
       d: '42'
     },
     e: 2.4
-  }), false, 'domino.types.check("template", ...) works again');
+  }, 'template'), false, 'domino.types.check(value, "template") works again');
 
   // Create a recursive type:
   domino.types.add({
@@ -176,21 +176,21 @@ QUnit.test('Custom types', function() {
   });
 
   QUnit.deepEqual(domino.types.isValid('s'), true, 'domino.types.isValid("s") is true (recursive)');
-  QUnit.deepEqual(domino.types.check('s', {}), true, 'recursive types work (level 0)');
-  QUnit.deepEqual(domino.types.check('s', {
+  QUnit.deepEqual(domino.types.check({}, 's'), true, 'recursive types work (level 0)');
+  QUnit.deepEqual(domino.types.check({
     k: {}
-  }), true, 'recursive types work (level 1)');
-  QUnit.deepEqual(domino.types.check('s', {
+  }, 's'), true, 'recursive types work (level 1)');
+  QUnit.deepEqual(domino.types.check({
     k: {
       k: {}
     }
-  }), true, 'recursive types work (level 2)');
-  QUnit.deepEqual(domino.types.check('s', {
+  }, 's'), true, 'recursive types work (level 2)');
+  QUnit.deepEqual(domino.types.check({
     k: {
       k: {},
       a: 42
     }
-  }), false, 'recursive types still check wrong keys (level 2)');
+  }, 's'), false, 'recursive types still check wrong keys (level 2)');
 
   // Create two self referencing types:
   domino.types.add({
@@ -207,19 +207,19 @@ QUnit.test('Custom types', function() {
 
   QUnit.deepEqual(domino.types.isValid('s1'), true, 'domino.types.isValid("s1") is true (recursive)');
   QUnit.deepEqual(domino.types.isValid('s2'), true, 'domino.types.isValid("s2") is true');
-  QUnit.deepEqual(domino.types.check('s1', {}), true, 'double recursive types work (level 0)');
-  QUnit.deepEqual(domino.types.check('s1', {
+  QUnit.deepEqual(domino.types.check({}, 's1'), true, 'double recursive types work (level 0)');
+  QUnit.deepEqual(domino.types.check({
     k: {}
-  }), true, 'double recursive types work (level 1)');
-  QUnit.deepEqual(domino.types.check('s1', {
+  }, 's1'), true, 'double recursive types work (level 1)');
+  QUnit.deepEqual(domino.types.check({
     k: {
       k: {}
     }
-  }), true, 'double recursive types work (level 2)');
-  QUnit.deepEqual(domino.types.check('s1', {
+  }, 's1'), true, 'double recursive types work (level 2)');
+  QUnit.deepEqual(domino.types.check({
     k: {
       k: {},
       a: 42
     }
-  }), false, 'double recursive types still check wrong keys (level 2)');
+  }, 's1'), false, 'double recursive types still check wrong keys (level 2)');
 });

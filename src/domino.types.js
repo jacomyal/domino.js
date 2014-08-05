@@ -97,7 +97,7 @@ var types = {
       String(obj) :
       class2type[Object.prototype.toString.call(obj)] || 'object';
   },
-  check: function(type, obj) {
+  check: function(obj, type) {
     var a,
         i,
         k,
@@ -121,7 +121,7 @@ var types = {
           if (
             (typeof customTypes[a[i]].type === 'function') ?
             (customTypes[a[i]].type(obj) === true) :
-            this.check(customTypes[a[i]].type, obj, customTypes[a[i]])
+            this.check(obj, customTypes[a[i]].type)
           )
             return true;
 
@@ -130,7 +130,7 @@ var types = {
       if (typeOf !== 'object')
         return false;
       for (k in type)
-        if (!this.check(type[k], obj[k]))
+        if (!this.check(obj[k], type[k]))
           return false;
 
       for (k in obj)
@@ -147,7 +147,7 @@ var types = {
       }
 
       for (k in obj)
-        if (!this.check(type[0], obj[k]))
+        if (!this.check(obj[k], type[0]))
           return false;
 
       return true;
