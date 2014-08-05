@@ -44,6 +44,9 @@ QUnit.test('domino.types.isValid', function() {
   QUnit.deepEqual(domino.types.isValid('string|?array'), false, '"string|?array" invalidity succeeds');
   QUnit.deepEqual(domino.types.isValid([]), false, '[] invalidity succeeds');
   QUnit.deepEqual(domino.types.isValid(['string', 'number']), false, '["string", "number"] invalidity succeeds');
+
+  QUnit.deepEqual(domino.types.check('type', 'boolean'), true, 'domino.types.check("type", val) works with valid types.');
+  QUnit.deepEqual(domino.types.check('type', 'null'), false, 'domino.types.check("type", val) works with unvalid types.');
 });
 
 // domino.types.check():
