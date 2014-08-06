@@ -1,30 +1,33 @@
 'use strict';
 
-var types = require('./domino.types.js');
+var types = require('./domino.types.js'),
+    helpers = require('./domino.helpers.js');
 
 /**
  * Custom types related to domino:
  */
 types.add('domino.events', function(val) {
-  return typeof val === 'string' || domino.types.check(val, ['string']);
+  return typeof val === 'string' || types.check(val, ['string']);
+});
+types.add('domino.name', function(val) {
+  return typeof val === 'string' &&
+    val.match(/^[a-zA-Z_$-][a-zA-Z_$0-9-]*$/);
 });
 
 types.add('domino.property', {
-  id: 'string',
-  namespace: '?string',
+  id: 'domino.name',
+  namespace: '?domino.name',
   events: '?domino.events',
   type: '?type'
 });
-
 types.add('domino.shortcut', {
-  id: 'string',
-  namespace: '?string',
+  id: 'domino.name',
+  namespace: '?domino.name',
   get: 'function'
 });
-
 types.add('domino.service', {
-  id: 'string',
-  namespace: '?string',
+  id: 'domino.name',
+  namespace: '?domino.name',
   property: '?string',
   dataPath: '?string',
   success: '?function',
@@ -32,16 +35,18 @@ types.add('domino.service', {
 });
 
 var domino = function() {
-  // Private properties:
   var _self = this,
 
+      // Orders:
       _stackFuture = [],
       _stackCurrents = [],
 
+      // Execution state:
       _timeout,
       _executionLock,
 
-      _data = {};
+      // Properties:
+      _properties = {};
 
   function _addOrder(order, now) {
     // TODO:
@@ -61,17 +66,18 @@ var domino = function() {
     if (_executionLock)
       throw 'The execution is not unlocked yet';
 
-    // Set state
+    // Set state:
     _timeout = null;
     _executionLock = true;
     _stackCurrents = _stackFuture;
     _stackFuture = [];
 
+    // Unstack orders:
     var order;
     while ((order = _stackCurrents.pop()))
       _executeOrder(order);
 
-    // Update lock flag
+    // Update lock flag:
     _executionLock = false;
 
     if (_stackFuture.length)
@@ -87,7 +93,7 @@ var domino = function() {
 
     switch (order.type) {
       case 'update':
-        _updateProperty(
+        _setProperty(
           order.property,
           order.value
         );
@@ -110,19 +116,38 @@ var domino = function() {
   }
 
   // Data related functions:
-  function _addProperty(options) {
+  function _addProperty(specs) {
+    if (types.check(specs, 'domino.property|domino.shortcut'))
+      throw 'Wrong type.';
+
+    if (_properties[specs.id])
+      throw 'The property "' + specs.id + '" already exists.';
+
+    _properties[specs.id] = helpers.clone(specs);
+
+    return this;
+  }
+  function _setProperty(propName, value) {
+    if (!types.check(propName, 'domino.fullname'))
+      throw 'Wrong type.';
+
     // TODO
   }
-  function _updateProperty(property, value) {
-    // TODO
-  }
-  function _getProperty(property) {
+  function _getProperty(propName) {
     // TODO
   }
 
   // Services related functions:
-  function _addService(options) {
-    // TODO
+  function _addService(specs) {
+    if (types.check(specs, 'domino.service'))
+      throw 'Wrong type.';
+
+    if (_properties[specs.id])
+      throw 'The property "' + specs.id + '" already exists.';
+
+    _properties[specs.id] = helpers.clone(specs);
+
+    return this;
   }
   function _requestService(service, options) {
     // TODO
@@ -132,8 +157,9 @@ var domino = function() {
   function _triggerEvent(event, data) {
     // TODO
   }
-
 };
 
 domino.types = types;
+domino.helpers = helpers;
+
 module.exports = domino;
