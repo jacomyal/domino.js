@@ -33,9 +33,21 @@ module.exports = function(grunt) {
       }
     },
     browserify: {
-      all: {
+      watch: {
         options: {
-          banner: '/* domino.js - Version: <%= pkg.version %> - Author:  Alexis Jacomy, Atelier Iceberg - License: MIT */\n',
+          watch: true,
+          keepAlive: true,
+          transform: [ 'uglifyify' ],
+          bundleOptions: {
+            standalone: 'domino'
+          }
+        },
+        files: {
+          'build/domino.min.js': ['src/domino.core.js']
+        }
+      },
+      build: {
+        options: {
           transform: [ 'uglifyify' ],
           bundleOptions: {
             standalone: 'domino'
@@ -56,5 +68,6 @@ module.exports = function(grunt) {
   });
 
   require('load-grunt-tasks')(grunt);
-  grunt.registerTask('default', ['closureLint', 'jshint', 'browserify', 'qunit']);
+  grunt.registerTask('default', ['closureLint', 'jshint', 'browserify:build', 'qunit']);
+  grunt.registerTask('watch', ['browserify:watch']);
 };
