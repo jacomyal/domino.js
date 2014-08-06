@@ -1,6 +1,7 @@
 'use strict';
 
 var types = require('./domino.types.js'),
+    logger = require('./domino.logger.js'),
     helpers = require('./domino.helpers.js');
 
 /**
@@ -34,6 +35,11 @@ types.add('domino.service', {
   error: '?function'
 });
 
+var defaultSettings = {
+  errorMessage: 'error from domino',
+  verbose: true
+};
+
 var domino = function() {
   var _self = this,
 
@@ -48,6 +54,47 @@ var domino = function() {
       // Properties:
       _properties = {};
 
+  // Settings method:
+  this.settings = function(a1, a2) {
+    if (typeof a1 === 'string' && arguments.length === 1)
+      return defaultSettings[a1];
+    else {
+      var o = (typeof a1 === 'object' && arguments.length === 1) ?
+        a1 || {} :
+        {};
+      if (typeof a1 === 'string')
+        o[a1] = a2;
+
+      for (var k in o)
+        if (o[k] !== undefined)
+          defaultSettings[k] = o[k];
+        else
+          delete defaultSettings[k];
+
+      return this;
+    }
+  };
+
+  // Logging methods:
+  this.debug = function() {
+    if (_self.settings('verbose'))
+      logger.debug.apply(logger, arguments);
+  };
+  this.info = function() {
+    if (_self.settings('verbose'))
+      logger.info.apply(logger, arguments);
+  };
+  this.warn = function() {
+    if (_self.settings('verbose'))
+      logger.warn.apply(logger, arguments);
+  };
+  this.die = function() {
+    if (_self.settings('verbose'))
+      logger.die.apply(logger, arguments);
+    throw _self.settings('errorMessage') || new Error();
+  };
+
+  // Orders management functions:
   function _addOrder(order, now) {
     // TODO:
     // Validate order's structure.
@@ -61,10 +108,9 @@ var domino = function() {
         _timeout = setTimeout(_execute, 0);
     }
   }
-
   function _execute() {
     if (_executionLock)
-      throw 'The execution is not unlocked yet';
+      _self.die('The execution is not unlocked yet');
 
     // Set state:
     _timeout = null;
@@ -83,13 +129,12 @@ var domino = function() {
     if (_stackFuture.length)
       _timeout = setTimeout(_execute, 0);
   }
-
   function _executeOrder(order) {
     if (!order || typeof order !== 'object')
-      throw 'Wrong parameter';
+      _self.die('Wrong parameter');
 
     if (typeof order.type !== 'number')
-      throw 'Order\'s type not specified';
+      _self.die('Order\'s type not specified');
 
     switch (order.type) {
       case 'update':
@@ -111,25 +156,23 @@ var domino = function() {
         );
         break;
       default:
-        throw 'Unknown order type "' + order.type + '"';
+        _self.die('Unknown order type "' + order.type + '"');
     }
   }
 
   // Data related functions:
   function _addProperty(specs) {
     if (types.check(specs, 'domino.property|domino.shortcut'))
-      throw 'Wrong type.';
+      _self.die('Wrong type.');
 
     if (_properties[specs.id])
-      throw 'The property "' + specs.id + '" already exists.';
+      _self.die('The property "' + specs.id + '" already exists.');
 
     _properties[specs.id] = helpers.clone(specs);
-
-    return this;
   }
   function _setProperty(propName, value) {
-    if (!types.check(propName, 'domino.fullname'))
-      throw 'Wrong type.';
+    if (!types.check(propName, 'domino.name'))
+      _self.die('Wrong type.');
 
     // TODO
   }
@@ -140,10 +183,10 @@ var domino = function() {
   // Services related functions:
   function _addService(specs) {
     if (types.check(specs, 'domino.service'))
-      throw 'Wrong type.';
+      _self.die('Wrong type.');
 
     if (_properties[specs.id])
-      throw 'The property "' + specs.id + '" already exists.';
+      _self.die('The property "' + specs.id + '" already exists.');
 
     _properties[specs.id] = helpers.clone(specs);
 
@@ -161,5 +204,6 @@ var domino = function() {
 
 domino.types = types;
 domino.helpers = helpers;
+domino.settings = defaultSettings;
 
 module.exports = domino;
