@@ -1,6 +1,5 @@
 QUnit.module('domino.types');
 
-// domino.types.get():
 QUnit.test('domino.types.get', function() {
   QUnit.deepEqual(domino.types.get(true), 'boolean', 'Boolean succeeds');
   QUnit.deepEqual(domino.types.get(42), 'number', 'Number succeeds');
@@ -14,7 +13,6 @@ QUnit.test('domino.types.get', function() {
   QUnit.deepEqual(domino.types.get(undefined), 'undefined', 'Undefined succeeds');
 });
 
-// domino.types.isValid():
 QUnit.test('domino.types.isValid', function() {
   QUnit.deepEqual(domino.types.isValid('boolean'), true, '"boolean" validity succeeds');
   QUnit.deepEqual(domino.types.isValid('number'), true, '"number" validity succeeds');
@@ -49,7 +47,6 @@ QUnit.test('domino.types.isValid', function() {
   QUnit.deepEqual(domino.types.check('null', 'type'), false, 'domino.types.check(val, "type") works with unvalid types.');
 });
 
-// domino.types.check():
 QUnit.test('domino.types.check', function() {
   QUnit.deepEqual(domino.types.check(true, 'boolean'), true, 'true" matches "boolean"');
   QUnit.deepEqual(domino.types.check(true, 'boolean'), true, 'true" matches "boolean"');
@@ -116,8 +113,7 @@ QUnit.test('domino.types.check', function() {
   );
 });
 
-// Custom types:
-QUnit.test('Custom types', function() {
+QUnit.test('domino.types.add', function() {
   // Check wrong calls to type.add:
   QUnit.throws(
     function() {
