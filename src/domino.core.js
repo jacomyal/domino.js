@@ -2,7 +2,8 @@
 
 var types = require('./domino.types.js'),
     logger = require('./domino.logger.js'),
-    helpers = require('./domino.helpers.js');
+    helpers = require('./domino.helpers.js'),
+    triggerer = require('./domino.event.js');
 
 /**
  * Custom types related to domino:
@@ -52,7 +53,8 @@ var domino = function() {
       _executionLock,
 
       // Properties:
-      _properties = {};
+      _properties = {},
+      _shortcuts = {};
 
   // Settings method:
   this.settings = function(a1, a2) {
@@ -118,46 +120,72 @@ var domino = function() {
     _stackCurrents = _stackFuture;
     _stackFuture = [];
 
+    // Merge orders:
+    var arr,
+        k,
+        i,
+        l,
+        order,
+
+        updates = {},
+        requests = {},
+        triggers = {};
+
+    while ((order = _stackCurrents.shift()))
+      switch (order.type) {
+        // Domino throws an error if the same property must be updated several
+        // times at the same time with different values.
+        case 'update':
+          if (updates[order.property]) {
+            if (updates[order.property].value !== order.value)
+              _self.die(
+                'You are trying to update the property "' + order.property +
+                '" with the values', updates[order.property].value, 'and',
+                order.value, 'at the same time.'
+              );
+          } else
+            updates[order.property] = order;
+          break;
+
+        // It is allowed to call several times the same service at the same
+        // time.
+        case 'request':
+          if (requests[order.service])
+            requests[order.service].push(order);
+          else
+            requests[order.service] = [order];
+          break;
+
+        // If an event is triggered several times with no data and at the same
+        // time, then it will be triggered ony once instead.
+        case 'trigger':
+          arr = Array.isArray(order.events) ?
+            order.events :
+            [order.events];
+          for (i = 0, l = arr.length; i < l; i++)
+            if (triggers[arr[i]])
+              triggers[arr[i]].push(order);
+            else
+              triggers[arr[i]] = [order];
+          break;
+
+        default:
+          _self.die('Unknown order type "' + order.type + '"');
+      }
+
     // Unstack orders:
-    var order;
-    while ((order = _stackCurrents.pop()))
-      _executeOrder(order);
+    for (k in updates)
+      _setProperty(k, updates[k].value);
+    for (k in requests)
+      _requestService(k, requests[k]);
+    for (k in triggers)
+      _triggerEvent(k, triggers[k]);
 
     // Update lock flag:
     _executionLock = false;
 
     if (_stackFuture.length)
       _timeout = setTimeout(_execute, 0);
-  }
-  function _executeOrder(order) {
-    if (!order || typeof order !== 'object')
-      _self.die('Wrong parameter');
-
-    if (typeof order.type !== 'number')
-      _self.die('Order\'s type not specified');
-
-    switch (order.type) {
-      case 'update':
-        _setProperty(
-          order.property,
-          order.value
-        );
-        break;
-      case 'request':
-        _requestService(
-          order.service,
-          order.options
-        );
-        break;
-      case 'trigger':
-        _triggerEvent(
-          order.event,
-          order.data
-        );
-        break;
-      default:
-        _self.die('Unknown order type "' + order.type + '"');
-    }
   }
 
   // Data related functions:
@@ -174,7 +202,23 @@ var domino = function() {
     if (!types.check(propName, 'domino.name'))
       _self.die('Wrong type.');
 
-    // TODO
+    var property = _properties[propName];
+
+    if (!property)
+      _self.die('The property "' + propName + '" does not exist.');
+
+    if (property.type && !types.check(value, property.type))
+      _self.die('Wrong type for "' + propName + '".');
+
+    // Update the property's value:
+    property.value = value;
+
+    // Dispatch related events:
+    if (property.events)
+      _addOrder({
+        type: 'trigger',
+        events: property.events
+      });
   }
   function _getProperty(propName) {
     // TODO
@@ -204,6 +248,7 @@ var domino = function() {
 
 domino.types = types;
 domino.helpers = helpers;
+domino.triggerer = triggerer;
 domino.settings = defaultSettings;
 
 module.exports = domino;
