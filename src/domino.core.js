@@ -3,7 +3,7 @@
 var types = require('./domino.types.js'),
     logger = require('./domino.logger.js'),
     helpers = require('./domino.helpers.js'),
-    triggerer = require('./domino.event.js');
+    emitter = require('./domino.emitter.js');
 
 /**
  * Custom types related to domino:
@@ -57,7 +57,7 @@ var domino = function() {
       _shortcuts = {},
 
       // Events:
-      _triggerer = new triggerer();
+      _emitter = new emitter();
 
   // Settings method:
   this.settings = function(a1, a2) {
@@ -137,7 +137,7 @@ var domino = function() {
 
         updates = {},
         requests = {},
-        triggers = {};
+        emits = {};
 
     while ((order = _stackCurrents.shift()))
       switch (order.type) {
@@ -164,25 +164,25 @@ var domino = function() {
             requests[order.service] = [order];
           break;
 
-        // If an event is triggered several times with no data and at the same
-        // time, then it will be triggered ony once instead.
-        case 'trigger':
+        // If an event is emited several times with no data and at the same
+        // time, then it will be emited ony once instead.
+        case 'emit':
           arr = Array.isArray(order.events) ?
             order.events :
             [order.events];
           for (i = 0, l = arr.length; i < l; i++) {
-            if (triggers[arr[i]]) {
+            if (emits[arr[i]]) {
               if (!('data' in order)) {
-                arr2 = triggers[arr[i]];
+                arr2 = emits[arr[i]];
                 for (j = 0, l2 = arr2.length; j < l2; j++)
                   if (!('data' in arr2[j]))
                     break;
                 arr2.push(order);
               }
               else
-                triggers[arr[i]].push(order);
+                emits[arr[i]].push(order);
             } else
-              triggers[arr[i]] = [order];
+              emits[arr[i]] = [order];
           }
           break;
 
@@ -195,8 +195,8 @@ var domino = function() {
       _setProperty(k, updates[k].value);
     for (k in requests)
       _requestService(k, requests[k]);
-    for (k in triggers)
-      _triggerer.trigger(k, triggers[k].data);
+    for (k in emits)
+      _emitter.emit(k, emits[k].data);
 
     // Update lock flag:
     _executionLock = false;
@@ -248,7 +248,7 @@ var domino = function() {
     // Dispatch related events:
     if (property.events)
       _addOrder({
-        type: 'trigger',
+        type: 'emit',
         events: property.events
       });
   }
@@ -293,16 +293,16 @@ var domino = function() {
   };
 
   this.on = function() {
-    _triggerer.on.apply(_triggerer, arguments);
+    _emitter.on.apply(_emitter, arguments);
     return this;
   };
   this.off = function() {
-    _triggerer.off.apply(_triggerer, arguments);
+    _emitter.off.apply(_emitter, arguments);
     return this;
   };
-  this.trigger = function(events, data) {
+  this.emit = function(events, data) {
     _addOrder({
-      type: 'trigger',
+      type: 'emit',
       events: events,
       data: data
     });
@@ -313,7 +313,7 @@ var domino = function() {
 // Global public declarations:
 domino.types = types;
 domino.helpers = helpers;
-domino.triggerer = triggerer;
+domino.emitter = emitter;
 domino.settings = defaultSettings;
 
 // Export:

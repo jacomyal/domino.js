@@ -1,12 +1,12 @@
 'use strict';
 
-var triggerer = function() {
+var emitter = function() {
   Object.defineProperty(this, '_handlers', {
     value: {}
   });
 };
 
-triggerer.prototype.on = function(events, handler) {
+emitter.prototype.on = function(events, handler) {
   var i,
       l,
       event,
@@ -45,12 +45,12 @@ triggerer.prototype.on = function(events, handler) {
     }
 
   } else
-    throw 'triggerer.on: Wrong arguments.';
+    throw 'emitter.on: Wrong arguments.';
 
   return this;
 };
 
-triggerer.prototype.off = function(events, handler) {
+emitter.prototype.off = function(events, handler) {
   var i,
       n,
       j,
@@ -90,7 +90,7 @@ triggerer.prototype.off = function(events, handler) {
   return this;
 };
 
-triggerer.prototype.trigger = function(events, data) {
+emitter.prototype.emit = function(events, data) {
   var i,
       n,
       j,
@@ -131,4 +131,4 @@ triggerer.prototype.trigger = function(events, data) {
   return this;
 };
 
-module.exports = triggerer;
+module.exports = emitter;
