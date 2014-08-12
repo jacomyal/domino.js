@@ -17,7 +17,7 @@ var styles =
 
 // Log override
 function logger(color, method) {
-  var args = [ (styles ? '%c' : '') + '[domino]' ];
+  var args = [(styles ? '%c' : '') + '[domino]'];
 
   if (styles)
     args.push('color:' + color);
@@ -28,21 +28,29 @@ function logger(color, method) {
     console,
     expand ?
       args :
-      [ args.map(function(v) { return '' + v; }).join(' ') ]
+      [args.map(function(v) { return '' + v; }).join(' ')]
   );
-};
+}
 
 module.exports = {
   debug: function() {
-    logger.apply(null, [ colors.debug, 'log' ].concat(Array.prototype.slice.call(arguments, 0)));
+    logger.apply(null, [colors.debug, 'log'].concat(
+      Array.prototype.slice.call(arguments, 0)
+    ));
   },
   info: function() {
-    logger.apply(null, [ colors.info, 'log' ].concat(Array.prototype.slice.call(arguments, 0)));
+    logger.apply(null, [colors.info, 'log'].concat(
+      Array.prototype.slice.call(arguments, 0)
+    ));
   },
   warn: function() {
-    logger.apply(null, [ colors.warn, 'warn' ].concat(Array.prototype.slice.call(arguments, 0)));
+    logger.apply(null, [colors.warn, 'warn'].concat(
+      Array.prototype.slice.call(arguments, 0)
+    ));
   },
   die: function() {
-    logger.apply(null, [ colors.die, 'error' ].concat(Array.prototype.slice.call(arguments, 0)));
+    logger.apply(null, [colors.die, 'error'].concat(
+      Array.prototype.slice.call(arguments, 0)
+    ));
   }
 };

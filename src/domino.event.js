@@ -24,7 +24,7 @@ triggerer.prototype.on = function(events, handler) {
     typeof arguments[1] === 'function'
   ) {
     eArray = typeof events === 'string' ?
-      [ events ] :
+      [events] :
       events;
 
     for (i = 0, l = eArray.length; i !== l; i += 1) {
@@ -59,7 +59,7 @@ triggerer.prototype.off = function(events, handler) {
       a,
       event,
       eArray = typeof events === 'string' ?
-        [ events ] :
+        [events] :
         events;
 
   if (!arguments.length) {
@@ -101,7 +101,7 @@ triggerer.prototype.trigger = function(events, data) {
       eventName,
       self = this,
       eArray = typeof events === 'string' ?
-        [ events ] :
+        [events] :
         events;
 
   data = data === undefined ? {} : data;
