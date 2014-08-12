@@ -42,6 +42,9 @@ var defaultSettings = {
 };
 
 var domino = function() {
+  // Inheritance:
+  triggerer.call(this);
+
   var _self = this,
 
       // Orders:
@@ -121,10 +124,13 @@ var domino = function() {
     _stackFuture = [];
 
     // Merge orders:
-    var arr,
-        k,
+    var k,
         i,
+        j,
         l,
+        l2,
+        arr,
+        arr2,
         order,
 
         updates = {},
@@ -162,11 +168,20 @@ var domino = function() {
           arr = Array.isArray(order.events) ?
             order.events :
             [order.events];
-          for (i = 0, l = arr.length; i < l; i++)
-            if (triggers[arr[i]])
-              triggers[arr[i]].push(order);
-            else
+          for (i = 0, l = arr.length; i < l; i++) {
+            if (triggers[arr[i]]) {
+              if (!('data' in order)) {
+                arr2 = triggers[arr[i]];
+                for (j = 0, l2 = arr2.length; j < l2; j++)
+                  if (!('data' in arr2[j]))
+                    break;
+                arr2.push(order);
+              }
+              else
+                triggers[arr[i]].push(order);
+            } else
               triggers[arr[i]] = [order];
+          }
           break;
 
         default:
@@ -179,7 +194,7 @@ var domino = function() {
     for (k in requests)
       _requestService(k, requests[k]);
     for (k in triggers)
-      _triggerEvent(k, triggers[k]);
+      _self.trigger(k, triggers[k].data);
 
     // Update lock flag:
     _executionLock = false;
@@ -237,11 +252,6 @@ var domino = function() {
     return this;
   }
   function _requestService(service, options) {
-    // TODO
-  }
-
-  // Events related functions:
-  function _triggerEvent(event, data) {
     // TODO
   }
 };
