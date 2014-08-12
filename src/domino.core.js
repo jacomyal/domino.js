@@ -42,9 +42,6 @@ var defaultSettings = {
 };
 
 var domino = function() {
-  // Inheritance:
-  triggerer.call(this);
-
   var _self = this,
 
       // Orders:
@@ -57,7 +54,10 @@ var domino = function() {
 
       // Properties:
       _properties = {},
-      _shortcuts = {};
+      _shortcuts = {},
+
+      // Events:
+      _triggerer = new triggerer();
 
   // Settings method:
   this.settings = function(a1, a2) {
@@ -196,7 +196,7 @@ var domino = function() {
     for (k in requests)
       _requestService(k, requests[k]);
     for (k in triggers)
-      _self.trigger(k, triggers[k].data);
+      _triggerer.trigger(k, triggers[k].data);
 
     // Update lock flag:
     _executionLock = false;
@@ -279,9 +279,9 @@ var domino = function() {
   }
 
   // Public declarations:
-  this.addProperty = _addProperty;
   this.addService = _addService;
 
+  this.addProperty = _addProperty;
   this.get = _getProperty;
   this.set = function(property, value) {
     _addOrder({
@@ -291,11 +291,30 @@ var domino = function() {
     });
     return this;
   };
+
+  this.on = function() {
+    _triggerer.on.apply(_triggerer, arguments);
+    return this;
+  };
+  this.off = function() {
+    _triggerer.off.apply(_triggerer, arguments);
+    return this;
+  };
+  this.trigger = function(events, data) {
+    _addOrder({
+      type: 'trigger',
+      events: events,
+      data: data
+    });
+    return this;
+  };
 };
 
+// Global public declarations:
 domino.types = types;
 domino.helpers = helpers;
 domino.triggerer = triggerer;
 domino.settings = defaultSettings;
 
+// Export:
 module.exports = domino;
