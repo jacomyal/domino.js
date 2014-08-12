@@ -12,15 +12,15 @@ types.add('domino.events', function(val) {
   return typeof val === 'string' || types.check(val, ['string']);
 });
 types.add('domino.name', function(val) {
-  return typeof val === 'string' &&
-    val.match(/^[a-zA-Z_$-][a-zA-Z_$0-9-]*$/);
+  return typeof val === 'string' && !!val.match(/^[a-zA-Z_$-][a-zA-Z_$0-9-]*$/);
 });
 
 types.add('domino.property', {
   id: 'domino.name',
   namespace: '?domino.name',
   events: '?domino.events',
-  type: '?type'
+  type: '?type',
+  value: '?*'
 });
 types.add('domino.shortcut', {
   id: 'domino.name',
@@ -112,6 +112,8 @@ var domino = function() {
       else
         _timeout = setTimeout(_execute, 0);
     }
+
+    return this;
   }
   function _execute() {
     if (_executionLock)
@@ -205,17 +207,32 @@ var domino = function() {
 
   // Data related functions:
   function _addProperty(specs) {
-    if (types.check(specs, 'domino.property|domino.shortcut'))
+    var isShortcut;
+
+    if (types.check(specs, 'domino.property'))
+      isShortcut = false;
+    else if (types.check(specs, 'domino.property'))
+      isShortcut = true;
+    else
       _self.die('Wrong type.');
 
-    if (_properties[specs.id])
-      _self.die('The property "' + specs.id + '" already exists.');
+    if (isShortcut) {
+      if (_shortcuts[specs.id])
+        _self.die('The property "' + specs.id + '" already exists.');
+      _shortcuts[specs.id] = helpers.clone(specs);
 
-    _properties[specs.id] = helpers.clone(specs);
+    } else {
+      if (_properties[specs.id])
+        _self.die('The property "' + specs.id + '" already exists.');
+      _properties[specs.id] = helpers.clone(specs);
+    }
+
+    return this;
   }
+
   function _setProperty(propName, value) {
     if (!types.check(propName, 'domino.name'))
-      _self.die('Wrong type.');
+      _self.die('Invalid property name.');
 
     var property = _properties[propName];
 
@@ -236,7 +253,13 @@ var domino = function() {
       });
   }
   function _getProperty(propName) {
-    // TODO
+    if (!types.check(propName, 'domino.name'))
+      _self.die('Invalid property name.');
+
+    if (_properties[propName])
+      return _properties[propName].value;
+    else if (_shortcuts[propName])
+      return _shortcuts[propName].get.call(_self);
   }
 
   // Services related functions:
@@ -254,6 +277,20 @@ var domino = function() {
   function _requestService(service, options) {
     // TODO
   }
+
+  // Public declarations:
+  this.addProperty = _addProperty;
+  this.addService = _addService;
+
+  this.get = _getProperty;
+  this.set = function(property, value) {
+    _addOrder({
+      type: 'update',
+      property: property,
+      value: value
+    });
+    return this;
+  };
 };
 
 domino.types = types;
