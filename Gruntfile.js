@@ -1,11 +1,6 @@
+var findit = require('findit');
 module.exports = function(grunt) {
-  var files = [
-    // Core:
-    'src/domino.core.js',
-
-    // Helpers:
-    'src/domino.types.js'
-  ];
+  var files = './src/*.js';
 
   // Project configuration.
   grunt.initConfig({
