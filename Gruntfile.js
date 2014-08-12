@@ -64,6 +64,6 @@ module.exports = function(grunt) {
 
   require('load-grunt-tasks')(grunt);
   grunt.registerTask('default', ['closureLint', 'jshint', 'browserify:build', 'qunit']);
-  grunt.registerTask('watch', ['browserify:watch']);
+  grunt.registerTask('watch', ['browserify:build', 'browserify:watch']);
   grunt.registerTask('test', ['qunit']);
 };
