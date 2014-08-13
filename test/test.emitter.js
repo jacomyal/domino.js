@@ -54,21 +54,29 @@ test('API', function() {
   instance.on('myEvent1', callback1);
   instance.emit('myEvent1');
   strictEqual(count1, 1, 'bind(event, handler) works.');
-  instance.off('myEvent1');
+  instance.off();
   count1 = 0;
 
   instance.on(['myEvent1', 'myEvent2'], callback1);
   instance.emit('myEvent1');
   instance.emit('myEvent2');
   strictEqual(count1, 2, 'bind(["event1", "event2"], handler) works.');
-  instance.off(['myEvent1', 'myEvent2']);
+  instance.off();
   count1 = 0;
+
+  instance.on(callback1);
+  instance.emit('myEvent1');
+  instance.emit('myEvent2');
+  deepEqual([count1, count2], [2, 0], 'bind(callback1) works.');
+  instance.off();
+  count1 = 0;
+  count2 = 0;
 
   instance.on({ myEvent1: callback1, myEvent2: callback2 });
   instance.emit('myEvent1');
   instance.emit('myEvent2');
-  deepEqual([count1, count2], [1, 1], 'bind({ event1: callback1, event2: callback2, }, handler) works.');
-  instance.off(['myEvent1', 'myEvent2']);
+  deepEqual([count1, count2], [1, 1], 'bind({ event1: callback1, event2: callback2, }) works.');
+  instance.off();
   count1 = 0;
   count2 = 0;
 });
