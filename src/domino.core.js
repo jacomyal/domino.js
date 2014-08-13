@@ -3,7 +3,8 @@
 var types = require('./domino.types.js'),
     logger = require('./domino.logger.js'),
     helpers = require('./domino.helpers.js'),
-    emitter = require('./domino.emitter.js');
+    emitter = require('./domino.emitter.js'),
+    moduleConstructor = require('./domino.module.js');
 
 /**
  * Custom types related to domino:
@@ -61,11 +62,10 @@ var domino = function() {
       _timeout,
       _executionLock,
 
-      // Properties:
-      _properties = {},
+      // Instance related attributes:
+      _services = {},
       _shortcuts = {},
-
-      // Events:
+      _properties = {},
       _emitter = new emitter();
 
   // Settings method:
@@ -300,6 +300,35 @@ var domino = function() {
     // TODO
   }
 
+  function _eventToOrder(event) {
+    _addOrder({
+      type: 'emit',
+      events: event.type,
+      data: event.data
+    });
+  }
+
+  function _addModule(moduleClass) {
+    var args = Array.prototype.slice.call(arguments, 1),
+        module = new moduleConstructor();
+
+    module.controller = this;
+    module.on(_eventToOrder);
+
+    return module;
+  }
+
+  function _killModule(module) {
+    module.off();
+    module.on(_eventToOrder);
+
+    // TODO:
+    // Find a way to unbind the listeners that have been attached to the domino
+    // instance from the module when created...
+
+    return module;
+  }
+
 
   /**
    * ********************
@@ -349,6 +378,7 @@ var domino = function() {
 domino.types = types;
 domino.helpers = helpers;
 domino.emitter = emitter;
+domino.module = moduleConstructor;
 domino.settings = defaultSettings;
 
 
