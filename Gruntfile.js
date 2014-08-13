@@ -13,7 +13,7 @@ module.exports = function(grunt) {
         options: {
           stdout: true,
           strict: true,
-          opt: '--disable 6,7,13,220'
+          opt: '--disable 6,7,13,220,210,217,225'
         }
       }
     },
