@@ -41,6 +41,15 @@ var defaultSettings = {
   verbose: true
 };
 
+
+
+
+
+/**
+ * *********************
+ * DOMINO'S CONSTRUCTOR:
+ * *********************
+ */
 var domino = function() {
   var _self = this,
 
@@ -99,7 +108,12 @@ var domino = function() {
     throw _self.settings('errorMessage') || new Error();
   };
 
-  // Orders management functions:
+
+  /**
+   * ***************
+   * CORE FUNCTIONS:
+   * ***************
+   */
   function _addOrder(order, now) {
     // TODO:
     // Validate order's structure.
@@ -115,6 +129,7 @@ var domino = function() {
 
     return this;
   }
+
   function _execute() {
     if (_executionLock)
       _self.die('The execution is not unlocked yet');
@@ -205,7 +220,12 @@ var domino = function() {
       _timeout = setTimeout(_execute, 0);
   }
 
-  // Data related functions:
+
+  /**
+   * **************
+   * API FUNCTIONS:
+   * **************
+   */
   function _addProperty(specs) {
     var isShortcut;
 
@@ -252,6 +272,7 @@ var domino = function() {
         events: property.events
       });
   }
+
   function _getProperty(propName) {
     if (!types.check(propName, 'domino.name'))
       _self.die('Invalid property name.');
@@ -267,18 +288,24 @@ var domino = function() {
     if (types.check(specs, 'domino.service'))
       _self.die('Wrong type.');
 
-    if (_properties[specs.id])
+    if (_services[specs.id])
       _self.die('The property "' + specs.id + '" already exists.');
 
-    _properties[specs.id] = helpers.clone(specs);
+    _services[specs.id] = helpers.clone(specs);
 
     return this;
   }
+
   function _requestService(service, options) {
     // TODO
   }
 
-  // Public declarations:
+
+  /**
+   * ********************
+   * PUBLIC DECLARATIONS:
+   * ********************
+   */
   this.addService = _addService;
 
   this.addProperty = _addProperty;
@@ -310,11 +337,27 @@ var domino = function() {
   };
 };
 
-// Global public declarations:
+
+
+
+
+/**
+ * ***************************
+ * GLOBAL PUBLIC DECLARATIONS:
+ * ***************************
+ */
 domino.types = types;
 domino.helpers = helpers;
 domino.emitter = emitter;
 domino.settings = defaultSettings;
 
-// Export:
+
+
+
+
+/**
+ * *******
+ * EXPORT:
+ * *******
+ */
 module.exports = domino;
