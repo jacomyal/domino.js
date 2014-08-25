@@ -2,18 +2,16 @@
   "version": "0.0.0",
   "main": "dist/main.js",
   "scripts": {
-    "test": "grunt test"
+    "test": "gulp test"
   },
   "author": "Alexis Jacomy - Atelier Iceberg",
   "license": "MIT",
   "devDependencies": {
-    "grunt": "^0.4.5",
-    "grunt-browserify": "^2.1.4",
-    "grunt-cli": "^0.1.13",
-    "grunt-closure-linter": "^0.1.4",
-    "grunt-contrib-jshint": "^0.10.0",
-    "grunt-contrib-qunit": "^0.5.2",
-    "load-grunt-tasks": "^0.6.0",
-    "uglifyify": "^2.5.0"
+    "gulp": "~3.8.7",
+    "gulp-qunit": "~0.3.3",
+    "gulp-jshint": "~1.8.4",
+    "gulp-uglify": "~0.3.1",
+    "gulp-browserify": "~0.5.0",
+    "gulp-rename": "~1.2.0"
   }
 }
