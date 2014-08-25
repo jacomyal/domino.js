@@ -14,7 +14,7 @@ function clone(item) {
   if (types.check(item, 'array')) {
     result = [];
     for (i = 0, l = item.length; i < l; i++)
-      result.push(this.clone(item[i]));
+      result.push(clone(item[i]));
 
   } else if (types.check(item, 'date')) {
     result = new Date(item.getTime());
@@ -25,7 +25,7 @@ function clone(item) {
     else if (!item.prototype) {
       result = {};
       for (i in item)
-        result[i] = this.clone(item[i]);
+        result[i] = clone(item[i]);
     } else
       result = item;
   } else {
