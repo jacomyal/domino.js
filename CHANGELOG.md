@@ -1,5 +1,9 @@
 ## domino.js - changelog:
 
+#### 1.3.8 (September 2, 2014)
+
+ - Fixed [#59](https://github.com/jacomyal/domino.js/issues/59): Adding unknown keys to ajax objects
+
 #### 1.3.7 (May 19, 2014)
 
  - Fixed [#58](https://github.com/jacomyal/domino.js/issues/58): module `kill` method support, added related unit tests
