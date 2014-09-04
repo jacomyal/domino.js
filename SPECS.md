@@ -174,9 +174,9 @@ controller.registerProperty({id: 'myprop', type: 'string', value: 'Hello!'});
 
 ```js
 // Firing events
-controller.emit('event');
-controller.emit('event1', 'event2');
-controller.emit(['event1', 'event2']);
+controller.emit('event', data);
+controller.emit('event1', 'event2', data);
+controller.emit(['event1', 'event2'], data);
 
 // Listening to events
 controller.on('event', callback(e));
