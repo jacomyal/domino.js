@@ -47,6 +47,12 @@ var controller = new domino({
   facets: {
     fullname: function() {
       return this.get('firstname') + ' ' + this.get('lastname');
+    },
+    reverseFullname: {
+      description: 'Retrieves the fullname backwards.',
+      method: function() {
+        return this.get('lastname') + ' ' + this.get('firstname');
+      }
     }
   },
   services: {
@@ -105,6 +111,7 @@ Properties are described thusly:
 * **expect** *?function*: function used to validate received data.
 * **emit** *?string|array*: events to be fired in case of success (with the ajax results as data).
 * **property** *?string*: valid id of property to be updated by the service.
+* **description** *?string*: an optional text describing the service for readability and help.
 
 Need to find a way to make `contentType` and `dataType` less painful, plus maybe add a configuration item dealing with default behaviour.
 
@@ -114,8 +121,11 @@ Lone scalar should mean **url**.
 
 Listeners are described thusly:
 
-* **event** *string*: which event should we listen?
+* **event** *string|array*: which event(s) should we listen?
 * **callback** *function*: what to do when event is fired?
+* **description** *?string*: an optional text describing the listener for readability and help.
+
+Lone scalar should mean **callback**.
 
 ### Facets
 
@@ -123,6 +133,9 @@ Facets are described thusly:
 
 * **id** *string*: a unique identifier.
 * **callback**: a function taking no arguments and returning a view on properties.
+* **description** *?string*: an optional text describing the facet for readability and help.
+
+Lone scalar should mean **callback**.
 
 ### External registers
 
