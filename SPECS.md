@@ -194,6 +194,8 @@ controller.off('event');
 
 A simple way to create and remove batches of listeners. (Basic controller listeners should be a tile in that regard.).
 
+Moreover, in tiles callbacks, `this` should naturally refer to the controller.
+
 ```js
 var tile = new controller.tile(config[object]);
 
