@@ -1,7 +1,5 @@
 # Domino - New version specifications draft
 
----
-
 ## Plan
 
 ### Concepts
@@ -17,8 +15,6 @@
 It should be painless and straightforward to plug React components into a controller's logic. A React mixin seems the best way to achieve this and the user should be able to access properties and choose to render when specific events are dispatched.
 
 Bootsrapping the controller on a React component should only occur on top-level components so bottom-level ones keep abstract and separated from domino's logic to ensure reusability.
-
----
 
 ## API
 
@@ -302,8 +298,6 @@ var MyComponent = React.createClass({
   }
 });
 ```
-
----
 
 ## Decisions to be made
 
