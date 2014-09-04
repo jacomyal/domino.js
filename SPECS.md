@@ -87,7 +87,7 @@ Properties are described thusly:
 
 * **id** *string*: a unique identifier.
 * **type** *?string* [`string`]: a variable type referring to an existing domino type.
-* **value** *: an initial value. If not specified and if the property is not indicated to be optional through the `?` type sigil, then the initial value should be something relevant like: `''` for a string.
+* **value**: an initial value. If not specified and if the property is not indicated to be optional through the `?` type sigil, then the initial value should be something relevant like: `''` for a string.
 * **emit** *?string|array*: events to be fired whenever the property is updated. Note that by default, a `propid.updated` event will be fired without having to specify it.
 * **description** *?string*: an optional text describing the property for readability and help.
 
