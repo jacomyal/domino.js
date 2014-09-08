@@ -3,8 +3,7 @@
 var types = require('./domino.types.js'),
     logger = require('./domino.logger.js'),
     helpers = require('./domino.helpers.js'),
-    emitter = require('./domino.emitter.js'),
-    moduleConstructor = require('./domino.module.js');
+    emitter = require('./domino.emitter.js');
 
 /**
  * Custom types related to domino:
@@ -207,7 +206,7 @@ var domino = function() {
 
     // Unstack orders:
     for (k in updates)
-      _setProperty(k, updates[k].value);
+      _updateProperty(k, updates[k].value);
     for (k in requests)
       _requestService(k, requests[k]);
     for (k in emits)
@@ -250,7 +249,7 @@ var domino = function() {
     return this;
   }
 
-  function _setProperty(propName, value) {
+  function _updateProperty(propName, value) {
     if (!types.check(propName, 'domino.name'))
       _self.die('Invalid property name.');
 
@@ -308,27 +307,6 @@ var domino = function() {
     });
   }
 
-  function _addModule(moduleClass) {
-    var args = Array.prototype.slice.call(arguments, 1),
-        module = new moduleConstructor();
-
-    module.controller = this;
-    module.on(_eventToOrder);
-
-    return module;
-  }
-
-  function _killModule(module) {
-    module.off();
-    module.on(_eventToOrder);
-
-    // TODO:
-    // Find a way to unbind the listeners that have been attached to the domino
-    // instance from the module when created...
-
-    return module;
-  }
-
 
   /**
    * ********************
@@ -339,7 +317,7 @@ var domino = function() {
 
   this.addProperty = _addProperty;
   this.get = _getProperty;
-  this.set = function(property, value) {
+  this.update = function(property, value) {
     _addOrder({
       type: 'update',
       property: property,
@@ -378,7 +356,6 @@ var domino = function() {
 domino.types = types;
 domino.helpers = helpers;
 domino.emitter = emitter;
-domino.module = moduleConstructor;
 domino.settings = defaultSettings;
 
 

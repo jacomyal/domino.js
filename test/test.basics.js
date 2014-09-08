@@ -49,10 +49,11 @@ test('Basics', function() {
 
   equal(d.get('prop1'), 42, 'Getting a property\'s value works.');
 
-  d.set('prop1', 123);
+  d.update('prop1', 123);
+  equal(d.get('prop1'), 42, 'Setting a property\'s value is not instant speed.');
   stop();
   setTimeout(function() {
     start();
-    equal(d.get('prop1'), 123, 'Setting a property\'s value works.');
+    equal(d.get('prop1'), 123, 'Setting a property\'s value works after one frame.');
   }, 0);
 });
