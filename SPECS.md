@@ -64,13 +64,13 @@ var controller = new domino({
   listeners: [
     {
       on: 'arbitrary.event',
-      fire: function() {
+      then: function() {
         // do something here
       }
     },
     {
       on: ['event1', 'event2'],
-      fire: function() {
+      then: function() {
         // do something here
       }
     }
@@ -186,36 +186,36 @@ controller.off('event', callback);
 controller.off('event');
 ```
 
-### Tiles proposition
+### Binders
 
-A simple way to create and remove batches of listeners. (Basic controller listeners should be a tile in that regard.).
+A simple way to create and remove batches of listeners. (Basic controller listeners should be a binder in that regard.).
 
-Moreover, in tiles callbacks, `this` should naturally refer to the controller.
+Moreover, in binders callbacks, `this` should naturally refer to the controller.
 
 ```js
-var tile = new controller.tile(config[object]);
+var binder = new controller.binder(config[object]);
 
 // Example
-var tile = new controller.tile([
+var binder = new controller.binder([
   {
     on: 'event1',
-    fire: fn1
+    then: fn1
   },
   {
     on: 'event2',
-    fire: fn2
+    then: fn2
   }
 ]);
 
-// Removing the tile
-tile.remove();
+// Removing the binder
+binder.remove();
 
 // Reinstate
-tile.place();
+binder.place();
 
-// A tile should extend the controller's event methods in a way
-tile.on('event', fn);
-tile.off('event', fn);
+// A binder should extend the controller's event methods in a way
+binder.on('event', fn);
+binder.off('event', fn);
 ```
 
 ### Model access
@@ -289,7 +289,8 @@ Configuration should be attached to a controller instance and not to the global 
 ```js
 var MyComponent = React.createClass({
   mixins: [controller.mixin],
-  on: 'name.updated',
+  renderOn: 'name.updated',
+
   renderItem: function(name) {
     return <li>{name}</li>;
   },
