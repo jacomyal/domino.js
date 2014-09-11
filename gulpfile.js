@@ -1,6 +1,7 @@
 var gulp = require('gulp'),
     jshint = require('gulp-jshint'),
-    qunit = require('gulp-qunit'),
+    mocha = require('gulp-mocha'),
+    phantom = require('gulp-mocha-phantomjs'),
     browserify = require('gulp-browserify'),
     uglify = require('gulp-uglify'),
     rename = require('gulp-rename');
@@ -38,11 +39,23 @@ gulp.task('build', function() {
     .pipe(gulp.dest('./build'));
 });
 
-// Testing
-gulp.task('test', ['build'], function() {
-  return gulp.src('./test/tests.html')
-    .pipe(qunit());
+gulp.task('build-tests', function() {
+  return gulp.src('./test/unit.collection.js')
+    .pipe(browserify())
+    .pipe(rename('tests.js'))
+    .pipe(gulp.dest('./build'));
 });
+
+// Testing
+gulp.task('node-test', function() {
+  return gulp.src('./test/unit.collection.js')
+    .pipe(mocha({reporter: 'spec'}));
+});
+
+gulp.task('browser-test', ['build-tests'], function() {
+  return gulp.src('./test/browser/unit.html')
+    .pipe(phantom({reporter: 'spec'}));
+})
 
 // Watching
 gulp.task('watch', ['build'], function() {
@@ -50,4 +63,5 @@ gulp.task('watch', ['build'], function() {
 });
 
 // Macro tasks
+gulp.task('test', ['node-test', 'browser-test']);
 gulp.task('default', ['lint', 'test']);
