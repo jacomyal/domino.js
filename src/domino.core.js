@@ -22,7 +22,7 @@ types.add('domino.property', {
   type: '?type',
   value: '?*'
 });
-types.add('domino.shortcut', {
+types.add('domino.facet', {
   id: 'domino.name',
   namespace: '?domino.name',
   get: 'function'
@@ -63,7 +63,7 @@ var domino = function() {
 
       // Instance related attributes:
       _services = {},
-      _shortcuts = {},
+      _facets = {},
       _properties = {},
       _emitter = new emitter();
 
@@ -226,25 +226,27 @@ var domino = function() {
    * **************
    */
   function _addProperty(specs) {
-    var isShortcut;
-
-    if (types.check(specs, 'domino.property'))
-      isShortcut = false;
-    else if (types.check(specs, 'domino.property'))
-      isShortcut = true;
-    else
+    if (!types.check(specs, 'domino.property'))
       _self.die('Wrong type.');
 
-    if (isShortcut) {
-      if (_shortcuts[specs.id])
-        _self.die('The property "' + specs.id + '" already exists.');
-      _shortcuts[specs.id] = helpers.clone(specs);
+    if (_facets[specs.id])
+      _self.die('A facet named "' + specs.id + '" already exists.');
+    if (_properties[specs.id])
+      _self.die('The property "' + specs.id + '" already exists.');
+    _properties[specs.id] = helpers.clone(specs);
 
-    } else {
-      if (_properties[specs.id])
-        _self.die('The property "' + specs.id + '" already exists.');
-      _properties[specs.id] = helpers.clone(specs);
-    }
+    return this;
+  }
+
+  function _addFacet(specs) {
+    if (!types.check(specs, 'domino.facet'))
+      _self.die('Wrong type.');
+
+    if (_properties[specs.id])
+      _self.die('A property named "' + specs.id + '" already exists.');
+    if (_facets[specs.id])
+      _self.die('The facet "' + specs.id + '" already exists.');
+    _facets[specs.id] = helpers.clone(specs);
 
     return this;
   }
@@ -278,8 +280,8 @@ var domino = function() {
 
     if (_properties[propName])
       return _properties[propName].value;
-    else if (_shortcuts[propName])
-      return _shortcuts[propName].get.call(_self);
+    else if (_facets[propName])
+      return _facets[propName].get.call(_self);
   }
 
   // Services related functions:
