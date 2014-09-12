@@ -204,7 +204,7 @@ var domino = function() {
    * API FUNCTIONS:
    * **************
    */
-  function _addProperty(specs) {
+  function _registerProperty(specs) {
     if (!types.check(specs, 'domino.property'))
       _self.die('Wrong type.');
 
@@ -217,7 +217,34 @@ var domino = function() {
     return this;
   }
 
-  function _addFacet(specs) {
+  function _registerProperties(specs) {
+    var i,
+        l,
+        k,
+        id;
+
+    if (arguments.length === 1) {
+      if (types.check(specs, 'domino.property'))
+        _registerProperty(specs);
+      else if (types.check(specs, 'array'))
+        for (i = 0, l = specs.length; i < l; i++)
+          _registerProperty(specs[i]);
+      else if (types.check(specs, 'object'))
+        for (k in specs)
+          _registerProperty(specs[k]);
+
+    } else if (arguments.length === 2) {
+      id = arguments[0];
+      specs = helpers.clone(arguments[1]);
+      specs.id = id;
+
+      _registerProperty(specs);
+    }
+
+    return this;
+  }
+
+  function _registerFacet(specs) {
     if (!types.check(specs, 'domino.facet'))
       _self.die('Wrong type.');
 
@@ -228,6 +255,31 @@ var domino = function() {
     _facets[specs.id] = helpers.clone(specs);
 
     return this;
+  }
+
+  function _registerFacets(specs) {
+    var i,
+        l,
+        k,
+        id;
+
+    if (arguments.length === 1) {
+      if (types.check(specs, 'domino.facet'))
+        _registerFacet(specs);
+      else if (types.check(specs, 'array'))
+        for (i = 0, l = specs.length; i < l; i++)
+          _registerFacet(specs[i]);
+      else if (types.check(specs, 'object'))
+        for (k in specs)
+          _registerFacet(specs[k]);
+
+    } else if (arguments.length === 2) {
+      id = arguments[0];
+      specs = helpers.clone(arguments[1]);
+      specs.id = id;
+
+      _registerFacet(specs);
+    }
   }
 
   function _updateProperty(propName, value) {
@@ -277,8 +329,8 @@ var domino = function() {
    * PUBLIC DECLARATIONS:
    * ********************
    */
-  this.addProperty = _addProperty;
-  this.addFacet = _addFacet;
+  this.registerProperties = _registerProperties;
+  this.registerFacets = _registerFacets;
   this.get = _getValue;
   this.update = function(property, value) {
     _addOrder({
