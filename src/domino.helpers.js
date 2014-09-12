@@ -1,6 +1,6 @@
 'use strict';
 
-var types = require('./domino.types.js');
+var types = require('typology');
 
 function clone(item) {
   if (!item)

@@ -15,5 +15,8 @@
     "mocha": "~1.21.4",
     "gulp-mocha": "~1.1.0",
     "gulp-mocha-phantomjs": "~0.5.0"
+  },
+  "dependencies": {
+    "typology": "^0.1.0"
   }
 }
