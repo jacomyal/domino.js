@@ -96,7 +96,7 @@ describe('Properties', function() {
 
       // Trying to set a property with required value but without starting value
       assert.throws(function() {
-        controller.registerProperty('prop1', 'string')
+        controller.registerProperty('prop1', 'string');
       }, Error);
 
       // Wrong signatures
