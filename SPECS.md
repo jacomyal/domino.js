@@ -273,9 +273,6 @@ It should be possible to plug your own methods in domino or in one of the contro
 
 Example, when working with realtime, I like to be able to dispatch two events with a single method. (Examples to come).
 
-### Types
-Kado Alexis.
-
 ### Configuration
 
 Configuration should be attached to a controller instance and not to the global object as it used to be.
