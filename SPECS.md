@@ -307,3 +307,5 @@ var MyComponent = React.createClass({
 3. What name for registration? (`register`)
 4. Should the user be able to use the controller logger?
 5. If tiles were to be accepted, maybe the listeners part of the registers is no more coherent.
+
+6. Should it be possible to add types in the controller constructor?

@@ -1,7 +1,7 @@
 var assert = require('assert'),
     domino = require('../../src/domino.core.js');
 
-describe('domino.helpers', function() {
+describe('Helpers', function() {
 
   describe('clone', function() {
 
@@ -13,7 +13,7 @@ describe('domino.helpers', function() {
       assert.deepEqual(o1, o2);
     });
 
-    it('should really produce another object.', function() {
+    it('but should really produce another object.', function() {
       o2.a = 2;
       assert.notDeepEqual(o1, o2);
     });
@@ -25,7 +25,7 @@ describe('domino.helpers', function() {
       assert.deepEqual(a1, a2);
     });
 
-    it('should really produce another array.', function() {
+    it('but should really produce another array.', function() {
       a2[3].a = 3;
       assert.notDeepEqual(a1, a2);
     });

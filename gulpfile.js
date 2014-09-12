@@ -10,7 +10,6 @@ var gulp = require('gulp'),
 var indexFile = './src/domino.core.js',
     jsFiles = './src/*.js';
 
-
 // Linting
 gulp.task('lint', function() {
 
