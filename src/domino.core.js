@@ -18,7 +18,7 @@ types.add('domino.name', function(val) {
 types.add('domino.property', {
   id: 'domino.name',
   namespace: '?domino.name',
-  events: '?domino.events',
+  emit: '?domino.events',
   type: '?type',
   value: '?*'
 });
@@ -26,14 +26,6 @@ types.add('domino.facet', {
   id: 'domino.name',
   namespace: '?domino.name',
   get: 'function'
-});
-types.add('domino.service', {
-  id: 'domino.name',
-  namespace: '?domino.name',
-  property: '?string',
-  dataPath: '?string',
-  success: '?function',
-  error: '?function'
 });
 
 var defaultSettings = {
@@ -62,7 +54,6 @@ var domino = function() {
       _executionLock,
 
       // Instance related attributes:
-      _services = {},
       _facets = {},
       _properties = {},
       _emitter = new emitter();
@@ -150,7 +141,6 @@ var domino = function() {
         order,
 
         updates = {},
-        requests = {},
         emits = {};
 
     while ((order = _stackCurrents.shift()))
@@ -167,15 +157,6 @@ var domino = function() {
               );
           } else
             updates[order.property] = order;
-          break;
-
-        // It is allowed to call several times the same service at the same
-        // time.
-        case 'request':
-          if (requests[order.service])
-            requests[order.service].push(order);
-          else
-            requests[order.service] = [order];
           break;
 
         // If an event is emited several times with no data and at the same
@@ -207,8 +188,6 @@ var domino = function() {
     // Unstack orders:
     for (k in updates)
       _updateProperty(k, updates[k].value);
-    for (k in requests)
-      _requestService(k, requests[k]);
     for (k in emits)
       _emitter.emit(k, emits[k].data);
 
@@ -267,14 +246,14 @@ var domino = function() {
     property.value = value;
 
     // Dispatch related events:
-    if (property.events)
+    if (property.emit)
       _addOrder({
         type: 'emit',
-        events: property.events
+        events: property.emit
       });
   }
 
-  function _getProperty(propName) {
+  function _getValue(propName) {
     if (!types.check(propName, 'domino.name'))
       _self.die('Invalid property name.');
 
@@ -282,23 +261,6 @@ var domino = function() {
       return _properties[propName].value;
     else if (_facets[propName])
       return _facets[propName].get.call(_self);
-  }
-
-  // Services related functions:
-  function _addService(specs) {
-    if (types.check(specs, 'domino.service'))
-      _self.die('Wrong type.');
-
-    if (_services[specs.id])
-      _self.die('The property "' + specs.id + '" already exists.');
-
-    _services[specs.id] = helpers.clone(specs);
-
-    return this;
-  }
-
-  function _requestService(service, options) {
-    // TODO
   }
 
   function _eventToOrder(event) {
@@ -315,10 +277,9 @@ var domino = function() {
    * PUBLIC DECLARATIONS:
    * ********************
    */
-  this.addService = _addService;
-
   this.addProperty = _addProperty;
-  this.get = _getProperty;
+  this.addFacet = _addFacet;
+  this.get = _getValue;
   this.update = function(property, value) {
     _addOrder({
       type: 'update',
