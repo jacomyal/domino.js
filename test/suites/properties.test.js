@@ -151,20 +151,25 @@ describe('Properties', function() {
 
   describe('setters', function() {
 
-    it('should be possible to set a property.', function() {
+    it('should be possible to set a property.', function(done) {
+      controller.on('prop1.updated', function(newString) {
+        assert.strictEqual(newString, 'test1');
+        done();
+      });
 
+      controller.update('prop1', 'test1');
     });
 
-    it('should be possible to set multiple properties.', function() {
+    it('should be possible to set multiple properties.', function(done) {
 
+      // TODO: find way to test back
+      controller.update({
+        prop1: 'test2',
+        prop3: true
+      });
+      done();
     });
 
-    it('should be possible to update a property.', function() {
-
-    });
-
-    it('should be possible to update multiple properties.', function() {
-
-    });
+    // TODO: errors handling when updating wrong type.
   });
 });
