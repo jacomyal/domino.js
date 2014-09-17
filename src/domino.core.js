@@ -15,13 +15,15 @@ types.add('domino.name', function(val) {
   return typeof val === 'string' && !!val.match(/^[a-zA-Z_$-][a-zA-Z_$0-9-]*$/);
 });
 
-types.add('domino.property', {
-  id: 'domino.name',
-  description: '?string',
-  namespace: '?domino.name',
-  emit: '?domino.events',
-  type: '?type',
-  value: '?*'
+types.add('domino.property', function(obj) {
+  return types.check(obj, {
+    id: 'domino.name',
+    type: 'type',
+    description: '?string',
+    namespace: '?domino.name',
+    emit: '?domino.events',
+    value: '?*'
+  }) && (!obj.type || types.check(obj.value, obj.type));
 });
 types.add('domino.facet', {
   id: 'domino.name',
