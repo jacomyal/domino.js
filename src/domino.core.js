@@ -430,11 +430,25 @@ var domino = function() {
   this.registerProperties = _registerProperties;
   this.get = _getValue;
   this.update = function(property, value) {
-    _addOrder({
-      type: 'update',
-      property: property,
-      value: value
-    });
+    if (arguments.length === 1) {
+      if (!types.check(property, 'object'))
+        this.die('Wrong arguments.');
+
+      var k;
+      for (k in property)
+        this.update(k, property[k]);
+
+    } else if (arguments.length === 2) {
+      if (!types.check(property, 'domino.name'))
+        this.die('Invalid property name.');
+
+      _addOrder({
+        type: 'update',
+        property: property,
+        value: value
+      });
+    }
+
     return this;
   };
 
