@@ -357,8 +357,10 @@ var domino = function() {
    * PUBLIC DECLARATIONS:
    * ********************
    */
-  this.registerProperties = _registerProperties;
+  this.registerFacet = _registerFacet;
   this.registerFacets = _registerFacets;
+  this.registerProperty = _registerProperty;
+  this.registerProperties = _registerProperties;
   this.get = _getValue;
   this.update = function(property, value) {
     _addOrder({
