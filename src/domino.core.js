@@ -355,13 +355,45 @@ var domino = function() {
   }
 
   function _getValue(propName) {
-    if (!types.check(propName, 'domino.name'))
-      _self.die('Invalid property name.');
+    if (arguments.length === 1) {
+      // Most basic use case:
+      if (typeof propName === 'string') {
+        if (!types.check(propName, 'domino.name'))
+          _self.die('Invalid property name.');
 
-    if (_properties[propName])
-      return _properties[propName].value;
-    else if (_facets[propName])
-      return _facets[propName].get.call(_self);
+        if (_properties[propName])
+          return _properties[propName].value;
+        else if (_facets[propName])
+          return _facets[propName].get.call(_self);
+
+      // Return an array of results:
+      } else if (types.check(propName, 'array')) {
+        var i,
+            l,
+            a = propName,
+            result = [];
+
+        for (i = 0, l = a.length; i < l; i++)
+          result.push(_getValue(a[i]));
+
+        return result;
+
+      // Invalid use cases:
+      } else
+        _self.die('Wrong arguments.');
+
+    // Return an object of results:
+    } else {
+      var i,
+          l,
+          a = arguments,
+          result = {};
+
+      for (i = 0, l = a.length; i < l; i++)
+        result[a[i]] = _getValue(a[i]);
+
+      return result;
+    }
   }
 
   function _eventToOrder(event) {
