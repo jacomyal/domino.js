@@ -364,6 +364,8 @@ var domino = function() {
         type: 'emit',
         events: property.emit
       });
+
+    return this;
   }
 
   function _getValue(propName) {
