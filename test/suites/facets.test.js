@@ -3,30 +3,30 @@ var assert = require('assert'),
 
 describe('Facets', function() {
 
-  describe('validation', function() {
-
-    var controller = new domino({
-      properties: {
-        firstname: {
-          type: 'string',
-          value: 'Joachim'
-        },
-        lastname: {
-          type: 'string',
-          value: 'Murat'
-        }
+  var controller = new domino({
+    properties: {
+      firstname: {
+        type: 'string',
+        value: 'Joachim'
+      },
+      lastname: {
+        type: 'string',
+        value: 'Murat'
       }
-    });
+    }
+  });
+
+  describe('validation', function() {
 
     it('should validate correct facets.', function() {
       var correctFacets = [
         {
           id: 'facet1',
-          method: function() {}
+          get: function() {}
         },
         {
           id: 'facet2',
-          method: function() {},
+          get: function() {},
           description: 'Facet description for testing purposes.'
         }
       ];
@@ -37,23 +37,23 @@ describe('Facets', function() {
     });
 
     it('should not validate incorrect facets.', function() {
-      var inccorrectFacets = [
+      var incorrectFacets = [
 
         // Wrong variable type
         'gloubiboulga',
 
         // No identifier
         {
-          method: function() {}
+          get: function() {}
         },
 
-        // No method
+        // No get
         {
           id: 'facet1'
         }
       ];
 
-      inccorrectFacets.forEach(function(facet) {
+      incorrectFacets.forEach(function(facet) {
         assert(!domino.types.check(facet, 'domino.facet'));
       });
     });
@@ -61,15 +61,15 @@ describe('Facets', function() {
 
   describe('registration', function() {
 
+    var get = function() {
+      return this.get('firstname') + ' ' + this.get('lastname');
+    };
+
     it('should be possible to register a single facet.', function() {
 
-      var method = function() {
-        return this.get('firstname') + ' ' + this.get('lastname');
-      };
-
-      controller.registerFacet('facet1', method);
-      controller.registerFacet('facet2', {method: method, description: 'Yeah!'});
-      controller.registerFacet({id: 'facet3', method: method, description: 'Yeah!'});
+      controller.registerFacet('facet1', get);
+      controller.registerFacet('facet2', {get: get, description: 'Yeah!'});
+      controller.registerFacet({id: 'facet3', get: get, description: 'Yeah!'});
 
       // Assertions
       assert.strictEqual(controller.get('facet1'), 'Joachim Murat');
@@ -80,8 +80,8 @@ describe('Facets', function() {
     it('should be possible to register multiple facets at once.', function() {
 
       controller.registerFacets({
-        facet4: method,
-        facet5: {method: method, description: 'Yeah!'}
+        facet4: get,
+        facet5: {get: get, description: 'Yeah!'}
       });
 
       // Assertions
@@ -114,7 +114,7 @@ describe('Facets', function() {
       assert.deepEqual({
         facet1: 'Joachim Murat',
         firstname: 'Joachim'
-      });
+      }, result);
     });
   });
 });
