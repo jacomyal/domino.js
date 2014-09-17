@@ -242,9 +242,19 @@ var domino = function() {
     // Refactor arguments, recall the function:
     } else if (arguments.length === 2) {
       var id = specs,
-          fullSpecs = helpers.clone(arguments[1]);
+          fullSpecs;
 
-      fullSpecs.id = id;
+      specs = arguments[1];
+
+      if (typeof specs === 'string')
+        fullSpecs = {
+          id: id,
+          type: specs
+        };
+      else if (typeof specs === 'object') {
+        fullSpecs = helpers.clone(specs);
+        fullSpecs.id = id;
+      }
 
       return _registerProperty(fullSpecs);
     }
