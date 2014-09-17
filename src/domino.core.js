@@ -97,7 +97,7 @@ var domino = function() {
   this.die = function() {
     if (_self.settings('verbose'))
       logger.die.apply(logger, arguments);
-    throw _self.settings('errorMessage') || new Error();
+    throw new Error(_self.settings('errorMessage') || '');
   };
 
 
