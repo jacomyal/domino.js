@@ -207,14 +207,26 @@ var domino = function() {
    * **************
    */
   function _registerProperty(specs) {
-    if (!types.check(specs, 'domino.property'))
-      _self.die('Wrong type.');
+    // Actually try to register the property:
+    if (arguments.length === 1) {
+      if (!types.check(specs, 'domino.property'))
+        _self.die('Wrong type.');
 
-    if (_facets[specs.id])
-      _self.die('A facet named "' + specs.id + '" already exists.');
-    if (_properties[specs.id])
-      _self.die('The property "' + specs.id + '" already exists.');
-    _properties[specs.id] = helpers.clone(specs);
+      if (_facets[specs.id])
+        _self.die('A facet named "' + specs.id + '" already exists.');
+      if (_properties[specs.id])
+        _self.die('The property "' + specs.id + '" already exists.');
+      _properties[specs.id] = helpers.clone(specs);
+
+    // Refactor arguments, recall the function:
+    } else if (arguments.length === 2) {
+      var id = specs,
+          fullSpecs = helpers.clone(arguments[1]);
+
+      fullSpecs.id = id;
+
+      return _registerFacet(fullSpecs);
+    }
 
     return this;
   }
@@ -227,34 +239,51 @@ var domino = function() {
 
     if (arguments.length === 1) {
       if (types.check(specs, 'domino.property'))
-        _registerProperty(specs);
+        _registerProperty.call(this, specs);
       else if (types.check(specs, 'array'))
         for (i = 0, l = specs.length; i < l; i++)
-          _registerProperty(specs[i]);
+          _registerProperty.call(this, specs[i]);
       else if (types.check(specs, 'object'))
         for (k in specs)
-          _registerProperty(specs[k]);
+          _registerProperty.call(this, k, specs[k]);
 
-    } else if (arguments.length === 2) {
-      id = arguments[0];
-      specs = helpers.clone(arguments[1]);
-      specs.id = id;
-
-      _registerProperty(specs);
-    }
+    } else
+      _registerProperty.apply(this, arguments);
 
     return this;
   }
 
   function _registerFacet(specs) {
-    if (!types.check(specs, 'domino.facet'))
-      _self.die('Wrong type.');
+    // Actually try to register the facet:
+    if (arguments.length === 1) {
+      if (!types.check(specs, 'domino.facet'))
+        _self.die('Wrong type.');
 
-    if (_properties[specs.id])
-      _self.die('A property named "' + specs.id + '" already exists.');
-    if (_facets[specs.id])
-      _self.die('The facet "' + specs.id + '" already exists.');
-    _facets[specs.id] = helpers.clone(specs);
+      if (_properties[specs.id])
+        _self.die('A property named "' + specs.id + '" already exists.');
+      if (_facets[specs.id])
+        _self.die('The facet "' + specs.id + '" already exists.');
+      _facets[specs.id] = helpers.clone(specs);
+
+    // Refactor arguments, recall the function:
+    } else if (arguments.length === 2) {
+      var id = specs,
+          fullSpecs;
+
+      specs = arguments[1];
+
+      if (typeof specs === 'function')
+        fullSpecs = {
+          id: id,
+          get: specs
+        };
+      else if (typeof specs === 'object') {
+        fullSpecs = helpers.clone(specs);
+        fullSpecs.id = id;
+      }
+
+      return _registerFacet(fullSpecs);
+    }
 
     return this;
   }
@@ -267,21 +296,18 @@ var domino = function() {
 
     if (arguments.length === 1) {
       if (types.check(specs, 'domino.facet'))
-        _registerFacet(specs);
+        _registerFacet.call(this, specs);
       else if (types.check(specs, 'array'))
         for (i = 0, l = specs.length; i < l; i++)
-          _registerFacet(specs[i]);
+          _registerFacet.call(this, specs[i]);
       else if (types.check(specs, 'object'))
         for (k in specs)
-          _registerFacet(specs[k]);
+          _registerFacet.call(this, specs[k]);
 
-    } else if (arguments.length === 2) {
-      id = arguments[0];
-      specs = helpers.clone(arguments[1]);
-      specs.id = id;
+    } else
+      _registerFacet.apply(this, arguments);
 
-      _registerFacet(specs);
-    }
+    return this;
   }
 
   function _updateProperty(propName, value) {
