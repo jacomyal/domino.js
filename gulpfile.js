@@ -4,8 +4,7 @@ var gulp = require('gulp'),
     phantom = require('gulp-mocha-phantomjs'),
     browserify = require('gulp-browserify'),
     uglify = require('gulp-uglify'),
-    rename = require('gulp-rename'),
-    sourcemaps = require('gulp-sourcemaps');
+    rename = require('gulp-rename');
 
 // Files
 var indexFile = './src/domino.core.js',
@@ -31,13 +30,11 @@ gulp.task('lint', function() {
 // Building
 gulp.task('build', function() {
   return gulp.src(indexFile)
-    .pipe(sourcemaps.init())
     .pipe(browserify({
       standalone: 'domino'
     }))
     .pipe(uglify())
     .pipe(rename('domino.min.js'))
-    .pipe(sourcemaps.write())
     .pipe(gulp.dest('./build'));
 });
 
