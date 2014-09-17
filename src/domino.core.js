@@ -102,6 +102,15 @@ var domino = function() {
 
 
   /**
+   * ********************
+   * INITIALIZE INSTANCE:
+   * ********************
+   */
+  if (arguments.length)
+    _register(arguments[0]);
+
+
+  /**
    * ***************
    * CORE FUNCTIONS:
    * ***************
@@ -206,6 +215,18 @@ var domino = function() {
    * API FUNCTIONS:
    * **************
    */
+  function _register(specs) {
+    if (!types.check(specs, 'object'))
+      _self.die('Wrong type.');
+
+    if (specs.facets)
+      _registerFacets(specs.facets);
+    if (specs.properties)
+      _registerProperties(specs.properties);
+
+    return this;
+  }
+
   function _registerProperty(specs) {
     // Actually try to register the property:
     if (arguments.length === 1) {
