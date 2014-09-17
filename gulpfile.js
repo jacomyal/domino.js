@@ -4,7 +4,8 @@ var gulp = require('gulp'),
     phantom = require('gulp-mocha-phantomjs'),
     browserify = require('gulp-browserify'),
     uglify = require('gulp-uglify'),
-    rename = require('gulp-rename');
+    rename = require('gulp-rename'),
+    sourcemaps = require('gulp-sourcemaps');
 
 // Files
 var indexFile = './src/domino.core.js',
@@ -30,17 +31,19 @@ gulp.task('lint', function() {
 // Building
 gulp.task('build', function() {
   return gulp.src(indexFile)
+    .pipe(sourcemaps.init())
     .pipe(browserify({
       standalone: 'domino'
     }))
     .pipe(uglify())
     .pipe(rename('domino.min.js'))
+    .pipe(sourcemaps.write())
     .pipe(gulp.dest('./build'));
 });
 
 gulp.task('build-tests', function() {
   return gulp.src('./test/unit.collection.js')
-    .pipe(browserify())
+    .pipe(browserify({debug: true}))
     .pipe(rename('tests.js'))
     .pipe(gulp.dest('./build'));
 });
