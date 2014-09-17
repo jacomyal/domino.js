@@ -379,6 +379,8 @@ var domino = function() {
           return _properties[propName].value;
         else if (_facets[propName])
           return _facets[propName].get.call(_self);
+        else
+          _self.die('The property "' + propName + '" does not exist.');
 
       // Return an array of results:
       } else if (types.check(propName, 'array')) {
