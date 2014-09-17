@@ -5,10 +5,10 @@ var gulp = require('gulp'),
     browserify = require('gulp-browserify'),
     uglify = require('gulp-uglify'),
     rename = require('gulp-rename');
-
 // Files
 var indexFile = './src/domino.core.js',
-    jsFiles = './src/*.js';
+    jsFiles = './src/*.js',
+    testFiles = './test/suites/*.js';
 
 // Linting
 gulp.task('lint', function() {
@@ -57,8 +57,8 @@ gulp.task('browser-test', ['build-tests'], function() {
 })
 
 // Watching
-gulp.task('watch', ['build'], function() {
-  gulp.watch(jsFiles, ['build']);
+gulp.task('watch', ['build-tests'], function() {
+  gulp.watch([jsFiles].concat(testFiles), ['build-tests']);
 });
 
 // Macro tasks
