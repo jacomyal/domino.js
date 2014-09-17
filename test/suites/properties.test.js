@@ -8,11 +8,12 @@ describe('Properties', function() {
     it('should validate correct properties.', function() {
       var correctProps = [
         {
-          id: 'prop1'
+          id: 'prop1',
+          type: '?string'
         },
         {
           id: 'prop2',
-          type: '?string',
+          type: 'string',
           value: 'hello',
           emit: 'custom.event',
           description: 'A random test prop for testing purposes.'
@@ -140,11 +141,11 @@ describe('Properties', function() {
 
       assert.deepEqual(
         controller.get(['prop1', 'prop2', 'prop3']),
-        {
-          prop1: undefined,
-          prop2: 'hello',
-          prop3: false
-        }
+        [
+          undefined,
+          'hello',
+          false
+        ]
       );
     });
   });
@@ -152,22 +153,29 @@ describe('Properties', function() {
   describe('setters', function() {
 
     it('should be possible to set a property.', function(done) {
-      controller.on('prop1.updated', function(newString) {
-        assert.strictEqual(newString, 'test1');
-        done();
-      });
-
       controller.update('prop1', 'test1');
+
+      setTimeout(function() {
+        console.log(controller.get('prop1'));
+        assert.strictEqual(controller.get('prop1'), 'test1');
+        done();
+      }, 0);
     });
 
     it('should be possible to set multiple properties.', function(done) {
-
-      // TODO: find way to test back
       controller.update({
-        prop1: 'test2',
+        prop2: 'test2',
         prop3: true
       });
-      done();
+
+      setTimeout(function() {
+        console.log(controller.get(['prop2', 'prop3']));
+        assert.deepEqual(
+          controller.get(['prop2', 'prop3']),
+          ['test2', true]
+        );
+        done();
+      }, 0);
     });
 
     // TODO: errors handling when updating wrong type.
