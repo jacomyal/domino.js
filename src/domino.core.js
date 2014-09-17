@@ -246,7 +246,7 @@ var domino = function() {
 
       fullSpecs.id = id;
 
-      return _registerFacet(fullSpecs);
+      return _registerProperty(fullSpecs);
     }
 
     return this;
@@ -323,7 +323,7 @@ var domino = function() {
           _registerFacet.call(this, specs[i]);
       else if (types.check(specs, 'object'))
         for (k in specs)
-          _registerFacet.call(this, specs[k]);
+          _registerFacet.call(this, k, specs[k]);
 
     } else
       _registerFacet.apply(this, arguments);
