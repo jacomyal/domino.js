@@ -156,7 +156,6 @@ describe('Properties', function() {
       controller.update('prop1', 'test1');
 
       setTimeout(function() {
-        console.log(controller.get('prop1'));
         assert.strictEqual(controller.get('prop1'), 'test1');
         done();
       }, 0);
@@ -169,7 +168,6 @@ describe('Properties', function() {
       });
 
       setTimeout(function() {
-        console.log(controller.get(['prop2', 'prop3']));
         assert.deepEqual(
           controller.get(['prop2', 'prop3']),
           ['test2', true]
@@ -178,6 +176,25 @@ describe('Properties', function() {
       }, 0);
     });
 
-    // TODO: errors handling when updating wrong type.
+    it('should not update value with wrong types.', function() {
+      assert.throws(function() {
+        controller.update('prop1', [ 'not a string' ]);
+      });
+    });
+
+    it('should not update multiple values with at least one wrong type.', function() {
+      assert.throws(function() {
+        controller.update({
+          prop1: [ 'not a string' ]
+        });
+      });
+
+      assert.throws(function() {
+        controller.update({
+          prop1: 'a string',
+          prop2: [ 'not a string' ]
+        });
+      });
+    });
   });
 });
