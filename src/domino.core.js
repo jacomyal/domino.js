@@ -17,6 +17,7 @@ types.add('domino.name', function(val) {
 
 types.add('domino.property', {
   id: 'domino.name',
+  description: '?string',
   namespace: '?domino.name',
   emit: '?domino.events',
   type: '?type',
@@ -24,6 +25,7 @@ types.add('domino.property', {
 });
 types.add('domino.facet', {
   id: 'domino.name',
+  description: '?string',
   namespace: '?domino.name',
   get: 'function'
 });
