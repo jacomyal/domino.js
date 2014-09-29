@@ -213,9 +213,9 @@ var domino = function() {
 
 
   /**
-   * **************
-   * API FUNCTIONS:
-   * **************
+   * *****************
+   * REGISTER HELPERS:
+   * *****************
    */
   function _register(specs) {
     if (!types.check(specs, 'object'))
@@ -229,6 +229,34 @@ var domino = function() {
     return this;
   }
 
+
+  /**
+   * This function registers one property into the controller. Check the
+   * "domino.property" custom type to know more about the optional parameters.
+   *
+   * Variant 1:
+   * **********
+   * > _registerProperty({ id: 'myProperty', type: 'string' });
+   *
+   * @param  {domino.property} specs The specifications of the property.
+   * @return {*}                     Returns this.
+   *
+   * Variant 2:
+   * **********
+   * > _registerProperty('myProperty', { type: 'string' });
+   *
+   * @param  {string}             id    The id of the property.
+   * @param  {domino.property(*)} specs The specs of the property (does not
+   *                                    require an id).
+   * @return {*}                        Returns this.
+   *
+   * Variant 3:
+   * **********
+   * > _registerProperty('myProperty');
+   *
+   * @param  {string} id The id of the property.
+   * @return {*}         Returns this.
+   */
   function _registerProperty(specs) {
     // Actually try to register the property:
     if (arguments.length === 1) {
@@ -267,6 +295,41 @@ var domino = function() {
     return this;
   }
 
+
+  /**
+   * This function is an helper for registering one or several properties at the
+   * same time.
+   *
+   * Variant 1:
+   * **********
+   * > _registerProperties({
+   * >   myProp1: { type: 'string' },
+   * >   myProp2: { type: 'string' }
+   * > });
+   *
+   * @param  {Object} props An object with properties IDs as keys, and the
+   *                        related specs as values.
+   * @return {*}            Returns this.
+   *
+   * Variant 2:
+   * **********
+   * > _registerProperties([
+   * >   { id: 'myProp1', type: 'string' },
+   * >   { id: 'myProp2' },
+   * >   'myProp3'
+   * > ]);
+   *
+   * @param  {[domino.property|string]} props An array of the specs of the
+   *                                          properties to register.
+   * @return {*}                              Returns this.
+   *
+   * Other variants:
+   * ***************
+   * Any of the _registerProperty signatures work as well here:
+   * > _registerProperties({ id: 'myProperty', type: 'string' });
+   * > _registerProperties('myProperty', { type: 'string' });
+   * > _registerProperties('myProperty');
+   */
   function _registerProperties(specs) {
     var i,
         l,
@@ -289,6 +352,34 @@ var domino = function() {
     return this;
   }
 
+  /**
+   * This function registers one facet into the controller. Check the
+   * "domino.facet" custom type to know more about the optional parameters.
+   *
+   * Variant 1:
+   * **********
+   * > _registerFacet({ id: 'myFacet', get: function() { return 42; } });
+   *
+   * @param  {domino.facet} specs The specifications of the facet.
+   * @return {*}                  Returns this.
+   *
+   * Variant 2:
+   * **********
+   * > _registerFacet('myFacet', { get: function() { return 42; } });
+   *
+   * @param  {string}          id    The id of the facet.
+   * @param  {domino.facet(*)} specs The specs of the facet (does not require an
+   *                                 id).
+   * @return {*}                     Returns this.
+   *
+   * Variant 3:
+   * **********
+   * > _registerFacet('myFacet', function() { return 42; });
+   *
+   * @param  {string}   id  The id of the facet.
+   * @param  {function} get The getter of the facet.
+   * @return {*}            Returns this.
+   */
   function _registerFacet(specs) {
     // Actually try to register the facet:
     if (arguments.length === 1) {
@@ -324,6 +415,40 @@ var domino = function() {
     return this;
   }
 
+
+  /**
+   * This function is an helper for registering one or several facets at the
+   * same time.
+   *
+   * Variant 1:
+   * **********
+   * > _registerFacets({
+   * >   myFacet1: { get: function() { return 42; } },
+   * >   myFacet2: function() { return 123; }
+   * > });
+   *
+   * @param  {Object} facets An object with facets IDs as keys, and the related
+   *                         specs or getters as values.
+   * @return {*}             Returns this.
+   *
+   * Variant 2:
+   * **********
+   * > _registerFacets([
+   * >   { id: 'myFacet1', get: function() { return 42; } },
+   * >   { id: 'myFacet2', get: function() { return 123; } }
+   * > ]);
+   *
+   * @param  {[domino.facet|string]} facets An array of the specs of the facets
+   *                                        to register.
+   * @return {*}                            Returns this.
+   *
+   * Other variants:
+   * ***************
+   * Any of the _registerFacet signatures work as well here:
+   * > _registerFacets({ id: 'myFacet', get: function() { return 42; } });
+   * > _registerFacets('myFacet', { get: function() { return 42; } });
+   * > _registerFacets('myFacet', function() { return 42; });
+   */
   function _registerFacets(specs) {
     var i,
         l,
@@ -346,6 +471,12 @@ var domino = function() {
     return this;
   }
 
+
+  /**
+   * *****************
+   * REGISTER HELPERS:
+   * *****************
+   */
   function _updateProperty(propName, value) {
     if (!types.check(propName, 'domino.name'))
       _self.die('Invalid property name.');
