@@ -18,7 +18,7 @@ types.add('domino.name', function(val) {
 types.add('domino.property', function(obj) {
   return types.check(obj, {
     id: 'domino.name',
-    type: 'type',
+    type: '?type',
     description: '?string',
     namespace: '?domino.name',
     emit: '?domino.events',
@@ -232,6 +232,9 @@ var domino = function() {
   function _registerProperty(specs) {
     // Actually try to register the property:
     if (arguments.length === 1) {
+      if (types.check(specs, 'string'))
+        return _registerProperty.call(this, { id: specs });
+
       if (!types.check(specs, 'domino.property'))
         _self.die('Wrong type.');
 
@@ -258,7 +261,7 @@ var domino = function() {
         fullSpecs.id = id;
       }
 
-      return _registerProperty(fullSpecs);
+      return _registerProperty.call(this, fullSpecs);
     }
 
     return this;
@@ -271,7 +274,7 @@ var domino = function() {
         id;
 
     if (arguments.length === 1) {
-      if (types.check(specs, 'domino.property'))
+      if (types.check(specs, 'domino.property|string'))
         _registerProperty.call(this, specs);
       else if (types.check(specs, 'array'))
         for (i = 0, l = specs.length; i < l; i++)
@@ -315,7 +318,7 @@ var domino = function() {
         fullSpecs.id = id;
       }
 
-      return _registerFacet(fullSpecs);
+      return _registerFacet.call(this, fullSpecs);
     }
 
     return this;
