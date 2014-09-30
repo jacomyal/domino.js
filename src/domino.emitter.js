@@ -277,5 +277,156 @@ Emitter.prototype.emit = function(events, data) {
 };
 
 
+/**
+ * This method will create a binder, to help enable / disable a bunch of
+ * functions as a single entity. This binder extends the on / off API of the
+ * emitter.
+ *
+ * @param  {object} bindings The initial bindings.
+ * @return {Binder}          The binder.
+ */
+Emitter.prototype.binder = function(bindings) {
+  var k,
+      i,
+      l,
+      a,
+      binder = new Binder(this);
+
+  // Bind initial bindings:
+  for (k in (bindings || {})) {
+    if (typeof bindings[k] === 'function')
+      binder.on(k, bindings[k]);
+    else if (Array.isArray(bindings[k])) {
+      a = bindings[k];
+      for (i = 0, l = a.length; i < l; i++)
+        binder.on(k, a[i]);
+    }
+  }
+
+  return binder;
+};
+
+
+
+
+
+
+/**
+ * The binder's constructor. Binders are useful if you want to manage your
+ * bindings as batches instead of individually.
+ *
+ * @return {Emitter} The fresh new instance.
+ */
+var Binder = function(emitter) {
+  // Initialize the emitter
+  Emitter.call(this);
+
+  // Reference the parent emitter:
+  this._emitter = emitter;
+
+  // Add current state:
+  this._enabled = true;
+};
+
+
+/**
+ * This method registers the pairs event(s) / function in the binder, and
+ * binds them to the emitter if the binder is activated.
+ *
+ * The polymorphism is exactly the one from Emitter.prototype.on.
+ */
+Binder.prototype.on = function() {
+  // Store the bindings as if it were an emitter:
+  Emitter.prototype.on.apply(this, arguments);
+
+  // Actually send the bindings to the parent emitter if the binder is on:
+  if (this._enabled)
+    this._emitter.on.apply(this, arguments);
+};
+
+
+/**
+ * This method unregister the pairs event(s) / function from the binder, and
+ * unbinds them from the emitter if the binder is activated.
+ *
+ * The polymorphism is exactly the one from Emitter.prototype.off.
+ */
+Binder.prototype.off = function() {
+  // Store the bindings as if it were an emitter:
+  Emitter.prototype.off.apply(this, arguments);
+
+  // Actually send the bindings to the parent emitter if the binder is on:
+  if (this._enabled)
+    this._emitter.off.apply(this, arguments);
+};
+
+
+/**
+ * If the binder if not enabled yet, this method will enable it and bind each
+ * stored event(s) / function pair to the emitter.
+ *
+ * @return {Binder} Returns this.
+ */
+Binder.prototype.enable = function() {
+  var k,
+      i,
+      l;
+
+  if (this._enabled)
+    return this;
+
+  this._enabled = true;
+
+  // First, let's deal with the _handlersAll index:
+  a = this._handlersAll;
+  for (i = a.length - 1; i >= 0; i--)
+    this._emitter.on(a[i]);
+
+  // Let's now deal with the _handlers index:
+  for (k in this._handlers) {
+    a = this._handlers[k];
+    for (i = a.length - 1; i >= 0; i--)
+      this._emitter.on(k, a[i]);
+  }
+
+  return this;
+};
+
+
+/**
+ * If the binder if enabled, this method will disable it and unbind each stored
+ * event(s) / function pair from the emitter.
+ *
+ * @return {Binder} Returns this.
+ */
+Binder.prototype.disable = function() {
+  var i,
+      k,
+      a;
+
+  if (!this._enabled)
+    return this;
+
+  // First, let's deal with the _handlersAll index:
+  // NOTE: Since the Emitter API does not allow to unbind functions ONLY from
+  // the _handlersAll index, I had to do it manually here.
+  a = this._emitter._handlersAll;
+  for (i = a.length - 1; i >= 0; i--)
+    if (~this._handlersAll.indexOf(a[i]))
+      a.splice(i, 1);
+
+  // Let's now deal with the _handlers index:
+  for (k in this._handlers) {
+    a = this._handlers[k];
+    for (i = a.length - 1; i >= 0; i--)
+      this._emitter.off(k, a[i]);
+  }
+
+  this._enabled = false;
+
+  return this;
+};
+
+
 // Export:
 module.exports = Emitter;
