@@ -1,10 +1,59 @@
 'use strict';
 
+
+/**
+ * The emitter's constructor. It initializes the handlers-per-events store and
+ * the global handlers store.
+ *
+ * @return {emitter} The fresh new instance.
+ */
 var emitter = function() {
   this._handlers = {};
   this._handlersAll = [];
 };
 
+
+/**
+ * This function binds one or more functions to the emitter, handled to one or a
+ * suite of events. So, these functions will be executed anytime one related
+ * event is emitted.
+ *
+ * It is also possible to bind a function to any emitted event by not specifying
+ * any event to bind the function to.
+ *
+ * Variant 1:
+ * **********
+ * > myEmitter.on('myEvent', function(e) { console.log(e); });
+ *
+ * @param  {string}   event   The event to listen to.
+ * @param  {function} handler The function to bind.
+ * @return {*}                Returns this.
+ *
+ * Variant 2:
+ * **********
+ * > myEmitter.on(['myEvent1', 'myEvent2'], function(e) { console.log(e); });
+ *
+ * @param  {array}    events  The events to listen to.
+ * @param  {function} handler The function to bind.
+ * @return {*}                Returns this.
+ *
+ * Variant 3:
+ * **********
+ * > myEmitter.on({
+ * >   myEvent1: function(e) { console.log(e); },
+ * >   myEvent2: function(e) { console.log(e); }
+ * > });
+ *
+ * @param  {object} bindings An object containing pairs event / function.
+ * @return {*}               Returns this.
+ *
+ * Variant 4:
+ * **********
+ * > myEmitter.on(function(e) { console.log(e); });
+ *
+ * @param  {function} handler The function to bind to every events.
+ * @return {*}                Returns this.
+ */
 emitter.prototype.on = function(events, handler) {
   var i,
       l,
@@ -57,6 +106,55 @@ emitter.prototype.on = function(events, handler) {
   return this;
 };
 
+
+/**
+ * This function unbinds one or more functions from events of the emitter. So,
+ * these functions will no more be executed when the related events are emitted.
+ * If the functions were not bound to the events, nothing will happen, and no
+ * error will be thrown.
+ *
+ * It is also possible to unbind a function from every AND any emitted event by
+ * not specifying any event to bind the function to.
+ *
+ * Variant 1:
+ * **********
+ * > myEmitter.off('myEvent');
+ *
+ * @param  {string} event The event to unbind.
+ * @return {*}            Returns this.
+ *
+ * Variant 1:
+ * **********
+ * > myEmitter.off(['myEvent1', 'myEvent2']);
+ *
+ * @param  {array} events The events to unbind.
+ * @return {*}            Returns this.
+ *
+ * Variant 2:
+ * **********
+ * > myEmitter.off(['myEvent1', 'myEvent2'], myHandler);
+ *
+ * @param  {array}    events  The events to unbind to.
+ * @param  {function} handler The function to unbind.
+ * @return {*}                Returns this.
+ *
+ * Variant 3:
+ * **********
+ * > myEmitter.off({
+ * >   myEvent1: myHandler1,
+ * >   myEvent2: myHandler2
+ * > });
+ *
+ * @param  {object} bindings An object containing pairs event / function.
+ * @return {*}               Returns this.
+ *
+ * Variant 4:
+ * **********
+ * > myEmitter.off(myHandler);
+ *
+ * @param  {function} handler The function to unbind to every events.
+ * @return {*}                Returns this.
+ */
 emitter.prototype.off = function(events, handler) {
   var i,
       n,
@@ -118,6 +216,22 @@ emitter.prototype.off = function(events, handler) {
   return this;
 };
 
+
+/**
+ * This function emits the specified event(s), and executes every handlers bound
+ * to the event(s).
+ *
+ * Use cases:
+ * **********
+ * > myEmitter.emit('myEvent');
+ * > myEmitter.emit('myEvent', myData);
+ * > myEmitter.emit(['myEvent1', 'myEvent2']);
+ * > myEmitter.emit(['myEvent1', 'myEvent2'], myData);
+ *
+ * @param  {string|array} events The event(s) to emit.
+ * @param  {object?}      data   The data.
+ * @return {*}                   Returns this.
+ */
 emitter.prototype.emit = function(events, data) {
   var i,
       n,
@@ -159,4 +273,6 @@ emitter.prototype.emit = function(events, data) {
   return this;
 };
 
+
+// Export:
 module.exports = emitter;
