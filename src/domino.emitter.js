@@ -5,16 +5,19 @@
  * The emitter's constructor. It initializes the handlers-per-events store and
  * the global handlers store.
  *
- * @return {emitter} The fresh new instance.
+ * Emitters are useful for non-DOM events communication. Read its methods
+ * documentation for more information about how it works.
+ *
+ * @return {Emitter} The fresh new instance.
  */
-var emitter = function() {
+var Emitter = function() {
   this._handlers = {};
   this._handlersAll = [];
 };
 
 
 /**
- * This function binds one or more functions to the emitter, handled to one or a
+ * This method binds one or more functions to the emitter, handled to one or a
  * suite of events. So, these functions will be executed anytime one related
  * event is emitted.
  *
@@ -27,7 +30,7 @@ var emitter = function() {
  *
  * @param  {string}   event   The event to listen to.
  * @param  {function} handler The function to bind.
- * @return {*}                Returns this.
+ * @return {Emitter}          Returns this.
  *
  * Variant 2:
  * **********
@@ -35,7 +38,7 @@ var emitter = function() {
  *
  * @param  {array}    events  The events to listen to.
  * @param  {function} handler The function to bind.
- * @return {*}                Returns this.
+ * @return {Emitter}          Returns this.
  *
  * Variant 3:
  * **********
@@ -45,16 +48,16 @@ var emitter = function() {
  * > });
  *
  * @param  {object} bindings An object containing pairs event / function.
- * @return {*}               Returns this.
+ * @return {Emitter}         Returns this.
  *
  * Variant 4:
  * **********
  * > myEmitter.on(function(e) { console.log(e); });
  *
  * @param  {function} handler The function to bind to every events.
- * @return {*}                Returns this.
+ * @return {Emitter}          Returns this.
  */
-emitter.prototype.on = function(events, handler) {
+Emitter.prototype.on = function(events, handler) {
   var i,
       l,
       event,
@@ -108,7 +111,7 @@ emitter.prototype.on = function(events, handler) {
 
 
 /**
- * This function unbinds one or more functions from events of the emitter. So,
+ * This method unbinds one or more functions from events of the emitter. So,
  * these functions will no more be executed when the related events are emitted.
  * If the functions were not bound to the events, nothing will happen, and no
  * error will be thrown.
@@ -121,14 +124,14 @@ emitter.prototype.on = function(events, handler) {
  * > myEmitter.off('myEvent');
  *
  * @param  {string} event The event to unbind.
- * @return {*}            Returns this.
+ * @return {Emitter}      Returns this.
  *
  * Variant 1:
  * **********
  * > myEmitter.off(['myEvent1', 'myEvent2']);
  *
  * @param  {array} events The events to unbind.
- * @return {*}            Returns this.
+ * @return {Emitter}      Returns this.
  *
  * Variant 2:
  * **********
@@ -136,7 +139,7 @@ emitter.prototype.on = function(events, handler) {
  *
  * @param  {array}    events  The events to unbind to.
  * @param  {function} handler The function to unbind.
- * @return {*}                Returns this.
+ * @return {Emitter}          Returns this.
  *
  * Variant 3:
  * **********
@@ -146,16 +149,16 @@ emitter.prototype.on = function(events, handler) {
  * > });
  *
  * @param  {object} bindings An object containing pairs event / function.
- * @return {*}               Returns this.
+ * @return {Emitter}         Returns this.
  *
  * Variant 4:
  * **********
  * > myEmitter.off(myHandler);
  *
  * @param  {function} handler The function to unbind to every events.
- * @return {*}                Returns this.
+ * @return {Emitter}          Returns this.
  */
-emitter.prototype.off = function(events, handler) {
+Emitter.prototype.off = function(events, handler) {
   var i,
       n,
       j,
@@ -218,7 +221,7 @@ emitter.prototype.off = function(events, handler) {
 
 
 /**
- * This function emits the specified event(s), and executes every handlers bound
+ * This method emits the specified event(s), and executes every handlers bound
  * to the event(s).
  *
  * Use cases:
@@ -230,9 +233,9 @@ emitter.prototype.off = function(events, handler) {
  *
  * @param  {string|array} events The event(s) to emit.
  * @param  {object?}      data   The data.
- * @return {*}                   Returns this.
+ * @return {Emitter}             Returns this.
  */
-emitter.prototype.emit = function(events, data) {
+Emitter.prototype.emit = function(events, data) {
   var i,
       n,
       j,
@@ -275,4 +278,4 @@ emitter.prototype.emit = function(events, data) {
 
 
 // Export:
-module.exports = emitter;
+module.exports = Emitter;
