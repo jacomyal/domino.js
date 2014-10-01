@@ -530,6 +530,22 @@ var domino = function() {
     return this;
   }
 
+
+  /**
+   * This method updates the value associated to a property.
+   *
+   * If this method is called with a property name that do not exist or if the
+   * value does not match the property's type (according to typology), an error
+   * will be thrown.
+   *
+   * Example:
+   * ********
+   * > _updateProperty('myProp', myValue);
+   *
+   * @param  {string} propName The property name.
+   * @param  {*}      value    The value.
+   * @return {*}               Returns this.
+   */
   function _updateProperty(propName, value) {
     if (!types.check(propName, 'domino.name'))
       _self.die('Invalid property name.');
@@ -555,6 +571,40 @@ var domino = function() {
     return this;
   }
 
+
+  /**
+   * This method returns the values of one or more properties, shaped as a
+   * single value, in an array or in an object.
+   *
+   * If this method is called with property names that do not exist, errors will
+   * be thrown.
+   *
+   * Variant 1:
+   * **********
+   * > _getValue('myProp'); // returns the value of "myProp"
+   *
+   * @param  {string} propName The property name.
+   * @return {*}               Returns the related value.
+   *
+   * Variant 2:
+   * **********
+   * > _getValue(['prop1', 'prop2']);
+   * > // returns the values of "prop1" and "prop2" in an array in that order
+   *
+   * @param  {array} propNames The property names in an array.
+   * @return {array}           Returns the related values in an array, sorted as
+   *                           in the input.
+   *
+   * Variant 3:
+   * **********
+   * > _getValue('prop1', 'prop2');
+   * > // returns the values of "prop1" and "prop2" in an object, associated to
+   * > // the related names: { prop1: value1, prop2: value2 }
+   *
+   * @params {*}      propNames The property names in an array.
+   * @return {object}           Returns the related values in an object, with
+   *                            the related property names as keys.
+   */
   function _getValue(propName) {
     if (arguments.length === 1) {
       // Most basic use case:
