@@ -293,7 +293,8 @@ Emitter.prototype.binder = function() {
       binder = new Binder(this);
 
   // Bind initial bindings:
-  binder.on.apply(binder, arguments);
+  if (arguments.length)
+    binder.on.apply(binder, arguments);
 
   return binder;
 };
