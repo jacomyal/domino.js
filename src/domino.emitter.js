@@ -68,7 +68,7 @@ Emitter.prototype.on = function(events, handler) {
     typeof arguments[0] === 'object'
   )
     for (event in arguments[0])
-      this.on(event, arguments[0][event]);
+      Emitter.prototype.on.call(this, event, arguments[0][event]);
 
   else if (
     arguments.length === 1 &&
@@ -104,7 +104,7 @@ Emitter.prototype.on = function(events, handler) {
     }
 
   } else
-    throw 'emitter.on: Wrong arguments.';
+    throw new Error('Wrong arguments.');
 
   return this;
 };
@@ -285,7 +285,7 @@ Emitter.prototype.emit = function(events, data) {
  * @param  {object} bindings The initial bindings.
  * @return {Binder}          The binder.
  */
-Emitter.prototype.binder = function(bindings) {
+Emitter.prototype.binder = function() {
   var k,
       i,
       l,
@@ -333,7 +333,9 @@ Binder.prototype.on = function() {
 
   // Actually send the bindings to the parent emitter if the binder is on:
   if (this._enabled)
-    this._emitter.on.apply(this, arguments);
+    this._emitter.on.apply(this._emitter, arguments);
+
+  return this;
 };
 
 
@@ -349,7 +351,9 @@ Binder.prototype.off = function() {
 
   // Actually send the bindings to the parent emitter if the binder is on:
   if (this._enabled)
-    this._emitter.off.apply(this, arguments);
+    this._emitter.off.apply(this._emitter, arguments);
+
+  return this;
 };
 
 
@@ -361,6 +365,7 @@ Binder.prototype.off = function() {
  */
 Binder.prototype.enable = function() {
   var k,
+      a,
       i,
       l;
 
@@ -372,13 +377,14 @@ Binder.prototype.enable = function() {
   // First, let's deal with the _handlersAll index:
   a = this._handlersAll;
   for (i = a.length - 1; i >= 0; i--)
-    this._emitter.on(a[i]);
+    this._emitter.on(a[i].handler);
 
   // Let's now deal with the _handlers index:
   for (k in this._handlers) {
     a = this._handlers[k];
+    console.log(k, a);
     for (i = a.length - 1; i >= 0; i--)
-      this._emitter.on(k, a[i]);
+      this._emitter.on(k, a[i].handler);
   }
 
   return this;
@@ -404,14 +410,16 @@ Binder.prototype.disable = function() {
   // the _handlersAll index, I had to do it manually here.
   a = this._emitter._handlersAll;
   for (i = a.length - 1; i >= 0; i--)
-    if (~this._handlersAll.indexOf(a[i]))
+    if (this._handlersAll.find(function(obj) {
+      return obj.handler === a[i].handler;
+    }))
       a.splice(i, 1);
 
   // Let's now deal with the _handlers index:
   for (k in this._handlers) {
     a = this._handlers[k];
     for (i = a.length - 1; i >= 0; i--)
-      this._emitter.off(k, a[i]);
+      this._emitter.off(k, a[i].handler);
   }
 
   this._enabled = false;
