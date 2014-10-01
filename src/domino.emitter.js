@@ -293,15 +293,7 @@ Emitter.prototype.binder = function(bindings) {
       binder = new Binder(this);
 
   // Bind initial bindings:
-  for (k in (bindings || {})) {
-    if (typeof bindings[k] === 'function')
-      binder.on(k, bindings[k]);
-    else if (Array.isArray(bindings[k])) {
-      a = bindings[k];
-      for (i = 0, l = a.length; i < l; i++)
-        binder.on(k, a[i]);
-    }
-  }
+  binder.on.apply(binder, arguments);
 
   return binder;
 };
