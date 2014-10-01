@@ -217,6 +217,19 @@ var domino = function() {
    * REGISTER HELPERS:
    * *****************
    */
+
+  /**
+   * This function helps registering several properties, shortcuts, etc... at
+   * the same time. The goal is to be able to add a bunch of related elements of
+   * a controller as a single object, to explode the controller specifications
+   * as several different files.
+   *
+   * The "specs" argument must be an object, containing arrays or objects
+   * associated to the keys "facets" and "properties".
+   *
+   * @param  {Object} specs The elements to register in the controller.
+   * @return {*}            Returns this.
+   */
   function _register(specs) {
     if (!types.check(specs, 'object'))
       _self.die('Wrong type.');
@@ -473,10 +486,50 @@ var domino = function() {
 
 
   /**
-   * *****************
-   * REGISTER HELPERS:
-   * *****************
+   * ******************
+   * DATA MANIPULATION:
+   * ******************
    */
+  function _eventToOrder(event) {
+    _addOrder({
+      type: 'emit',
+      events: event.type,
+      data: event.data
+    });
+  }
+
+  function _orderUpdateProperty(propName, value) {
+    if (arguments.length === 1) {
+      if (!types.check(propName, 'object'))
+        this.die('Wrong arguments.');
+
+      var k;
+      for (k in propName)
+        this.update(k, propName[k]);
+
+    } else if (arguments.length === 2) {
+      if (!types.check(propName, 'domino.name'))
+        this.die('Invalid property name.');
+
+      if (!_properties[propName])
+        _self.die('The property "' + propName + '" does not exist.');
+
+      if (
+        _properties[propName].type &&
+        !types.check(value, _properties[propName].type)
+      )
+        _self.die('Wrong type for "' + propName + '".');
+
+      _addOrder({
+        type: 'update',
+        property: propName,
+        value: value
+      });
+    }
+
+    return this;
+  }
+
   function _updateProperty(propName, value) {
     if (!types.check(propName, 'domino.name'))
       _self.die('Invalid property name.');
@@ -546,14 +599,6 @@ var domino = function() {
     }
   }
 
-  function _eventToOrder(event) {
-    _addOrder({
-      type: 'emit',
-      events: event.type,
-      data: event.data
-    });
-  }
-
 
   /**
    * ********************
@@ -564,38 +609,8 @@ var domino = function() {
   this.registerFacets = _registerFacets;
   this.registerProperty = _registerProperty;
   this.registerProperties = _registerProperties;
+  this.update = _orderUpdateProperty;
   this.get = _getValue;
-  this.update = function(propName, value) {
-    if (arguments.length === 1) {
-      if (!types.check(propName, 'object'))
-        this.die('Wrong arguments.');
-
-      var k;
-      for (k in propName)
-        this.update(k, propName[k]);
-
-    } else if (arguments.length === 2) {
-      if (!types.check(propName, 'domino.name'))
-        this.die('Invalid property name.');
-
-      if (!_properties[propName])
-        _self.die('The property "' + propName + '" does not exist.');
-
-      if (
-        _properties[propName].type &&
-        !types.check(value, _properties[propName].type)
-      )
-        _self.die('Wrong type for "' + propName + '".');
-
-      _addOrder({
-        type: 'update',
-        property: propName,
-        value: value
-      });
-    }
-
-    return this;
-  };
 
   this.on = function() {
     _emitter.on.apply(_emitter, arguments);
