@@ -40,7 +40,6 @@ var defaultSettings = {
 
 
 
-
 /**
  * *********************
  * DOMINO'S CONSTRUCTOR:
@@ -103,6 +102,8 @@ var domino = function() {
   };
 
 
+
+
   /**
    * ********************
    * INITIALIZE INSTANCE:
@@ -112,27 +113,25 @@ var domino = function() {
     _register(arguments[0]);
 
 
+
+
   /**
    * ***************
    * CORE FUNCTIONS:
    * ***************
    */
-  function _addOrder(order, now) {
-    // TODO:
-    // Validate order's structure.
 
-    _stackFuture.push(order);
-
-    if (!_timeout && !_executionLock) {
-      if (now)
-        _execute();
-      else
-        _timeout = setTimeout(_execute, 0);
-    }
-
-    return this;
-  }
-
+  /**
+   * This function is the core of domino. It is the place were is implemented
+   * domino's most important and singular principle: The orders deduplication:
+   *
+   * So, it will first deduplicate orders, to avoid emitting twice an event at
+   * the same time, order update a property with two different values in the
+   * same frame, for instance.
+   *
+   * Then, it will execute the orders. And if new orders have been added to the
+   * new stack, this function will be called again next frame.
+   */
   function _execute() {
     if (_executionLock)
       _self.die('The execution is not unlocked yet');
@@ -210,6 +209,95 @@ var domino = function() {
     if (_stackFuture.length)
       _timeout = setTimeout(_execute, 0);
   }
+
+
+  /**
+   * This function properly adds an order to the stack. If the stack was empty
+   * before, then the _execute function will be planed for next frame if the
+   * "now" flag is true, in which case the _execute function will be executed
+   * right now (ie synchronously).
+   *
+   * @param  {object}  order The order to add.
+   * @param  {boolean} now   A boolean specifying wether the loop has to start
+   *                         synchronously or not if the stack was empty before.
+   *                         Default value: false.
+   * @return {*}             Returns this.
+   */
+  function _addOrder(order, now) {
+    // TODO:
+    // Validate order's structure.
+
+    _stackFuture.push(order);
+
+    if (!_timeout && !_executionLock) {
+      if (now)
+        _execute();
+      else
+        _timeout = setTimeout(_execute, 0);
+    }
+
+    return this;
+  }
+
+
+  /**
+   * This function adds the order of emitting an event.
+   *
+   * @param  {object} event The event to emit, ie an object with at least a type
+   *                        and data value.
+   * @return {*}            Returns this.
+   */
+  function _orderEmitEvent(event) {
+    _addOrder({
+      type: 'emit',
+      events: event.type,
+      data: event.data
+    });
+
+    return this;
+  }
+
+
+  /**
+   * This function adds the order of updating a property.
+   *
+   * @param  {string} propName The name of the property to update.
+   * @param  {*}      value    The new value of the property.
+   * @return {*}               Returns this.
+   */
+  function _orderUpdateProperty(propName, value) {
+    if (arguments.length === 1) {
+      if (!types.check(propName, 'object'))
+        this.die('Wrong arguments.');
+
+      var k;
+      for (k in propName)
+        this.update(k, propName[k]);
+
+    } else if (arguments.length === 2) {
+      if (!types.check(propName, 'domino.name'))
+        this.die('Invalid property name.');
+
+      if (!_properties[propName])
+        _self.die('The property "' + propName + '" does not exist.');
+
+      if (
+        _properties[propName].type &&
+        !types.check(value, _properties[propName].type)
+      )
+        _self.die('Wrong type for "' + propName + '".');
+
+      _addOrder({
+        type: 'update',
+        property: propName,
+        value: value
+      });
+    }
+
+    return this;
+  }
+
+
 
 
   /**
@@ -490,45 +578,6 @@ var domino = function() {
    * DATA MANIPULATION:
    * ******************
    */
-  function _eventToOrder(event) {
-    _addOrder({
-      type: 'emit',
-      events: event.type,
-      data: event.data
-    });
-  }
-
-  function _orderUpdateProperty(propName, value) {
-    if (arguments.length === 1) {
-      if (!types.check(propName, 'object'))
-        this.die('Wrong arguments.');
-
-      var k;
-      for (k in propName)
-        this.update(k, propName[k]);
-
-    } else if (arguments.length === 2) {
-      if (!types.check(propName, 'domino.name'))
-        this.die('Invalid property name.');
-
-      if (!_properties[propName])
-        _self.die('The property "' + propName + '" does not exist.');
-
-      if (
-        _properties[propName].type &&
-        !types.check(value, _properties[propName].type)
-      )
-        _self.die('Wrong type for "' + propName + '".');
-
-      _addOrder({
-        type: 'update',
-        property: propName,
-        value: value
-      });
-    }
-
-    return this;
-  }
 
 
   /**
@@ -662,6 +711,7 @@ var domino = function() {
   this.update = _orderUpdateProperty;
   this.get = _getValue;
 
+  // Adapt emitter's API:
   this.on = function() {
     _emitter.on.apply(_emitter, arguments);
     return this;
@@ -683,7 +733,6 @@ var domino = function() {
 
 
 
-
 /**
  * ***************************
  * GLOBAL PUBLIC DECLARATIONS:
@@ -693,7 +742,6 @@ domino.types = types;
 domino.helpers = helpers;
 domino.emitter = emitter;
 domino.settings = defaultSettings;
-
 
 
 
