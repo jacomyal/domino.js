@@ -300,9 +300,17 @@ var MyComponent = React.createClass({
 ## Decisions to be made
 
 1. What name for the controller's accessor property in a React component? (`this.store`, `this.controller`, plain `this.get(x)`)
+**SOLVED: `this.controller` by default, but possibility to change that name**
+
 2. What name for the function property in listeners configuration? (`fire`, `trigger`, `method`)
+**SOLVED**
+
 3. What name for registration? (`register`)
+**SOLVED**
+
 4. Should the user be able to use the controller logger?
+
 5. If tiles were to be accepted, maybe the listeners part of the registers is no more coherent.
+**SOLVED**
 
 6. Should it be possible to add types in the controller constructor?
