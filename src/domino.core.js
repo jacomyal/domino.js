@@ -711,6 +711,11 @@ var domino = function() {
   this.update = _orderUpdateProperty;
   this.get = _getValue;
 
+  // Open binders to public:
+  this.binder = function() {
+    return _emitter.binder.apply(_emitter, arguments);
+  };
+
   // Adapt emitter's API:
   this.on = function() {
     _emitter.on.apply(_emitter, arguments);
