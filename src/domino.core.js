@@ -32,6 +32,34 @@ types.add('domino.facet', {
   get: 'function'
 });
 
+// Orders
+var orderTypes = {
+  update: {
+    type: 'string',
+    property: 'string',
+    value: '*'
+  },
+  emit: {
+    type: 'string',
+    events: 'string|array',
+    data: '?*'
+  }
+};
+
+types.add('domino.order', function(obj) {
+  return (
+    types.check(obj, 'object') &&
+    types.check(obj.type, 'string') &&
+    types.check(obj, orderTypes[obj.type])
+  );
+});
+
+
+
+
+/**
+ * Default domino's settings:
+ */
 var defaultSettings = {
   errorMessage: 'error from domino',
   verbose: true
@@ -177,15 +205,15 @@ var domino = function() {
    * "now" flag is true, in which case the _execute function will be executed
    * right now (ie synchronously).
    *
-   * @param  {object}  order The order to add.
-   * @param  {boolean} now   A boolean specifying wether the loop has to start
-   *                         synchronously or not if the stack was empty before.
-   *                         Default value: false.
-   * @return {*}             Returns this.
+   * @param  {domino.order}  order The order to add.
+   * @param  {boolean}       now   A boolean specifying wether the loop has to
+   *                               start synchronously or not if the stack was
+   *                               empty before. The default value is "false".
+   * @return {*}                   Returns this.
    */
   function _addOrder(order, now) {
-    // TODO:
-    // Validate order's structure.
+    if (!types.check(order, 'domino.order'))
+      _self.die('Wrong type for order', order);
 
     _stackFuture.push(order);
 
