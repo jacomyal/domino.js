@@ -61,46 +61,6 @@ var domino = function() {
       _properties = {},
       _emitter = new emitter();
 
-  // Settings method:
-  this.settings = function(a1, a2) {
-    if (typeof a1 === 'string' && arguments.length === 1)
-      return defaultSettings[a1];
-    else {
-      var o = (typeof a1 === 'object' && arguments.length === 1) ?
-        a1 || {} :
-        {};
-      if (typeof a1 === 'string')
-        o[a1] = a2;
-
-      for (var k in o)
-        if (o[k] !== undefined)
-          defaultSettings[k] = o[k];
-        else
-          delete defaultSettings[k];
-
-      return this;
-    }
-  };
-
-  // Logging methods:
-  this.debug = function() {
-    if (_self.settings('verbose'))
-      logger.debug.apply(logger, arguments);
-  };
-  this.info = function() {
-    if (_self.settings('verbose'))
-      logger.info.apply(logger, arguments);
-  };
-  this.warn = function() {
-    if (_self.settings('verbose'))
-      logger.warn.apply(logger, arguments);
-  };
-  this.die = function() {
-    if (_self.settings('verbose'))
-      logger.die.apply(logger, arguments);
-    throw new Error(_self.settings('errorMessage') || '');
-  };
-
 
 
 
@@ -732,6 +692,46 @@ var domino = function() {
       data: data
     });
     return this;
+  };
+
+  // Settings method:
+  this.settings = function(a1, a2) {
+    if (typeof a1 === 'string' && arguments.length === 1)
+      return defaultSettings[a1];
+    else {
+      var o = (typeof a1 === 'object' && arguments.length === 1) ?
+        a1 || {} :
+        {};
+      if (typeof a1 === 'string')
+        o[a1] = a2;
+
+      for (var k in o)
+        if (o[k] !== undefined)
+          defaultSettings[k] = o[k];
+        else
+          delete defaultSettings[k];
+
+      return this;
+    }
+  };
+
+  // Logging methods:
+  this.debug = function() {
+    if (_self.settings('verbose'))
+      logger.debug.apply(logger, arguments);
+  };
+  this.info = function() {
+    if (_self.settings('verbose'))
+      logger.info.apply(logger, arguments);
+  };
+  this.warn = function() {
+    if (_self.settings('verbose'))
+      logger.warn.apply(logger, arguments);
+  };
+  this.die = function() {
+    if (_self.settings('verbose'))
+      logger.die.apply(logger, arguments);
+    throw new Error(_self.settings('errorMessage') || '');
   };
 };
 
