@@ -692,6 +692,7 @@ var domino = function() {
    * PUBLIC DECLARATIONS:
    * ********************
    */
+  this.register = _register;
   this.registerFacet = _registerFacet;
   this.registerFacets = _registerFacets;
   this.registerProperty = _registerProperty;
