@@ -794,6 +794,32 @@ var domino = function(options) {
       logger.die.apply(logger, arguments);
     throw new Error(_self.settings('errorMessage') || '');
   };
+
+  // Kill method:
+  this.kill = function() {
+    var k;
+
+    // Clear various variables and references:
+    _self = null;
+    _stackFuture = null;
+    _stackCurrents = null;
+    _timeout = null;
+    _executionLock = null;
+    _facets = null;
+    _properties = null;
+
+    // Kill emitter:
+    _emitter.off();
+    _emitter = null;
+
+    // Destroy methods references:
+    for (k in this)
+      if (this.hasOwnProperty(k))
+        this.k = null;
+
+    // Delete instance reference:
+    _instances[this.name] = null;
+  };
 };
 
 

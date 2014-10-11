@@ -80,8 +80,17 @@ describe('API', function() {
     });
   });
 
-  describe('#.register', function() {
+  describe('#.kill', function() {
+    it('should free the related name', function() {
+      var controller = new domino({ name: 'API.kill.test1' });
+      controller.kill();
 
+      // Create a new controller with the same name:
+      new domino({ name: 'API.kill.test1' });
+    });
+  });
+
+  describe('#.register', function() {
     it('should register properties and facets given in arrays', function() {
       var controller = new domino();
 
