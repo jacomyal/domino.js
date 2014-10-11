@@ -8,6 +8,21 @@ describe('API', function() {
       var controller = new domino();
     });
 
+    it('should register an instance under its given name', function() {
+      var controller = new domino({ name: 'API.constructor.test1' });
+      assert(controller === domino.instances('API.constructor.test1'));
+    });
+
+    it('should throw if the name already exists or if the name is not a string', function() {
+      var controller = new domino({ name: 'API.constructor.test2' });
+      assert.throws(function() {
+        new domino({ name: 'API.constructor.test2' });
+      });
+      assert.throws(function() {
+        new domino({ name: 123 });
+      });
+    });
+
     it('should have all its public methods', function() {
       var controller = new domino();
       assert(types.check(controller.register, 'function'));

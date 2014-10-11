@@ -69,11 +69,25 @@ var defaultSettings = {
 
 
 /**
+ * Running domino instances:
+ */
+var _instances = {},
+    _getNewId = (function() {
+      var i = 0;
+      return function() {
+        return '' + ++i;
+      };
+    })();
+
+
+
+
+/**
  * *********************
  * DOMINO'S CONSTRUCTOR:
  * *********************
  */
-var domino = function() {
+var domino = function(options) {
   var _self = this,
 
       // Orders:
@@ -97,8 +111,26 @@ var domino = function() {
    * INITIALIZE INSTANCE:
    * ********************
    */
-  if (arguments.length)
-    _register(arguments[0]);
+  if (options) {
+    // Register instance:
+    if (typeof options.name === 'string')
+      this.name = options.name;
+    else if ('name' in options)
+      throw new Error('Wrong type for domino instance name');
+    else
+      this.name = _getNewId();
+
+    // Check name:
+    if (_instances[this.name])
+      throw new Error(
+        'Domino instance named "' + this.name + '" already exists'
+      );
+    else
+      _instances[this.name] = this;
+
+    // Register initial options:
+    _register(options);
+  }
 
 
 
@@ -776,6 +808,12 @@ domino.types = types;
 domino.helpers = helpers;
 domino.emitter = emitter;
 domino.settings = defaultSettings;
+domino.instances = function(name) {
+  if (arguments.length)
+    return _instances[name];
+  else
+    return helpers.clone(_instances);
+};
 
 
 
