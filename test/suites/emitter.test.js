@@ -5,23 +5,30 @@ describe('Emitter', function() {
   describe('basics', function() {
     var count = 0,
         emitter = new domino.emitter(),
-        callback = function() { count++; };
+        callback = function(e) {
+          count += e.data.count || 1;
+        };
 
-    it('dispatching an event with no callback does nothing.', function() {
+    it('dispatching an event with no trigger does nothing.', function() {
       emitter.emit('myEvent');
       assert.strictEqual(count, 0);
     });
 
-    it('dispatching an event with a callback executes the callback.', function() {
+    it('dispatching an event with a trigger executes the callback.', function() {
       emitter.on('myEvent', callback);
       emitter.emit('myEvent');
       assert.strictEqual(count, 1);
     });
 
-    it('dispatching an event with a callback than has been unbound does nothing.', function() {
+    it('dispatching an event with a trigger executes the callback.', function() {
+      emitter.emit('myEvent', { count: 2 });
+      assert.strictEqual(count, 3);
+    });
+
+    it('dispatching an event with a trigger than has been unbound does nothing.', function() {
       emitter.off('myEvent', callback);
       emitter.emit('myEvent');
-      assert.strictEqual(count, 1);
+      assert.strictEqual(count, 3);
     });
   });
 
