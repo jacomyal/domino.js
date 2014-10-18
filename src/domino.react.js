@@ -7,15 +7,19 @@ function forge(scope) {
   return {
     componentWillMount: function() {
 
+
+
+      // Referencing the controller
+      this[scope.settings('mixinControllerName')] = scope;
+
+      // Quick exit
+      if (!this.renderOn)
+        return;
+
       // Checking validity of renderOn argument
-      // NOTE: this is not currently possible to check this with typology
-      // with a single call
       if (!types.check(this.renderOn, ['string']) &&
           !types.check(this.renderOn, 'string'))
         throw new Error('MESSAGE_TO_BE_DECIDED');
-
-      // Referencing the controller
-      this[scope.settings('TO_BE_DECIDED')] = scope;
 
       // Referencing the controller listener
       this.__listener = (function() {
@@ -24,21 +28,29 @@ function forge(scope) {
     },
     componentDidMount: function() {
 
+      // Quick exit
+      if (!this.renderOn)
+        return;
+
       // Binding event listeners
       (typeof this.renderOn === 'string' ?
         [this.renderOn] :
         this.renderOn).forEach(function(event) {
           scope.on(event, this.__listener);
-        });
+        }, this);
     },
     componentWillUnmount: function() {
+
+      // Quick exit
+      if (!this.renderOn)
+        return;
 
       // Unbinding event listeners
       (typeof this.renderOn === 'string' ?
         [this.renderOn] :
         this.renderOn).forEach(function(event) {
           scope.off(event, this.__listener);
-        });
+        }, this);
     }
   }
 }

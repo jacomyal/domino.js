@@ -3,7 +3,8 @@
 var types = require('typology'),
     logger = require('./domino.logger.js'),
     helpers = require('./domino.helpers.js'),
-    emitter = require('./domino.emitter.js');
+    emitter = require('./domino.emitter.js'),
+    mixinForge = require('./domino.react.js');
 
 /**
  * Custom types related to domino:
@@ -61,6 +62,7 @@ types.add('domino.order', function(obj) {
  * Default domino's settings:
  */
 var defaultSettings = {
+  mixinControllerName: 'control',
   errorMessage: 'error from domino',
   verbose: true
 };
@@ -101,7 +103,8 @@ var domino = function(options) {
       // Instance related attributes:
       _facets = {},
       _properties = {},
-      _emitter = new emitter();
+      _emitter = new emitter(),
+      _mixin = mixinForge(this);
 
 
 
@@ -731,6 +734,7 @@ var domino = function(options) {
   this.registerProperties = _registerProperties;
   this.update = _orderUpdateProperty;
   this.get = _getValue;
+  this.mixin = _mixin;
 
   // Open binders to public:
   this.binder = function() {
