@@ -383,7 +383,6 @@ Binder.prototype.enable = function() {
   // Let's now deal with the _handlers index:
   for (k in this._handlers) {
     a = this._handlers[k];
-    console.log(k, a);
     for (i = a.length - 1; i >= 0; i--)
       this._emitter.on(k, a[i].handler);
   }
