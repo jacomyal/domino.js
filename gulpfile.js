@@ -5,6 +5,7 @@ var gulp = require('gulp'),
     browserify = require('gulp-browserify'),
     uglify = require('gulp-uglify'),
     rename = require('gulp-rename');
+
 // Files
 var indexFile = './src/domino.core.js',
     jsFiles = './src/*.js',
