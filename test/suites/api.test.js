@@ -78,6 +78,31 @@ describe('API', function() {
       assert(controller.get('f1') === 'def');
       assert(controller.get('f2') === 456);
     });
+
+    it('should bind listeners given as bindings to the controller', function(done) {
+      var count1 = 0,
+          controller = new domino({
+            bindings: {
+              myEvent1: function() {
+                count1++;
+                controller.emit('myEvent2');
+              },
+              myEvent2: function() {
+                count1++;
+              }
+            }
+          });
+
+      controller.emit('myEvent1');
+      setTimeout(function() {
+        assert(count1 === 1);
+
+        setTimeout(function() {
+          assert(count1 === 2);
+          done();
+        }, 0);
+      }, 0);
+    });
   });
 
   describe('#.kill', function() {

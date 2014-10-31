@@ -349,6 +349,8 @@ var domino = function(options) {
       _registerFacets(specs.facets);
     if (specs.properties)
       _registerProperties(specs.properties);
+    if (specs.bindings)
+      _emitter.on(specs.bindings);
 
     return this;
   }
@@ -596,6 +598,7 @@ var domino = function(options) {
   }
 
 
+
   /**
    * ******************
    * DATA MANIPULATION:
@@ -720,6 +723,8 @@ var domino = function(options) {
       return result;
     }
   }
+
+
 
 
   /**
