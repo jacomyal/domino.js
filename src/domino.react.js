@@ -6,9 +6,6 @@ var types = require('typology');
 function forge(scope) {
   return {
     componentWillMount: function() {
-
-
-
       // Referencing the controller
       this[scope.settings('mixinControllerName')] = scope;
 
@@ -26,8 +23,8 @@ function forge(scope) {
         this.forceUpdate();
       }).bind(this);
     },
-    componentDidMount: function() {
 
+    componentDidMount: function() {
       // Quick exit
       if (!this.renderOn)
         return;
@@ -39,8 +36,8 @@ function forge(scope) {
           scope.on(event, this.__listener);
         }, this);
     },
-    componentWillUnmount: function() {
 
+    componentWillUnmount: function() {
       // Quick exit
       if (!this.renderOn)
         return;
@@ -52,7 +49,7 @@ function forge(scope) {
           scope.off(event, this.__listener);
         }, this);
     }
-  }
+  };
 }
 
 // Exporting

@@ -676,7 +676,7 @@ var domino = function(options) {
    * > // returns the values of "prop1" and "prop2" in an object, associated to
    * > // the related names: { prop1: value1, prop2: value2 }
    *
-   * @params {*}      propNames The property names in an array.
+   * @param  {*}      propNames The property names in an array.
    * @return {object}           Returns the related values in an object, with
    *                            the related property names as keys.
    */
