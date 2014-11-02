@@ -410,10 +410,11 @@ var domino = function(options) {
           id: id,
           type: specs
         };
-      else if (typeof specs === 'object') {
+      else if (types.check(specs, 'object')) {
         fullSpecs = helpers.clone(specs);
         fullSpecs.id = id;
-      }
+      } else
+        _self.die('Wrong type.');
 
       return _registerProperty.call(this, fullSpecs);
     }
@@ -530,10 +531,11 @@ var domino = function(options) {
           id: id,
           get: specs
         };
-      else if (typeof specs === 'object') {
+      else if (types.check(specs, 'object')) {
         fullSpecs = helpers.clone(specs);
         fullSpecs.id = id;
-      }
+      } else
+        _self.die('Wrong type.');
 
       return _registerFacet.call(this, fullSpecs);
     }
@@ -564,9 +566,9 @@ var domino = function(options) {
    * >   { id: 'myFacet2', get: function() { return 123; } }
    * > ]);
    *
-   * @param  {[domino.facet|string]} facets An array of the specs of the facets
-   *                                        to register.
-   * @return {*}                            Returns this.
+   * @param  {[domino.facet]} facets An array of the specs of the facets to
+   *                                 register.
+   * @return {*}                     Returns this.
    *
    * Other variants:
    * ***************
