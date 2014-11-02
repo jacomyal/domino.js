@@ -28,7 +28,8 @@ gulp.task('lint', function() {
 
   return gulp.src(jsFiles)
     .pipe(jshint(jshintConfig))
-    .pipe(jshint.reporter('default'))
+    .pipe(jshint.reporter('jshint-stylish'))
+    .pipe(jshint.reporter('fail'))
     .pipe(gjslint(gjslintConfig))
     .pipe(gjslint.reporter('console'), {fail: true});
 });
