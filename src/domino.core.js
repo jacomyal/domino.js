@@ -77,7 +77,7 @@ var _instances = {},
     _getNewId = (function() {
       var i = 0;
       return function() {
-        return '' + ++i;
+        return '' + (++i);
       };
     })();
 
@@ -681,6 +681,11 @@ var domino = function(options) {
    *                            the related property names as keys.
    */
   function _getValue(propName) {
+    var i,
+        l,
+        a,
+        result;
+
     if (arguments.length === 1) {
       // Most basic use case:
       if (typeof propName === 'string') {
@@ -696,10 +701,8 @@ var domino = function(options) {
 
       // Return an array of results:
       } else if (types.check(propName, 'array')) {
-        var i,
-            l,
-            a = propName,
-            result = [];
+        a = propName;
+        result = [];
 
         for (i = 0, l = a.length; i < l; i++)
           result.push(_getValue(a[i]));
@@ -712,10 +715,8 @@ var domino = function(options) {
 
     // Return an object of results:
     } else {
-      var i,
-          l,
-          a = arguments,
-          result = {};
+      a = arguments;
+      result = {};
 
       for (i = 0, l = a.length; i < l; i++)
         result[a[i]] = _getValue(a[i]);
