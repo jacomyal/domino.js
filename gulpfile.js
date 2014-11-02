@@ -1,5 +1,6 @@
 var gulp = require('gulp'),
     jshint = require('gulp-jshint'),
+    gjslint = require('gulp-gjslint'),
     mocha = require('gulp-mocha'),
     phantom = require('gulp-mocha-phantomjs'),
     browserify = require('gulp-browserify'),
@@ -13,19 +14,23 @@ var indexFile = './src/domino.core.js',
 
 // Linting
 gulp.task('lint', function() {
-
   // Linting configurations
   var jshintConfig = {
-    '-W055': true,
-    '-W040': true,
-    '-W064': true,
-    node: true,
-    browser: true
-  };
+        '-W055': true,
+        '-W040': true,
+        '-W064': true,
+        node: true,
+        browser: true
+      },
+      gjslintConfig = {
+        flags: ['--nojsdoc', '--disable 211,212']
+      };
 
   return gulp.src(jsFiles)
     .pipe(jshint(jshintConfig))
-    .pipe(jshint.reporter('default'));
+    .pipe(jshint.reporter('default'))
+    .pipe(gjslint(gjslintConfig))
+    .pipe(gjslint.reporter('console'), {fail: true});
 });
 
 // Building
