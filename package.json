@@ -19,6 +19,7 @@
     "mocha": "~1.21.4"
   },
   "dependencies": {
+    "djax": "^1.0.0",
     "emmett": "^1.0.0",
     "typology": "^0.1.0"
   }

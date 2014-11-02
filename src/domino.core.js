@@ -1,6 +1,7 @@
 'use strict';
 
-var types = require('typology'),
+var ajax = require('djax'),
+    types = require('typology'),
     emitter = require('emmett'),
     logger = require('./domino.logger.js'),
     helpers = require('./domino.helpers.js'),
@@ -31,6 +32,12 @@ types.add('domino.facet', {
   description: '?string',
   namespace: '?domino.name',
   get: 'function'
+});
+types.add('domino.service', function(obj) {
+  var result =
+    types.check(obj, 'object') &&
+    types.check(obj.id, 'domino.name') &&
+    types.check(obj.url, 'string');
 });
 
 // Orders
@@ -102,6 +109,7 @@ var domino = function(options) {
 
       // Instance related attributes:
       _facets = {},
+      _services = {},
       _properties = {},
       _emitter = new emitter(),
       _mixin = mixinForge(this);
@@ -349,6 +357,8 @@ var domino = function(options) {
       _registerFacets(specs.facets);
     if (specs.properties)
       _registerProperties(specs.properties);
+    if (specs.services)
+      _registerServices(specs.services);
     if (specs.bindings)
       _emitter.on(specs.bindings);
 
@@ -599,6 +609,117 @@ var domino = function(options) {
     return this;
   }
 
+  /**
+   * This function registers one service into the controller. Check the
+   * "domino.service" custom type to know more about the optional parameters.
+   *
+   * Variant 1:
+   * **********
+   * > _registerService({
+   * >   id: 'getUser',
+   * >   url: '/api/user/:id',
+   * >   error: function(xhr, m, error) { throw; } },
+   * >   success: function(data) { return 42; } },
+   * > });
+   *
+   * @param  {domino.service} specs The specifications of the service.
+   * @return {*}                    Returns this.
+   *
+   * Variant 2:
+   * **********
+   * > _registerService('myService', myServiceSpecs);
+   *
+   * @param  {string}            id    The id of the service.
+   * @param  {domino.service(*)} specs The specs of the service (does not
+   *                                   require an id).
+   * @return {*}                       Returns this.
+   */
+  function _registerService(specs) {
+    // Actually try to register the service:
+    if (arguments.length === 1) {
+      if (!types.check(specs, 'domino.service'))
+        _self.die('Wrong type.');
+
+      if (_properties[specs.id])
+        _self.die('A property named "' + specs.id + '" already exists.');
+      if (_services[specs.id])
+        _self.die('The service "' + specs.id + '" already exists.');
+      _services[specs.id] = helpers.clone(specs);
+
+    // Refactor arguments, recall the function:
+    } else if (arguments.length === 2) {
+      var id = specs,
+          fullSpecs;
+
+      specs = arguments[1];
+
+      if (typeof specs === 'object') {
+        fullSpecs = helpers.clone(specs);
+        fullSpecs.id = id;
+      } else
+        _self.die('Wrong type.');
+
+      return _registerFacet.call(this, fullSpecs);
+    }
+
+    return this;
+  }
+
+
+  /**
+   * This function is an helper for registering one or several services at the
+   * same time.
+   *
+   * Variant 1:
+   * **********
+   * > _registerServices({
+   * >   myService1: myServiceSpecs1,
+   * >   myService2: myServiceSpecs2
+   * > });
+   *
+   * @param  {Object} services An object with services IDs as keys, and the
+   *                           related specs. IDs are not required in specs.
+   * @return {*}               Returns this.
+   *
+   * Variant 2:
+   * **********
+   * > _registerServices([
+   * >   myServiceSpecs1,
+   * >   myServiceSpecs2
+   * > ]);
+   *
+   * @param  {[domino.services]} services An array of the specs of the services
+   *                                      to register.
+   * @return {*}                          Returns this.
+   *
+   * Other variants:
+   * ***************
+   * Any of the _registerService signatures work as well here:
+   * > _registerServices(myServiceSpec);
+   * > _registerServices('myService', myServiceSpecWithoutID);
+   */
+  function _registerServices(specs) {
+    var i,
+        l,
+        k,
+        id;
+
+    if (arguments.length === 1) {
+      if (types.check(specs, 'domino.service'))
+        _registerService.call(this, specs);
+      else if (types.check(specs, 'array'))
+        for (i = 0, l = specs.length; i < l; i++)
+          _registerService.call(this, specs[i]);
+      else if (types.check(specs, 'object'))
+        for (k in specs)
+          _registerService.call(this, k, specs[k]);
+
+    } else
+      _registerService.apply(this, arguments);
+
+    return this;
+  }
+
 
 
   /**
@@ -740,6 +861,8 @@ var domino = function(options) {
   this.registerFacets = _registerFacets;
   this.registerProperty = _registerProperty;
   this.registerProperties = _registerProperties;
+  this.registerService = _registerService;
+  this.registerServices = _registerServices;
   this.update = _orderUpdateProperty;
   this.get = _getValue;
   this.mixin = _mixin;
@@ -819,6 +942,7 @@ var domino = function(options) {
     _executionLock = null;
     _facets = null;
     _properties = null;
+    _services = null;
 
     // Kill emitter:
     _emitter.off();
