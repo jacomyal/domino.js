@@ -17,6 +17,7 @@
     "gulp-mocha-phantomjs": "~0.5.0"
   },
   "dependencies": {
+    "emmett": "^1.0.0",
     "typology": "^0.1.0"
   }
 }

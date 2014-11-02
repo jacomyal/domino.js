@@ -1,9 +1,9 @@
 'use strict';
 
 var types = require('typology'),
+    emitter = require('emmett'),
     logger = require('./domino.logger.js'),
     helpers = require('./domino.helpers.js'),
-    emitter = require('./domino.emitter.js'),
     mixinForge = require('./domino.react.js');
 
 /**
