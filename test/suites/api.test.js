@@ -115,6 +115,22 @@ describe('API', function() {
     });
   });
 
+  describe('#.settings', function() {
+    it('should heritate from the domino.settings object', function() {
+      var controller = new domino();
+      assert(controller.settings('mySetting') === undefined);
+
+      domino.settings.mySetting = 'globalValue';
+      assert(controller.settings('mySetting') === 'globalValue');
+
+      controller.settings('mySetting', 'instanceValue');
+      assert(controller.settings('mySetting') === 'instanceValue');
+
+      controller.settings('mySetting', undefined);
+      assert(controller.settings('mySetting') === 'globalValue');
+    });
+  });
+
   describe('#.register', function() {
     it('should register properties and facets given in arrays', function() {
       var controller = new domino();

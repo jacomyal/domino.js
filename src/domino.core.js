@@ -99,6 +99,9 @@ var _instances = {},
 var domino = function(options) {
   var _self = this,
 
+      // Settings:
+      _settings = {},
+
       // Orders:
       _stackFuture = [],
       _stackCurrents = [],
@@ -893,19 +896,19 @@ var domino = function(options) {
   // Settings method:
   this.settings = function(a1, a2) {
     if (typeof a1 === 'string' && arguments.length === 1)
-      return defaultSettings[a1];
+      return (_settings[a1] !== undefined && _settings[a1] !== null) ?
+        _settings[a1] :
+        defaultSettings[a1];
     else {
       var o = (typeof a1 === 'object' && arguments.length === 1) ?
         a1 || {} :
         {};
+
       if (typeof a1 === 'string')
         o[a1] = a2;
 
       for (var k in o)
-        if (o[k] !== undefined)
-          defaultSettings[k] = o[k];
-        else
-          delete defaultSettings[k];
+        _settings[k] = o[k];
 
       return this;
     }
