@@ -75,6 +75,7 @@ types.add('domino.order', function(obj) {
  * Default domino's settings:
  */
 var defaultSettings = {
+  solveFromSpecs: true,
   paramSolver: /:([^\/]*)/g,
   mixinControllerName: 'control',
   errorMessage: 'error from domino',
@@ -984,6 +985,7 @@ var domino = function(options) {
       else if (types.check(id, 'object')) {
         specs = id;
         id = specs.id;
+        specs.id = undefined;
       }
     } else if (arguments.length === 2) {
       if (!types.check(id, 'string'))
@@ -1005,6 +1007,7 @@ var domino = function(options) {
 
     // Resolve URL and data:
     var execRes,
+        solveFromSpecs = _self.settings('solveFromSpecs'),
         solver = _self.settings('paramSolver');
 
     if (solver) {
@@ -1015,6 +1018,11 @@ var domino = function(options) {
             execRes[0],
             _getValue(execRes[1]).toString()
           );
+        else if (solveFromSpecs && ajaxSpecs[execRes[1]])
+          ajaxSpecs.url = ajaxSpecs.url.replace(
+            execRes[0],
+            ajaxSpecs[execRes[1]]
+          );
 
       // Resolve data:
       ajaxSpecs.data = helpers.browse(
@@ -1023,10 +1031,13 @@ var domino = function(options) {
           if (
             typeof scalar === 'string' &&
             (execRes = solver.exec(scalar)) &&
-            execRes[0] === scalar && // Check only strings that entirely matched
-            (_properties[execRes[1]] || _facets[execRes[1]])
-          )
-            return _getValue(execRes[1]);
+            execRes[0] === scalar // Check only strings that entirely matched
+          ) {
+            if (_properties[execRes[1]] || _facets[execRes[1]])
+              return _getValue(execRes[1]);
+            else if (solveFromSpecs && ajaxSpecs[execRes[1]])
+              return ajaxSpecs[execRes[1]];
+          }
 
           return scalar;
         }
