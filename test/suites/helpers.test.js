@@ -138,4 +138,21 @@ describe('Helpers', function() {
       assert.deepEqual(parsed, [1, 'a', false, null, undefined]);
     });
   });
+
+  describe('"concat" method', function() {
+    it('should concat the arguments', function() {
+      var arr = domino.helpers.concat(
+        1,
+        null,
+        undefined,
+        [undefined, null],
+        [2, 3],
+        [[4]],
+        [5],
+        [[null]]
+      );
+
+      assert.deepEqual(arr, [1, 2, 3, [4], 5, [null]]);
+    });
+  });
 });

@@ -155,8 +155,52 @@ function browse(item, fn) {
   return res;
 }
 
+/**
+ * This function takes any number of arguments, and returns an array
+ * concatenating all of them, without the nully elements. If you give it arrays,
+ * then it will concatenate their contents.
+ *
+ * Example:
+ * ********
+ *  > concat(;
+ *  >   1,
+ *  >   null,
+ *  >   undefined,
+ *  >   [undefined, null],
+ *  >   [2, 3],
+ *  >   [[4]],
+ *  >   [5],
+ *  >   [[null]]
+ *  > );
+ *
+ *  will return:
+ *  > [
+ *  >   1,
+ *  >   2,
+ *  >   3,
+ *  >   [4],
+ *  >   5,
+ *  >   [null]
+ *  > ];
+ *
+ * @param  {*+}    Any number of arguments.
+ * @return {array} The concatenated array.
+ */
+function concat() {
+  return Array.prototype.reduce.call(
+    arguments,
+    function(res, arg) {
+      return res.concat(arg);
+    },
+    []
+  ).filter(function(val) {
+    return val !== undefined && val !== null;
+  });
+}
+
 module.exports = {
   clone: clone,
   extend: extend,
-  browse: browse
+  browse: browse,
+  concat: concat
 };
