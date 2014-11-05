@@ -52,6 +52,11 @@ var orderTypes = {
     type: 'string',
     events: 'string|array',
     data: '?*'
+  },
+  request: {
+    type: 'string',
+    service: 'string',
+    specs: '?object'
   }
 };
 
@@ -732,7 +737,7 @@ var domino = function(options) {
       } else
         _self.die('Wrong type.');
 
-      return _registerFacet.call(this, fullSpecs);
+      return _registerService.call(_self, fullSpecs);
     }
 
     return this;
@@ -995,10 +1000,12 @@ var domino = function(options) {
 
     // Merge service definition and request specs:
     var ajaxSpecs = helpers.extend(specs, _services[id]);
+    ajaxSpecs.success = helpers.concat(specs.success, _services[id].success);
+    ajaxSpecs.error = helpers.concat(specs.error, _services[id].error);
 
     // Resolve URL and data:
     var execRes,
-        solver = this.settings('paramSolver');
+        solver = _self.settings('paramSolver');
 
     if (solver) {
       // Resolve URL:
@@ -1027,7 +1034,7 @@ var domino = function(options) {
     }
 
     // Launch Ajax call:
-    var xhr = domino.ajax(specs);
+    var xhr = domino.ajax(ajaxSpecs);
 
     return xhr;
   }
