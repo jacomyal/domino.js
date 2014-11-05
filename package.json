@@ -7,6 +7,8 @@
   "author": "Alexis Jacomy - Atelier Iceberg",
   "license": "MIT",
   "devDependencies": {
+    "body-parser": "^1.9.2",
+    "express": "^4.10.1",
     "gulp": "~3.8.7",
     "gulp-browserify": "~0.5.0",
     "gulp-gjslint": "^0.1.4",
