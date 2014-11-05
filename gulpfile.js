@@ -61,7 +61,7 @@ gulp.task('node-test', function() {
 gulp.task('browser-test', ['build-tests'], function() {
   return gulp.src('./test/browser/unit.html')
     .pipe(phantom({reporter: 'spec'}));
-})
+});
 
 // Watching
 gulp.task('watch', ['build-tests'], function() {
