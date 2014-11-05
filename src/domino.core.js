@@ -1027,7 +1027,7 @@ var domino = function(options) {
     }
 
     // Launch Ajax call:
-    var xhr = ajax(specs);
+    var xhr = domino.ajax(specs);
 
     return xhr;
   }
@@ -1151,6 +1151,7 @@ var domino = function(options) {
  * GLOBAL PUBLIC DECLARATIONS:
  * ***************************
  */
+domino.ajax = ajax;
 domino.types = types;
 domino.helpers = helpers;
 domino.emitter = emitter;
