@@ -92,7 +92,7 @@ var model = {
  */
 var controller = {
   getAll: function(req, res) {
-    res.send(model.readData());
+    res.send({ result: model.readData() });
   },
   getRow: function(req, res) {
     var result;
@@ -149,21 +149,11 @@ var controller = {
     }
 
     if (result)
-      res.send({ ok: 1 });
+      res.send({ ok: 1, id: id });
     else
       res.status(404).send('Data not found');
   }
 };
-
-
-
-
-/**
- * INITIALIZE THE DATABASE:
- * ************************
- */
-model.createData('abcde');
-model.createData('toBeDeleted');
 
 
 
