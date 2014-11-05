@@ -370,15 +370,15 @@ var domino = function(options) {
   function _orderUpdateProperty(propName, value) {
     if (arguments.length === 1) {
       if (!types.check(propName, 'object'))
-        this.die('Wrong arguments.');
+        _self.die('Wrong arguments.');
 
       var k;
       for (k in propName)
-        this.update(k, propName[k]);
+        _self.update(k, propName[k]);
 
     } else if (arguments.length === 2) {
       if (!types.check(propName, 'domino.name'))
-        this.die('Invalid property name.');
+        _self.die('Invalid property name.');
 
       if (!_properties[propName])
         _self.die('The property "' + propName + '" does not exist.');
@@ -468,7 +468,7 @@ var domino = function(options) {
     // Actually try to register the property:
     if (arguments.length === 1) {
       if (types.check(specs, 'string'))
-        return _registerProperty.call(this, { id: specs });
+        return _registerProperty.call(_self, { id: specs });
 
       if (!types.check(specs, 'domino.property'))
         _self.die('Wrong type.');
@@ -497,7 +497,7 @@ var domino = function(options) {
       } else
         _self.die('Wrong type.');
 
-      return _registerProperty.call(this, fullSpecs);
+      return _registerProperty.call(_self, fullSpecs);
     }
 
     return this;
@@ -546,16 +546,16 @@ var domino = function(options) {
 
     if (arguments.length === 1) {
       if (types.check(specs, 'domino.property|string'))
-        _registerProperty.call(this, specs);
+        _registerProperty.call(_self, specs);
       else if (types.check(specs, 'array'))
         for (i = 0, l = specs.length; i < l; i++)
-          _registerProperty.call(this, specs[i]);
+          _registerProperty.call(_self, specs[i]);
       else if (types.check(specs, 'object'))
         for (k in specs)
-          _registerProperty.call(this, k, specs[k]);
+          _registerProperty.call(_self, k, specs[k]);
 
     } else
-      _registerProperty.apply(this, arguments);
+      _registerProperty.apply(_self, arguments);
 
     return this;
   }
@@ -619,7 +619,7 @@ var domino = function(options) {
       } else
         _self.die('Wrong type.');
 
-      return _registerFacet.call(this, fullSpecs);
+      return _registerFacet.call(_self, fullSpecs);
     }
 
     return this;
@@ -667,16 +667,16 @@ var domino = function(options) {
 
     if (arguments.length === 1) {
       if (types.check(specs, 'domino.facet'))
-        _registerFacet.call(this, specs);
+        _registerFacet.call(_self, specs);
       else if (types.check(specs, 'array'))
         for (i = 0, l = specs.length; i < l; i++)
-          _registerFacet.call(this, specs[i]);
+          _registerFacet.call(_self, specs[i]);
       else if (types.check(specs, 'object'))
         for (k in specs)
-          _registerFacet.call(this, k, specs[k]);
+          _registerFacet.call(_self, k, specs[k]);
 
     } else
-      _registerFacet.apply(this, arguments);
+      _registerFacet.apply(_self, arguments);
 
     return this;
   }
@@ -779,16 +779,16 @@ var domino = function(options) {
 
     if (arguments.length === 1) {
       if (types.check(specs, 'domino.service'))
-        _registerService.call(this, specs);
+        _registerService.call(_self, specs);
       else if (types.check(specs, 'array'))
         for (i = 0, l = specs.length; i < l; i++)
-          _registerService.call(this, specs[i]);
+          _registerService.call(_self, specs[i]);
       else if (types.check(specs, 'object'))
         for (k in specs)
-          _registerService.call(this, k, specs[k]);
+          _registerService.call(_self, k, specs[k]);
 
     } else
-      _registerService.apply(this, arguments);
+      _registerService.apply(_self, arguments);
 
     return this;
   }
