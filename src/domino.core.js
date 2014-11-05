@@ -34,10 +34,11 @@ types.add('domino.facet', {
   get: 'function'
 });
 types.add('domino.service', function(obj) {
-  var result =
+  return (
     types.check(obj, 'object') &&
     types.check(obj.id, 'domino.name') &&
-    types.check(obj.url, 'string');
+    types.check(obj.url, 'string')
+  );
 });
 
 // Orders
@@ -69,6 +70,7 @@ types.add('domino.order', function(obj) {
  * Default domino's settings:
  */
 var defaultSettings = {
+  paramSolver: /:([^\/]*)/g,
   mixinControllerName: 'control',
   errorMessage: 'error from domino',
   verbose: true
@@ -186,6 +188,7 @@ var domino = function(options) {
         arr2,
         order,
 
+        requests = [],
         updates = {},
         emits = {};
 
@@ -227,6 +230,11 @@ var domino = function(options) {
           }
           break;
 
+        // Domino does not do any deduplication on services calls.
+        case 'request':
+          requests.push(order);
+          break;
+
         default:
           _self.die('Unknown order type "' + order.type + '"');
       }
@@ -236,6 +244,8 @@ var domino = function(options) {
       _updateProperty(k, updates[k].value);
     for (k in emits)
       _emitter.emit(k, emits[k].data);
+    for (i = 0; i < requests.length; i++)
+      _requestService(requests[i].service, requests[i].specs);
 
     // Update lock flag:
     _executionLock = false;
@@ -286,6 +296,64 @@ var domino = function(options) {
       type: 'emit',
       events: event.type,
       data: event.data
+    });
+
+    return this;
+  }
+
+
+  /**
+   * This function adds the order of requesting a service.
+   *
+   * Variant 1:
+   * **********
+   * > _orderRequestService('myService');
+   * > _orderRequestService('myService', { data: myData });
+   *
+   * @param  {string}  id    The service id.
+   * @param  {?object} specs The specifications of the request (without ID).
+   * @return {*}             Returns this.
+   *
+   * Variant 2:
+   * **********
+   * > _orderRequestService({
+   * >   id: 'myService',
+   * >   success: function(data) { console.log(data); }
+   * > });
+   *
+   * @param  {object} specs The specifications of the request (with ID).
+   * @return {*}            Returns this.
+   *
+   * Variant 3:
+   * **********
+   * > _orderRequestService('myService', function(data) { console.log(data); });
+   *
+   * @param  {string}   id      The service id.
+   * @param  {function} success The success callback.
+   * @return {*}                Returns this.
+   */
+  function _orderRequestService(id, specs) {
+    if (arguments.length === 1) {
+      if (types.check(id, 'string'))
+        specs = {};
+      else if (types.check(id, 'object')) {
+        specs = id;
+        id = specs.id;
+      }
+    } else if (arguments.length === 2) {
+      if (!types.check(id, 'string'))
+        _self.die('Wrong arguments');
+
+      if (types.check(specs, 'function'))
+        specs = { success: specs };
+      else if (!types.check(specs, 'object'))
+        _self.die('Wrong arguments');
+    }
+
+    _addOrder({
+      type: 'request',
+      service: id,
+      specs: specs
     });
 
     return this;
@@ -492,6 +560,7 @@ var domino = function(options) {
     return this;
   }
 
+
   /**
    * This function registers one facet into the controller. Check the
    * "domino.facet" custom type to know more about the optional parameters.
@@ -612,6 +681,7 @@ var domino = function(options) {
     return this;
   }
 
+
   /**
    * This function registers one service into the controller. Check the
    * "domino.service" custom type to know more about the optional parameters.
@@ -725,12 +795,12 @@ var domino = function(options) {
 
 
 
+
   /**
    * ******************
    * DATA MANIPULATION:
    * ******************
    */
-
 
   /**
    * This method updates the value associated to a property.
@@ -855,6 +925,117 @@ var domino = function(options) {
 
 
   /**
+   * **************
+   * AJAX SERVICES:
+   * **************
+   */
+
+  /**
+   * This method will make an Ajax call through a previously registered service.
+   * It is possible to override any parameter given to the service definition
+   * through a specs object, or to add any other option.
+   *
+   * Parameter solving:
+   * ******************
+   * Also, if the setting "paramSolver" is a regular expression, the references
+   * to registered properties and facets in the URL or the data object will be
+   * replaced by the related values.
+   *
+   * For instance, with the default value, if the property "projectId" is
+   * registered and has the value 123456 the URL "/api/:projectId" will be
+   * replaced by "/api/123456" before the Ajax call is sent.
+   *
+   * Variant 1:
+   * **********
+   * > _requestService('myService');
+   * > _requestService('myService', { data: myData });
+   *
+   * @param  {string}  id    The service id.
+   * @param  {?object} specs The specifications of the request (without ID).
+   * @return {djxhr}         Returns the Djax modified XHR object.
+   *
+   * Variant 2:
+   * **********
+   * > _requestService({
+   * >   id: 'myService',
+   * >   success: function(data) { console.log(data); }
+   * > });
+   *
+   * @param  {object} specs The specifications of the request (with ID).
+   * @return {djxhr}        Returns the Djax modified XHR object.
+   *
+   * Variant 3:
+   * **********
+   * > _requestService('myService', function(data) { console.log(data); });
+   *
+   * @param  {string}   id      The service id.
+   * @param  {function} success The success callback.
+   * @return {djxhr}            Returns the Djax modified XHR object.
+   */
+  function _requestService(id, specs) {
+    if (arguments.length === 1) {
+      if (types.check(id, 'string'))
+        specs = {};
+      else if (types.check(id, 'object')) {
+        specs = id;
+        id = specs.id;
+      }
+    } else if (arguments.length === 2) {
+      if (!types.check(id, 'string'))
+        _self.die('Wrong arguments');
+
+      if (types.check(specs, 'function'))
+        specs = { success: specs };
+      else if (!types.check(specs, 'object'))
+        _self.die('Wrong arguments');
+    }
+
+    if (!_services[id])
+      _self.die('The service "' + id + '" does not exist.');
+
+    // Merge service definition and request specs:
+    var ajaxSpecs = helpers.extend(specs, _services[id]);
+
+    // Resolve URL and data:
+    var execRes,
+        solver = this.settings('paramSolver');
+
+    if (solver) {
+      // Resolve URL:
+      while ((execRes = solver.exec(ajaxSpecs.url)))
+        if (_properties[execRes[1]] || _facets[execRes[1]])
+          ajaxSpecs.url = ajaxSpecs.url.replace(
+            execRes[0],
+            _getValue(execRes[1]).toString()
+          );
+
+      // Resolve data:
+      ajaxSpecs.data = helpers.browse(
+        ajaxSpecs.data,
+        function(scalar) {
+          if (
+            typeof scalar === 'string' &&
+            (execRes = solver.exec(scalar)) &&
+            execRes[0] === scalar && // Check only strings that entirely matched
+            (_properties[execRes[1]] || _facets[execRes[1]])
+          )
+            return _getValue(execRes[1]);
+
+          return scalar;
+        }
+      );
+    }
+
+    // Launch Ajax call:
+    var xhr = ajax(specs);
+
+    return xhr;
+  }
+
+
+
+
+  /**
    * ********************
    * PUBLIC DECLARATIONS:
    * ********************
@@ -866,6 +1047,7 @@ var domino = function(options) {
   this.registerProperties = _registerProperties;
   this.registerService = _registerService;
   this.registerServices = _registerServices;
+  this.request = _orderRequestService;
   this.update = _orderUpdateProperty;
   this.get = _getValue;
   this.mixin = _mixin;
