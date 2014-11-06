@@ -32,6 +32,7 @@ describe('Services', function() {
       updateRow: {
         url: '/data/:id',
         type: 'POST',
+        contentType: 'application/json',
         success: function(data) {
           store.update('rows', store.get('rows').map(function(row) {
             return row.id === data.result.id ? data.result : row;
@@ -41,12 +42,14 @@ describe('Services', function() {
       createRow: {
         url: '/data/',
         type: 'PUT',
+        contentType: 'application/json',
         success: function(data) {
           store.update('rows', store.get('rows').concat([ data.result ]));
         }
       },
       deleteRow: {
         url: '/data/:id',
+        contentType: 'application/json',
         success: function(data) {
           store.update('rows', store.get('rows').filter(function(row) {
             return row.id !== data.id;
@@ -62,7 +65,19 @@ describe('Services', function() {
         setTimeout(function() {
           assert.deepEqual(store.get('rows'), []);
           done();
-        }, 100);
+        }, 10);
+      });
+    });
+
+    it('should solve the URL with ', function(done) {
+      store.request('createRow', {
+        data: { data: 'Lorem ipsum' },
+        success: function() {
+          setTimeout(function() {
+            assert.deepEqual(store.get('rows'), [{ id: '1', data: 'Lorem ipsum' }]);
+            done();
+          }, 10);
+        }
       });
     });
   });
