@@ -359,6 +359,8 @@ var domino = function(options) {
     if (!types.check(specs, 'object'))
       _self.die('Wrong type.');
 
+    if (specs.settings)
+      _self.settings(specs.settings);
     if (specs.facets)
       _registerFacets(specs.facets);
     if (specs.properties)
