@@ -973,8 +973,43 @@ var domino = function(options) {
       );
     }
 
+    // Hijack successes and errors that have already been added, to make them
+    // being executed in the scope of the controller:
+    function bindToController(fn) {
+      return fn.bind(_self);
+    }
+    ajaxSpecs.success = ajaxSpecs.success.map(bindToController);
+    ajaxSpecs.error = ajaxSpecs.error.map(bindToController);
+
     // Launch Ajax call:
     var xhr = domino.ajax(ajaxSpecs);
+
+    // Hijack this object, to make the promise methods bind functions to the
+    // controller before giving them to ajax:
+    function hijack(fnName, target) {
+      // Copy original method:
+      var originalName = '__' + fnName + '__';
+      target[originalName] = target[fnName];
+      target[fnName] = function() {
+        var i,
+            l = arguments.length,
+            newArguments = [];
+
+        for (i = 0; i < l; i++) {
+          if (types.check(arguments[i], 'function'))
+            newArguments.push(bindToController(arguments[i]));
+          else if (types.check(arguments[i], ['function']))
+            newArguments.push(arguments[i].map(bindToController));
+          else
+            newArguments.push(arguments[i]);
+        }
+
+        this[originalName].apply(this, newArguments);
+      };
+    }
+    hijack('done', xhr);
+    hijack('fail', xhr);
+    hijack('then', xhr);
 
     return xhr;
   }

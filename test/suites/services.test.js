@@ -18,13 +18,13 @@ describe('Services', function() {
       readAll: {
         url: '/data/',
         success: function(data) {
-          store.update('rows', data.result);
+          this.update('rows', data.result);
         }
       },
       readRow: {
         url: '/data/:id',
         success: function(data) {
-          store.update('rows', store.get('rows').map(function(row) {
+          this.update('rows', this.get('rows').map(function(row) {
             return row.id === data.result.id ? data.result : row;
           }));
         }
@@ -34,7 +34,7 @@ describe('Services', function() {
         type: 'POST',
         contentType: 'application/json',
         success: function(data) {
-          store.update('rows', store.get('rows').map(function(row) {
+          this.update('rows', this.get('rows').map(function(row) {
             return row.id === data.result.id ? data.result : row;
           }));
         }
@@ -44,14 +44,14 @@ describe('Services', function() {
         type: 'PUT',
         contentType: 'application/json',
         success: function(data) {
-          store.update('rows', store.get('rows').concat([ data.result ]));
+          this.update('rows', this.get('rows').concat([ data.result ]));
         }
       },
       deleteRow: {
         url: '/data/:id',
         contentType: 'application/json',
         success: function(data) {
-          store.update('rows', store.get('rows').filter(function(row) {
+          this.update('rows', this.get('rows').filter(function(row) {
             return row.id !== data.id;
           }));
         }
