@@ -153,6 +153,25 @@ var domino = function(options) {
 
 
   /**
+   * *****************
+   * INSTANCE HELPERS:
+   * *****************
+   */
+  function _bindToController(arg) {
+    if (typeof arg === 'function')
+      return arg.bind(_self);
+    else if (types.check(arg, 'array'))
+      return arg.map(_bindToController);
+    else if (Object.prototype.toString.call(arg) === '[object Arguments]')
+      return Array.prototype.map.call(arg, _bindToController);
+    else
+      return arg;
+  }
+
+
+
+
+  /**
    * ***************
    * CORE FUNCTIONS:
    * ***************
@@ -977,18 +996,15 @@ var domino = function(options) {
 
     // Hijack successes and errors that have already been added, to make them
     // being executed in the scope of the controller:
-    function bindToController(fn) {
-      return fn.bind(_self);
-    }
-    ajaxSpecs.success = ajaxSpecs.success.map(bindToController);
-    ajaxSpecs.error = ajaxSpecs.error.map(bindToController);
+    ajaxSpecs.success = _bindToController(ajaxSpecs.success);
+    ajaxSpecs.error = _bindToController(ajaxSpecs.error);
 
     // Launch Ajax call:
     var xhr = domino.ajax(ajaxSpecs);
 
     // Hijack this object, to make the promise methods bind functions to the
     // controller before giving them to ajax:
-    function hijack(fnName, target) {
+    function _hijack(fnName, target) {
       // Copy original method:
       var originalName = '__' + fnName + '__';
       target[originalName] = target[fnName];
@@ -998,10 +1014,11 @@ var domino = function(options) {
             newArguments = [];
 
         for (i = 0; i < l; i++) {
-          if (types.check(arguments[i], 'function'))
-            newArguments.push(bindToController(arguments[i]));
-          else if (types.check(arguments[i], ['function']))
-            newArguments.push(arguments[i].map(bindToController));
+          if (
+            types.check(arguments[i], 'function') ||
+            types.check(arguments[i], ['function'])
+          )
+            newArguments.push(_bindToController(arguments[i]));
           else
             newArguments.push(arguments[i]);
         }
@@ -1009,9 +1026,9 @@ var domino = function(options) {
         this[originalName].apply(this, newArguments);
       };
     }
-    hijack('done', xhr);
-    hijack('fail', xhr);
-    hijack('then', xhr);
+    _hijack('done', xhr);
+    _hijack('fail', xhr);
+    _hijack('then', xhr);
 
     return xhr;
   }
