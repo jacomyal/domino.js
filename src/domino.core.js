@@ -387,7 +387,7 @@ var domino = function(options) {
     if (specs.services)
       _registerServices(specs.services);
     if (specs.bindings)
-      _emitter.on(specs.bindings);
+      _emitter.on(_bindToController(specs.bindings));
 
     return this;
   }
@@ -1059,12 +1059,24 @@ var domino = function(options) {
   };
 
   // Adapt emitter's API:
-  this.on = function() {
-    _emitter.on.apply(_emitter, arguments);
+  this.on = function(o) {
+    if (arguments.length === 1 && types.check(o, 'object')) {
+      for (var k in o)
+        o[k] = _bindToController(o[k]);
+      _emitter.on.call(_emitter, o);
+    } else
+      _emitter.on.call(_emitter, _bindToController(arguments));
+
     return this;
   };
-  this.off = function() {
-    _emitter.off.apply(_emitter, arguments);
+  this.off = function(o) {
+    if (arguments.length === 1 && types.check(o, 'object')) {
+      for (var k in o)
+        o[k] = _bindToController(o[k]);
+      _emitter.off.call(_emitter, o);
+    } else
+      _emitter.off.call(_emitter, _bindToController(arguments));
+
     return this;
   };
   this.emit = function(events, data) {
