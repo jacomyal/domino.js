@@ -6,7 +6,7 @@ if (typeof document !== 'object')
   return;
 
 describe('Services', function() {
-  var store = new domino({
+  var controller = new domino({
     properties: {
       rows: {
         value: null,
@@ -61,20 +61,20 @@ describe('Services', function() {
 
   describe('Basic calls', function() {
     it('should update the "rows" property when calling "readAll"', function(done) {
-      store.request('readAll', function() {
+      controller.request('readAll', function() {
         setTimeout(function() {
-          assert.deepEqual(store.get('rows'), []);
+          assert.deepEqual(controller.get('rows'), []);
           done();
         });
       });
     });
 
     it('should solve the URL with ', function(done) {
-      store.request('createRow', {
+      controller.request('createRow', {
         data: { data: 'Lorem ipsum' },
         success: function() {
           setTimeout(function() {
-            assert.deepEqual(store.get('rows'), [{ id: '1', data: 'Lorem ipsum' }]);
+            assert.deepEqual(controller.get('rows'), [{ id: '1', data: 'Lorem ipsum' }]);
             done();
           });
         }
