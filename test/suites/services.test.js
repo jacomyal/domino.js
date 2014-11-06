@@ -65,7 +65,7 @@ describe('Services', function() {
         setTimeout(function() {
           assert.deepEqual(store.get('rows'), []);
           done();
-        }, 10);
+        });
       });
     });
 
@@ -76,7 +76,7 @@ describe('Services', function() {
           setTimeout(function() {
             assert.deepEqual(store.get('rows'), [{ id: '1', data: 'Lorem ipsum' }]);
             done();
-          }, 10);
+          });
         }
       });
     });

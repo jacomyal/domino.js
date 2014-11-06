@@ -931,8 +931,8 @@ var domino = function(options) {
 
     // Merge service definition and request specs:
     var ajaxSpecs = helpers.extend(specs, _services[id]);
-    ajaxSpecs.success = helpers.concat(specs.success, _services[id].success);
-    ajaxSpecs.error = helpers.concat(specs.error, _services[id].error);
+    ajaxSpecs.success = helpers.concat(_services[id].success, specs.success);
+    ajaxSpecs.error = helpers.concat(_services[id].error, specs.error);
 
     // Resolve URL and data:
     var execRes,
