@@ -133,7 +133,7 @@ var controller = {
     try {
       result = model.createData(data);
     } catch (e) {
-      return res.status(400).send('lol');
+      return res.status(400).send('Bad request');
     }
 
     res.send({ result: result });
