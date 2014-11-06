@@ -60,7 +60,7 @@ describe('Services', function() {
   });
 
   describe('Basic calls', function() {
-    it('should update the "rows" property when calling "readAll"', function(done) {
+    it('should work with GET services calls', function(done) {
       controller.request('readAll', function() {
         setTimeout(function() {
           assert.deepEqual(controller.get('rows'), []);
@@ -69,7 +69,7 @@ describe('Services', function() {
       });
     });
 
-    it('should solve the URL with ', function(done) {
+    it('should work with PUT services calls', function(done) {
       controller.request('createRow', {
         data: { data: 'Lorem ipsum' },
         success: function() {
