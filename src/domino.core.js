@@ -52,11 +52,6 @@ var orderTypes = {
     type: 'string',
     events: 'string|array',
     data: '?*'
-  },
-  request: {
-    type: 'string',
-    service: 'string',
-    specs: '?object'
   }
 };
 
@@ -194,7 +189,6 @@ var domino = function(options) {
         arr2,
         order,
 
-        requests = [],
         updates = {},
         emits = {};
 
@@ -236,11 +230,6 @@ var domino = function(options) {
           }
           break;
 
-        // Domino does not do any deduplication on services calls.
-        case 'request':
-          requests.push(order);
-          break;
-
         default:
           _self.die('Unknown order type "' + order.type + '"');
       }
@@ -250,8 +239,6 @@ var domino = function(options) {
       _updateProperty(k, updates[k].value);
     for (k in emits)
       _emitter.emit(k, emits[k].data);
-    for (i = 0; i < requests.length; i++)
-      _requestService(requests[i].service, requests[i].specs);
 
     // Update lock flag:
     _executionLock = false;
@@ -302,64 +289,6 @@ var domino = function(options) {
       type: 'emit',
       events: event.type,
       data: event.data
-    });
-
-    return this;
-  }
-
-
-  /**
-   * This function adds the order of requesting a service.
-   *
-   * Variant 1:
-   * **********
-   * > _orderRequestService('myService');
-   * > _orderRequestService('myService', { data: myData });
-   *
-   * @param  {string}  id    The service id.
-   * @param  {?object} specs The specifications of the request (without ID).
-   * @return {*}             Returns this.
-   *
-   * Variant 2:
-   * **********
-   * > _orderRequestService({
-   * >   id: 'myService',
-   * >   success: function(data) { console.log(data); }
-   * > });
-   *
-   * @param  {object} specs The specifications of the request (with ID).
-   * @return {*}            Returns this.
-   *
-   * Variant 3:
-   * **********
-   * > _orderRequestService('myService', function(data) { console.log(data); });
-   *
-   * @param  {string}   id      The service id.
-   * @param  {function} success The success callback.
-   * @return {*}                Returns this.
-   */
-  function _orderRequestService(id, specs) {
-    if (arguments.length === 1) {
-      if (types.check(id, 'string'))
-        specs = {};
-      else if (types.check(id, 'object')) {
-        specs = id;
-        id = specs.id;
-      }
-    } else if (arguments.length === 2) {
-      if (!types.check(id, 'string'))
-        _self.die('Wrong arguments');
-
-      if (types.check(specs, 'function'))
-        specs = { success: specs };
-      else if (!types.check(specs, 'object'))
-        _self.die('Wrong arguments');
-    }
-
-    _addOrder({
-      type: 'request',
-      service: id,
-      specs: specs
     });
 
     return this;
@@ -1061,12 +990,12 @@ var domino = function(options) {
   this.register = _register;
   this.registerFacet = _registerFacet;
   this.registerFacets = _registerFacets;
-  this.registerProperty = _registerProperty;
-  this.registerProperties = _registerProperties;
   this.registerService = _registerService;
   this.registerServices = _registerServices;
-  this.request = _orderRequestService;
+  this.registerProperty = _registerProperty;
+  this.registerProperties = _registerProperties;
   this.update = _orderUpdateProperty;
+  this.request = _requestService;
   this.get = _getValue;
   this.mixin = _mixin;
 
