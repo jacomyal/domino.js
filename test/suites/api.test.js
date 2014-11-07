@@ -224,6 +224,33 @@ describe('API', function() {
   });
 
   describe('Emmett\'s methods', function() {
+    it('#on should bind the handler, and execute it when #emit is called', function(done) {
+      var controller = new domino();
+
+      controller.on('myEvent', function(e) {
+        done();
+      });
+
+      controller.emit('myEvent');
+    });
+
+    it('#off should unbind the handler, and prevent it to be called when #emit is called', function(done) {
+      var controller = new domino(),
+          count = 0,
+          handler = function(e) {
+            count++;
+          };
+
+      controller.on('myEvent', handler);
+      controller.off('myEvent', handler);
+      controller.emit('myEvent');
+
+      setTimeout(function() {
+        assert(count === 0);
+        done();
+      }, 30);
+    });
+
     it('should send the data of the event', function(done) {
       var controller = new domino();
 
