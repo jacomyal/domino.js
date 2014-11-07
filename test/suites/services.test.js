@@ -15,18 +15,13 @@ describe('Services', function() {
       }
     },
     services: {
+      readRow: {
+        url: '/data/:id'
+      },
       readAll: {
         url: '/data/',
         success: function(data) {
           this.update('rows', data.result);
-        }
-      },
-      readRow: {
-        url: '/data/:id',
-        success: function(data) {
-          this.update('rows', this.get('rows').map(function(row) {
-            return row.id === data.result.id ? data.result : row;
-          }));
         }
       },
       updateRow: {
@@ -105,6 +100,59 @@ describe('Services', function() {
           });
         }
       });
+    });
+
+    it('should work with the "then" method (when success)', function(done) {
+      controller.request('createRow', {data: {data: 'Lorem ipsum'}})
+        .then(
+          function(data) {
+            assert(this instanceof domino);
+
+            setTimeout(function() {
+              assert.deepEqual(controller.get('rows'), [{ id: '2', data: 'Lorem ipsum' }]);
+              done();
+            });
+          },
+          function(djxhr, status, error) {
+            throw new Error('Unexpected error.');
+          }
+        );
+    });
+
+    it('should work with the "then" method (when error)', function(done) {
+      controller.request('readRow', {id: '1'})
+        .then(
+          function(data) {
+            throw new Error('Unexpected success.');
+          },
+          function(djxhr, status, error) {
+            assert(djxhr instanceof XMLHttpRequest);
+            assert(status === 'error');
+            assert(error === 'Row not found');
+            assert(this instanceof domino);
+            done();
+          }
+        );
+    });
+
+    it('should work with the "done" method', function(done) {
+      controller.request('readRow', {id: '2'})
+        .done(function(data) {
+          assert(data.result.data === 'Lorem ipsum');
+          assert(this instanceof domino);
+          done();
+        });
+    });
+
+    it('should work with the "fail" method', function(done) {
+      controller.request('readRow', {id: '1'})
+        .fail(function(djxhr, status, error) {
+          assert(djxhr instanceof XMLHttpRequest);
+          assert(status === 'error');
+          assert(error === 'Row not found');
+          assert(this instanceof domino);
+          done();
+        });
     });
   });
 });
