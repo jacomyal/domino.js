@@ -171,5 +171,55 @@ describe('API', function() {
       assert(controller.get('f1') === 'def');
       assert(controller.get('f2') === 456);
     });
+
+    // Test services for browser only:
+    if (typeof document === 'object')
+      it('should register services given in arrays', function(done) {
+        var controller = new domino();
+
+        controller.register({
+          services:  [
+            { id: 's1', url: '/ping/:data' },
+            { id: 's2', url: '/ping/:data' }
+          ]
+        });
+
+        controller
+          .request('s1', { data: 'test1' })
+          .done(function(data) {
+            assert(data.data === 'test1');
+            this
+              .request('s1', { data: 'test2' })
+              .done(function(data) {
+                assert(data.data === 'test2');
+                done();
+              });
+          });
+      });
+
+    // Test services for browser only:
+    if (typeof document === 'object')
+      it('should register services given in objects', function(done) {
+        var controller = new domino();
+
+        controller.register({
+          services: {
+            s1: { url: '/ping/:data' },
+            s2: { url: '/ping/:data' }
+          }
+        });
+
+        controller
+          .request('s1', { data: 'test1' })
+          .done(function(data) {
+            assert(data.data === 'test1');
+            this
+              .request('s1', { data: 'test2' })
+              .done(function(data) {
+                assert(data.data === 'test2');
+                done();
+              });
+          });
+      });
   });
 });
