@@ -209,23 +209,37 @@ function concat() {
  * @param  {*} target The target to bind the functions to.
  * @return {*}        The clone with bound functions.
  */
+var _cache = {};
 function bind(item, target) {
-  if (typeof item === 'function')
+  // Deal with functions:
+  if (typeof item === 'function') {
+    // Deal with bound functions caching:
+    // TODO
+
+    // Waiting for that to be implemented, let's just bind the function:
     return item.bind(target);
-  else if (types.check(item, 'array'))
+
+  // Deal with arrays:
+  } else if (types.check(item, 'array'))
     return item.map(function(val) {
       return bind(val, target);
     });
+
+  // Deal with Arguments objects:
   else if (Object.prototype.toString.call(item) === '[object Arguments]')
     return Array.prototype.map.call(item, function(val) {
       return bind(val, target);
     });
+
+  // Deal with objects:
   else if (types.check(item, 'object')) {
     var k,
         res = {};
     for (k in item)
       res[k] = bind(item[k], target);
     return res;
+
+  // Deal with other types (supposedly scalars):
   } else
     return item;
 }
