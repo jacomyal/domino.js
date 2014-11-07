@@ -153,25 +153,6 @@ var domino = function(options) {
 
 
   /**
-   * *****************
-   * INSTANCE HELPERS:
-   * *****************
-   */
-  function _bindToController(arg) {
-    if (typeof arg === 'function')
-      return arg.bind(_self);
-    else if (types.check(arg, 'array'))
-      return arg.map(_bindToController);
-    else if (Object.prototype.toString.call(arg) === '[object Arguments]')
-      return Array.prototype.map.call(arg, _bindToController);
-    else
-      return arg;
-  }
-
-
-
-
-  /**
    * ***************
    * CORE FUNCTIONS:
    * ***************
@@ -387,7 +368,7 @@ var domino = function(options) {
     if (specs.services)
       _registerServices(specs.services);
     if (specs.bindings)
-      _emitter.on(_bindToController(specs.bindings));
+      _emitter.on(helpers.bind(specs.bindings, _self));
 
     return this;
   }
@@ -996,8 +977,8 @@ var domino = function(options) {
 
     // Hijack successes and errors that have already been added, to make them
     // being executed in the scope of the controller:
-    ajaxSpecs.success = _bindToController(ajaxSpecs.success);
-    ajaxSpecs.error = _bindToController(ajaxSpecs.error);
+    ajaxSpecs.success = helpers.bind(ajaxSpecs.success, _self);
+    ajaxSpecs.error = helpers.bind(ajaxSpecs.error, _self);
 
     // Launch Ajax call:
     var xhr = domino.ajax(ajaxSpecs);
@@ -1018,7 +999,7 @@ var domino = function(options) {
             types.check(arguments[i], 'function') ||
             types.check(arguments[i], ['function'])
           )
-            newArguments.push(_bindToController(arguments[i]));
+            newArguments.push(helpers.bind(arguments[i], _self));
           else
             newArguments.push(arguments[i]);
         }
@@ -1062,20 +1043,20 @@ var domino = function(options) {
   this.on = function(o) {
     if (arguments.length === 1 && types.check(o, 'object')) {
       for (var k in o)
-        o[k] = _bindToController(o[k]);
+        o[k] = helpers.bind(o[k], _self);
       _emitter.on.call(_emitter, o);
     } else
-      _emitter.on.call(_emitter, _bindToController(arguments));
+      _emitter.on.call(_emitter, helpers.bind(arguments, _self));
 
     return this;
   };
   this.off = function(o) {
     if (arguments.length === 1 && types.check(o, 'object')) {
       for (var k in o)
-        o[k] = _bindToController(o[k]);
+        o[k] = helpers.bind(o[k], _self);
       _emitter.off.call(_emitter, o);
     } else
-      _emitter.off.call(_emitter, _bindToController(arguments));
+      _emitter.off.call(_emitter, helpers.bind(arguments, _self));
 
     return this;
   };

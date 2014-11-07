@@ -198,9 +198,42 @@ function concat() {
   });
 }
 
+/**
+ * This function recursively browse the argument "item" and returns a clone of
+ * it, but with functions bound the the argument "target".
+ *
+ * The browsing works with objects, arrays, Arguments instances and of course
+ * functions and scalars.
+ *
+ * @param  {*} item   The item to browse or to bind.
+ * @param  {*} target The target to bind the functions to.
+ * @return {*}        The clone with bound functions.
+ */
+function bind(item, target) {
+  if (typeof item === 'function')
+    return item.bind(target);
+  else if (types.check(item, 'array'))
+    return item.map(function(val) {
+      return bind(val, target);
+    });
+  else if (Object.prototype.toString.call(item) === '[object Arguments]')
+    return Array.prototype.map.call(item, function(val) {
+      return bind(val, target);
+    });
+  else if (types.check(item, 'object')) {
+    var k,
+        res = {};
+    for (k in item)
+      res[k] = bind(item[k], target);
+    return res;
+  } else
+    return item;
+}
+
 module.exports = {
   clone: clone,
   extend: extend,
   browse: browse,
-  concat: concat
+  concat: concat,
+  bind: bind
 };
