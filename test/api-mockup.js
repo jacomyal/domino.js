@@ -106,7 +106,7 @@ var controller = {
     if (result)
       res.send({ result: result });
     else
-      res.send({ result: null });
+      res.status(404).send('Row not found');
   },
   postRow: function(req, res) {
     var result,
