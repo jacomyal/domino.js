@@ -222,8 +222,7 @@ var domino = function(options) {
                   if (!('data' in arr2[j]))
                     break;
                 arr2.push(order);
-              }
-              else
+              } else
                 emits[arr[i]].push(order);
             } else
               emits[arr[i]] = [order];
@@ -237,8 +236,12 @@ var domino = function(options) {
     // Unstack orders:
     for (k in updates)
       _updateProperty(k, updates[k].value);
-    for (k in emits)
-      _emitter.emit(k, emits[k].data);
+    for (k in emits) {
+      arr = emits[k];
+      l = arr.length;
+      for (i = 0; i < l; i++)
+        _emitter.emit(k, arr[i].data);
+    }
 
     // Update lock flag:
     _executionLock = false;
@@ -1041,23 +1044,11 @@ var domino = function(options) {
 
   // Adapt emitter's API:
   this.on = function(o) {
-    if (arguments.length === 1 && types.check(o, 'object')) {
-      for (var k in o)
-        o[k] = helpers.bind(o[k], _self);
-      _emitter.on.call(_emitter, o);
-    } else
-      _emitter.on.call(_emitter, helpers.bind(arguments, _self));
-
+    _emitter.on.apply(_emitter, helpers.bind(arguments, _self));
     return this;
   };
   this.off = function(o) {
-    if (arguments.length === 1 && types.check(o, 'object')) {
-      for (var k in o)
-        o[k] = helpers.bind(o[k], _self);
-      _emitter.off.call(_emitter, o);
-    } else
-      _emitter.off.call(_emitter, helpers.bind(arguments, _self));
-
+    _emitter.on.apply(_emitter, helpers.bind(arguments, _self));
     return this;
   };
   this.emit = function(events, data) {

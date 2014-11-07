@@ -222,4 +222,32 @@ describe('API', function() {
           });
       });
   });
+
+  describe('Emmett\'s methods', function() {
+    it('should send the data of the event', function(done) {
+      var controller = new domino();
+
+      controller.on('myEvent', function(e) {
+        assert(e.data === 'myData');
+        done();
+      });
+
+      controller.emit('myEvent', 'myData');
+    });
+
+    it('should bind the handlers to the controller', function(done) {
+      var controller = new domino({
+        facets: {
+          myFacet: function() { return 'bim'; }
+        }
+      });
+
+      controller.on('myEvent', function() {
+        assert(this.get('myFacet'), 'bim');
+        done();
+      });
+
+      controller.emit('myEvent');
+    });
+  });
 });
