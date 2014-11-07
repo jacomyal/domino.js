@@ -49,6 +49,7 @@ describe('Services', function() {
       },
       deleteRow: {
         url: '/data/:id',
+        type: 'DELETE',
         contentType: 'application/json',
         success: function(data) {
           this.update('rows', this.get('rows').filter(function(row) {
@@ -88,6 +89,18 @@ describe('Services', function() {
         success: function() {
           setTimeout(function() {
             assert.deepEqual(controller.get('rows'), [{ id: '1', data: 'Dolores sit amet' }]);
+            done();
+          });
+        }
+      });
+    });
+
+    it('should work with DELETE services calls (with URL solving)', function(done) {
+      controller.request('deleteRow', {
+        id: '1',
+        success: function() {
+          setTimeout(function() {
+            assert.deepEqual(controller.get('rows'), []);
             done();
           });
         }
