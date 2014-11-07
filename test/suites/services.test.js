@@ -155,5 +155,49 @@ describe('Services', function() {
           done();
         });
     });
+
+    it('should work with several success callbacks', function(done) {
+      var count = 0;
+      controller.request('readRow', {
+        id: '2',
+        success: [
+          function(data) {
+            assert(data.result.data === 'Lorem ipsum');
+            assert(this instanceof domino);
+            count++;
+          },
+          function(data) {
+            assert(data.result.data === 'Lorem ipsum');
+            assert(this instanceof domino);
+            assert(count === 1);
+            done();
+          },
+        ]
+      });
+    });
+
+    it('should work with seceral error callbacks', function(done) {
+      var count = 0;
+      controller.request('readRow', {
+        id: '1',
+        error: [
+          function(djxhr, status, error) {
+            assert(djxhr instanceof XMLHttpRequest);
+            assert(status === 'error');
+            assert(error === 'Row not found');
+            assert(this instanceof domino);
+            count++;
+          },
+          function(djxhr, status, error) {
+            assert(djxhr instanceof XMLHttpRequest);
+            assert(status === 'error');
+            assert(error === 'Row not found');
+            assert(this instanceof domino);
+            assert(count === 1);
+            done();
+          },
+        ]
+      });
+    });
   });
 });
