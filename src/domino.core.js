@@ -946,6 +946,7 @@ var domino = function(options) {
 
     if (solver) {
       // Resolve URL:
+      solver.lastIndex = 0;
       while ((execRes = solver.exec(ajaxSpecs.url)))
         if (_properties[execRes[1]] || _facets[execRes[1]])
           ajaxSpecs.url = ajaxSpecs.url.replace(
@@ -962,6 +963,7 @@ var domino = function(options) {
       ajaxSpecs.data = helpers.browse(
         ajaxSpecs.data,
         function(scalar) {
+          solver.lastIndex = 0;
           if (
             typeof scalar === 'string' &&
             (execRes = solver.exec(scalar)) &&

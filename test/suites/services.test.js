@@ -27,6 +27,7 @@ describe('Services', function() {
       updateRow: {
         url: '/data/:id',
         type: 'POST',
+        data: { data: ':message' },
         contentType: 'application/json',
         success: function(data) {
           this.update('rows', this.get('rows').map(function(row) {
@@ -77,10 +78,10 @@ describe('Services', function() {
       });
     });
 
-    it('should work with POST services calls (with URL solving)', function(done) {
+    it('should work with POST services calls (with URL and data solving)', function(done) {
       controller.request('updateRow', {
         id: '1',
-        data: { data: 'Dolores sit amet' },
+        message: 'Dolores sit amet',
         success: function() {
           setTimeout(function() {
             assert.deepEqual(controller.get('rows'), [{ id: '1', data: 'Dolores sit amet' }]);
