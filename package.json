@@ -2,6 +2,7 @@
   "version": "0.0.0",
   "main": "dist/main.js",
   "scripts": {
+    "build": "gulp build",
     "test": "gulp test"
   },
   "author": "Alexis Jacomy - Atelier Iceberg",
@@ -18,7 +19,8 @@
     "gulp-rename": "~1.2.0",
     "gulp-uglify": "~0.3.1",
     "jshint-stylish": "^1.0.0",
-    "mocha": "~1.21.4"
+    "mocha": "~1.21.4",
+    "run-sequence": "^1.0.1"
   },
   "dependencies": {
     "djax": "^1.0.0",

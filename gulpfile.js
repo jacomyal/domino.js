@@ -1,11 +1,12 @@
 var gulp = require('gulp'),
-    jshint = require('gulp-jshint'),
-    gjslint = require('gulp-gjslint'),
     mocha = require('gulp-mocha'),
-    phantom = require('gulp-mocha-phantomjs'),
-    browserify = require('gulp-browserify'),
     uglify = require('gulp-uglify'),
     rename = require('gulp-rename'),
+    jshint = require('gulp-jshint'),
+    gjslint = require('gulp-gjslint'),
+    runSequence = require('run-sequence'),
+    browserify = require('gulp-browserify'),
+    phantom = require('gulp-mocha-phantomjs'),
     api = require('./test/api-mockup.js'),
     server;
 
@@ -80,16 +81,20 @@ gulp.task('browser-test-run', ['build-tests'], function() {
 });
 
 gulp.task('browser-test', ['browser-test-run'], function() {
-  // Tests are over, we close the server
+  // Tests are over, we close the server:
   server.close();
 });
 
 
-// Watching
+// Watching:
 gulp.task('watch', ['build-tests'], function() {
   gulp.watch([jsFiles].concat(testFiles), ['build-tests']);
 });
 
-// Macro tasks
-gulp.task('test', ['node-test', 'browser-test']);
-gulp.task('default', ['lint', 'test']);
+// Macro tasks:
+gulp.task('test', function() {
+  runSequence('lint', 'browser-test', 'node-test');
+});
+gulp.task('default', function() {
+  runSequence('lint', 'browser-test', 'node-test', 'build');
+});
