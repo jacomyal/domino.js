@@ -102,8 +102,8 @@ function extend() {
 
 /**
  * This function will recursively browse an object (or array), and return a deep
- * clone of this object (or array), but with every scalar objects transformed
- * with a function given as argument.
+ * clone of this object (or array), but with every scalar elements and functions
+ * transformed with a function given as argument.
  *
  * Example:
  * ********
@@ -139,7 +139,10 @@ function browse(item, fn) {
       l,
       res = {};
 
-  if (Array.isArray(item)) {
+  if (
+    Array.isArray(item) ||
+    Object.prototype.toString.call(item) === '[object Arguments]'
+  ) {
     res = [];
     for (i = 0, l = item.length; i < l; i++)
       res.push(browse(item[i], fn));
@@ -198,56 +201,9 @@ function concat() {
   });
 }
 
-/**
- * This function recursively browse the argument "item" and returns a clone of
- * it, but with functions bound the the argument "target".
- *
- * The browsing works with objects, arrays, Arguments instances and of course
- * functions and scalars.
- *
- * @param  {*} item   The item to browse or to bind.
- * @param  {*} target The target to bind the functions to.
- * @return {*}        The clone with bound functions.
- */
-var _cache = {};
-function bind(item, target) {
-  // Deal with functions:
-  if (typeof item === 'function') {
-    // Deal with bound functions caching:
-    // TODO
-
-    // Waiting for that to be implemented, let's just bind the function:
-    return item.bind(target);
-
-  // Deal with arrays:
-  } else if (types.check(item, 'array'))
-    return item.map(function(val) {
-      return bind(val, target);
-    });
-
-  // Deal with Arguments objects:
-  else if (Object.prototype.toString.call(item) === '[object Arguments]')
-    return Array.prototype.map.call(item, function(val) {
-      return bind(val, target);
-    });
-
-  // Deal with objects:
-  else if (types.check(item, 'object')) {
-    var k,
-        res = {};
-    for (k in item)
-      res[k] = bind(item[k], target);
-    return res;
-
-  // Deal with other types (supposedly scalars):
-  } else
-    return item;
-}
-
 module.exports = {
   clone: clone,
   extend: extend,
   browse: browse,
-  concat: concat,
-  bind: bind
+  concat: concat
 };

@@ -155,42 +155,4 @@ describe('Helpers', function() {
       assert.deepEqual(arr, [1, 2, 3, [4], 5, [null]]);
     });
   });
-
-  describe('"bind" method', function() {
-    function log() {
-      return this.data;
-    }
-
-    var o = {data: 123};
-
-    it('should work with a function', function() {
-      assert(domino.helpers.bind(log, o)() === 123);
-    });
-
-    it('should work with an array', function() {
-      assert.deepEqual(
-        domino.helpers.bind([log, log], o).map(function(fn) {
-          return fn();
-        }),
-        [123, 123]
-      );
-    });
-
-    it('should work with an object', function() {
-      var obj = domino.helpers.bind({a: log, b: {c: log}}, o);
-      assert(obj.a() === 123);
-      assert(obj.b.c() === 123);
-    });
-
-    it('should work with an Arguments object', function() {
-      (function() {
-        assert.deepEqual(
-          domino.helpers.bind(arguments, o).map(function(fn) {
-            return fn();
-          }),
-          [123, 123]
-        );
-      })(log, log);
-    });
-  });
 });

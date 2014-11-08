@@ -120,6 +120,65 @@ var domino = function(options) {
       _emitter = new emitter(),
       _mixin = mixinForge(this);
 
+  // Store a unique ID for the instance (inspired by jQuery):
+  this.expando = 'domino_' + ('' + Math.random()).replace(/\D/g, '');
+
+
+
+
+  /**
+   * *****************
+   * INSTANCE HELPERS:
+   * *****************
+   */
+  var _boundCache = {},
+      _cacheKey = 'cache_' + this.expando;
+
+  function _bindOneAndCache(item) {
+    if (types.check(item, 'function')) {
+      if (item[_cacheKey])
+        return _boundCache[item[_cacheKey]];
+      else {
+        item[_cacheKey] = 'function_' + ('' + Math.random()).replace(/\D/g, '');
+        _boundCache[item[_cacheKey]] = item.bind(_self);
+        return _boundCache[item[_cacheKey]];
+      }
+    } else
+      return item;
+  }
+
+  function _bindOneAndUncache(item) {
+    if (types.check(item, 'function')) {
+      if (item[_cacheKey]) {
+        var fn = _boundCache[item[_cacheKey]];
+        _boundCache[item[_cacheKey]] = null;
+        item[_cacheKey] = null;
+        return fn;
+      } else
+        return item.bind(_self);
+    } else
+      return item;
+  }
+
+  function _bindOne(item) {
+    if (types.check(item, 'function')) {
+      if (item[_cacheKey]) {
+        return _boundCache[item[_cacheKey]];
+      } else
+        return item.bind(_self);
+    } else
+      return item;
+  }
+
+  function _bind(object, cache) {
+    if (cache === true)
+      return helpers.browse(object, _bindOneAndCache);
+    else if (cache === false)
+      return helpers.browse(object, _bindOneAndUncache);
+    else
+      return helpers.browse(object, _bindOne);
+  }
+
 
 
 
@@ -371,7 +430,7 @@ var domino = function(options) {
     if (specs.services)
       _registerServices(specs.services);
     if (specs.bindings)
-      _emitter.on(helpers.bind(specs.bindings, _self));
+      _emitter.on(_bind(specs.bindings, true));
 
     return this;
   }
@@ -982,8 +1041,8 @@ var domino = function(options) {
 
     // Hijack successes and errors that have already been added, to make them
     // being executed in the scope of the controller:
-    ajaxSpecs.success = helpers.bind(ajaxSpecs.success, _self);
-    ajaxSpecs.error = helpers.bind(ajaxSpecs.error, _self);
+    ajaxSpecs.success = _bind(ajaxSpecs.success);
+    ajaxSpecs.error = _bind(ajaxSpecs.error);
 
     // Launch Ajax call:
     var xhr = domino.ajax(ajaxSpecs);
@@ -1004,7 +1063,7 @@ var domino = function(options) {
             types.check(arguments[i], 'function') ||
             types.check(arguments[i], ['function'])
           )
-            newArguments.push(helpers.bind(arguments[i], _self));
+            newArguments.push(_bind(arguments[i]));
           else
             newArguments.push(arguments[i]);
         }
@@ -1046,11 +1105,11 @@ var domino = function(options) {
 
   // Adapt emitter's API:
   this.on = function(o) {
-    _emitter.on.apply(_emitter, helpers.bind(arguments, _self));
+    _emitter.on.apply(_emitter, _bind(arguments, true));
     return this;
   };
   this.off = function(o) {
-    _emitter.on.apply(_emitter, helpers.bind(arguments, _self));
+    _emitter.off.apply(_emitter, _bind(arguments, false));
     return this;
   };
   this.emit = function(events, data) {
