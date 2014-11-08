@@ -2,9 +2,7 @@ var assert = require('assert'),
     domino = require('../../src/domino.core.js');
 
 describe('Properties', function() {
-
   describe('validation', function() {
-
     it('should validate correct properties.', function() {
       var correctProps = [
         {
@@ -33,7 +31,6 @@ describe('Properties', function() {
 
     it('should not validate incorrect properties.', function() {
       var incorrectProps = [
-
         // Wrong variable type
         'gloubiboulga',
 
@@ -63,7 +60,6 @@ describe('Properties', function() {
   });
 
   describe('registration', function() {
-
     it('should be possible to register a single property.', function() {
       var controller = new domino();
 
@@ -122,7 +118,6 @@ describe('Properties', function() {
   })
 
   describe('getters', function() {
-
     it('should be possible to retrieve a property.', function() {
       assert.strictEqual(controller.get('prop1'), undefined);
       assert.strictEqual(controller.get('prop2'), 'hello');
@@ -151,7 +146,6 @@ describe('Properties', function() {
   });
 
   describe('setters', function() {
-
     it('should be possible to set a property.', function(done) {
       controller.update('prop1', 'test1');
 

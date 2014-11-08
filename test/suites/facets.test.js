@@ -17,7 +17,6 @@ describe('Facets', function() {
   });
 
   describe('validation', function() {
-
     it('should validate correct facets.', function() {
       var correctFacets = [
         {
@@ -60,7 +59,6 @@ describe('Facets', function() {
   });
 
   describe('registration', function() {
-
     var get = function() {
       return this.get('firstname') + ' ' + this.get('lastname');
     };
@@ -106,7 +104,6 @@ describe('Facets', function() {
   });
 
   describe('getters', function() {
-
     it('should be possible to retrieve facets with properties indifferently.', function() {
 
       var result = controller.get('facet1', 'firstname');
