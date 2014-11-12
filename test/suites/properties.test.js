@@ -3,7 +3,7 @@ var assert = require('assert'),
 
 describe('Properties', function() {
   describe('validation', function() {
-    it('should validate correct properties.', function() {
+    it('should validate correct properties', function() {
       var correctProps = [
         {
           id: 'prop1',
@@ -29,7 +29,7 @@ describe('Properties', function() {
       });
     });
 
-    it('should not validate incorrect properties.', function() {
+    it('should not validate incorrect properties', function() {
       var incorrectProps = [
         // Wrong variable type
         'gloubiboulga',
@@ -60,7 +60,7 @@ describe('Properties', function() {
   });
 
   describe('registration', function() {
-    it('should be possible to register a single property.', function() {
+    it('should be possible to register a single property', function() {
       var controller = new domino();
 
       controller.registerProperty('prop1', '?string');
@@ -73,7 +73,7 @@ describe('Properties', function() {
       assert.strictEqual(controller.get('prop3'), 'world');
     });
 
-    it('should be possible to register multiple properties at once.', function() {
+    it('should be possible to register multiple properties at once', function() {
       var controller = new domino();
 
       controller.registerProperties({
@@ -88,7 +88,7 @@ describe('Properties', function() {
       assert.strictEqual(controller.get('prop3'), false);
     });
 
-    it('should trigger errors when trying to register invalid properties.', function() {
+    it('should trigger errors when trying to register invalid properties', function() {
       var controller = new domino();
 
       // Trying to set a property with required value but without starting value
@@ -118,13 +118,13 @@ describe('Properties', function() {
   })
 
   describe('getters', function() {
-    it('should be possible to retrieve a property.', function() {
+    it('should be possible to retrieve a property', function() {
       assert.strictEqual(controller.get('prop1'), undefined);
       assert.strictEqual(controller.get('prop2'), 'hello');
       assert.strictEqual(controller.get('prop3'), false);
     });
 
-    it('should be possible to retrieve multiple properties.', function() {
+    it('should be possible to retrieve multiple properties', function() {
       assert.deepEqual(
         controller.get('prop1', 'prop2', 'prop3'),
         {
@@ -146,7 +146,7 @@ describe('Properties', function() {
   });
 
   describe('setters', function() {
-    it('should be possible to set a property.', function(done) {
+    it('should be possible to set a property', function(done) {
       controller.update('prop1', 'test1');
 
       setTimeout(function() {
@@ -155,7 +155,7 @@ describe('Properties', function() {
       }, 0);
     });
 
-    it('should be possible to set multiple properties.', function(done) {
+    it('should be possible to set multiple properties', function(done) {
       controller.update({
         prop2: 'test2',
         prop3: true
@@ -170,13 +170,13 @@ describe('Properties', function() {
       }, 0);
     });
 
-    it('should not update value with wrong types.', function() {
+    it('should not update value with wrong types', function() {
       assert.throws(function() {
         controller.update('prop1', [ 'not a string' ]);
       });
     });
 
-    it('should not update multiple values with at least one wrong type.', function() {
+    it('should not update multiple values with at least one wrong type', function() {
       assert.throws(function() {
         controller.update({
           prop1: [ 'not a string' ]

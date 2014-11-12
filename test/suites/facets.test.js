@@ -2,7 +2,6 @@ var assert = require('assert'),
     domino = require('../../src/domino.core.js');
 
 describe('Facets', function() {
-
   var controller = new domino({
     properties: {
       firstname: {
@@ -17,7 +16,7 @@ describe('Facets', function() {
   });
 
   describe('validation', function() {
-    it('should validate correct facets.', function() {
+    it('should validate correct facets', function() {
       var correctFacets = [
         {
           id: 'facet1',
@@ -35,7 +34,7 @@ describe('Facets', function() {
       });
     });
 
-    it('should not validate incorrect facets.', function() {
+    it('should not validate incorrect facets', function() {
       var incorrectFacets = [
 
         // Wrong variable type
@@ -63,8 +62,7 @@ describe('Facets', function() {
       return this.get('firstname') + ' ' + this.get('lastname');
     };
 
-    it('should be possible to register a single facet.', function() {
-
+    it('should be possible to register a single facet', function() {
       controller.registerFacet('facet1', get);
       controller.registerFacet('facet2', {get: get, description: 'Yeah!'});
       controller.registerFacet({id: 'facet3', get: get, description: 'Yeah!'});
@@ -75,8 +73,7 @@ describe('Facets', function() {
       assert.strictEqual(controller.get('facet3'), 'Joachim Murat');
     });
 
-    it('should be possible to register multiple facets at once.', function() {
-
+    it('should be possible to register multiple facets at once', function() {
       controller.registerFacets({
         facet4: get,
         facet5: {get: get, description: 'Yeah!'}
@@ -87,7 +84,7 @@ describe('Facets', function() {
       assert.strictEqual(controller.get('facet5'), 'Joachim Murat');
     });
 
-    it('should trigger errors when trying to register invalid facets.', function() {
+    it('should trigger errors when trying to register invalid facets', function() {
       var controller = new domino();
 
       // Wrong signatures
@@ -104,8 +101,7 @@ describe('Facets', function() {
   });
 
   describe('getters', function() {
-    it('should be possible to retrieve facets with properties indifferently.', function() {
-
+    it('should be possible to retrieve facets with properties indifferently', function() {
       var result = controller.get('facet1', 'firstname');
 
       assert.deepEqual({
