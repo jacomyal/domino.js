@@ -1,6 +1,9 @@
 {
-  "version": "0.0.0",
-  "main": "dist/main.js",
+  "name": "domino-js",
+  "version": "2.0.0",
+  "description": "An asynchronous JavaScript event-driven controller for single page web applications development.",
+  "homepage": "http://dominojs.org",
+  "main": "src/domino.core.js",
   "scripts": {
     "build": "gulp build",
     "test": "gulp test"
