@@ -98,6 +98,18 @@ describe('Facets', function() {
         controller.registerFacet('facet', {hello: 'world'});
       });
     });
+
+    it('should trigger errors when trying to register already registered facets', function() {
+      var controller = new domino({
+        facets: {
+          myFacet: function() { return 'abc'; }
+        }
+      });
+
+      assert.throws(function() {
+        controller.registerFacet('myFacet', function() { return 'def'; });
+      });
+    });
   });
 
   describe('getters', function() {

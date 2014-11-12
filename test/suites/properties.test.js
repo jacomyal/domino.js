@@ -107,6 +107,18 @@ describe('Properties', function() {
         controller.registerProperty('prop1', {emit: 43});
       });
     });
+
+    it('should trigger errors when trying to register already registered properties', function() {
+      var controller = new domino({
+        properties: {
+          myProp: '?string'
+        }
+      });
+
+      assert.throws(function() {
+        controller.registerFacet('myProp', '?string');
+      });
+    });
   });
 
   // Unique controller for the getters & setters tests
