@@ -2,11 +2,13 @@ var gulp = require('gulp'),
     mocha = require('gulp-mocha'),
     uglify = require('gulp-uglify'),
     rename = require('gulp-rename'),
+    header = require('gulp-header'),
     jshint = require('gulp-jshint'),
     gjslint = require('gulp-gjslint'),
     runSequence = require('run-sequence'),
     browserify = require('gulp-browserify'),
     phantom = require('gulp-mocha-phantomjs'),
+    pkg = require('./package.json'),
     api = require('./test/api-mockup.js'),
     server;
 
@@ -39,15 +41,32 @@ gulp.task('lint', function() {
 
 // Building
 gulp.task('build', function() {
+  var banner = ['/**',
+    ' * <%= pkg.name %> - <%= pkg.description %>',
+    ' * @version v<%= pkg.version %>',
+    ' * @link <%= pkg.homepage %>',
+    ' * @license <%= pkg.license %>',
+    ' */',
+    ''].join('\n');
+
   return gulp.src(indexFile)
     .pipe(browserify({
       standalone: 'domino'
     }))
+
+    // Export unminified version:
+    .pipe(rename('domino.js'))
+    .pipe(header(banner, {pkg: pkg}))
+    .pipe(gulp.dest('./build'))
+
+    // Export minified version:
     .pipe(uglify())
+    .pipe(header(banner, {pkg: pkg}))
     .pipe(rename('domino.min.js'))
     .pipe(gulp.dest('./build'));
 });
 
+// Testing
 gulp.task('build-tests', function() {
   return gulp.src('./test/unit.collection.js')
     .pipe(browserify({debug: true}))
@@ -55,7 +74,6 @@ gulp.task('build-tests', function() {
     .pipe(gulp.dest('./test/build'));
 });
 
-// Testing
 gulp.task('node-test', function() {
   return gulp.src('./test/unit.collection.js')
     .pipe(mocha({reporter: 'spec'}));
