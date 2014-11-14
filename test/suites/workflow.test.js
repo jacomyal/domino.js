@@ -60,28 +60,16 @@ describe('Orders management', function() {
     }, 0);
   });
 
-  it('should throw an error if a value is updated twice with different values in the same frame', function(done) {
+  it('should throw an error if a value is updated twice with different values in the same frame', function() {
     var c = new domino({
       properties: {
         myProp: '?string'
-      },
-      bindings: {
-        'domino:die': function(e) {
-          assert.deepEqual(
-            [ 'You are trying to update the property "myProp" with the values',
-              'abc',
-              'and',
-              'def',
-              'at the same time.' ],
-            e.data.message
-          );
-          done();
-        }
       }
     });
 
     c.update('myProp', 'abc');
-    c.update('myProp', 'def');
-    assert.deepEqual(c.get('myProp'), undefined);
+    assert.throws(function() {
+      c.update('myProp', 'def')
+    });
   });
 });

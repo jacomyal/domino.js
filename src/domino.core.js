@@ -106,8 +106,11 @@ var domino = function(options) {
       _settings = {},
 
       // Orders:
-      _stackFuture = [],
-      _stackCurrents = [],
+      _hasFutureOrders = false,
+      _currentUpdates = {},
+      _futureUpdates = {},
+      _currentEmits = {},
+      _futureEmits = {},
 
       // Execution state:
       _timeout,
@@ -238,68 +241,22 @@ var domino = function(options) {
     // Set state:
     _timeout = null;
     _executionLock = true;
-    _stackCurrents = _stackFuture;
-    _stackFuture = [];
+    _hasFutureOrders = false;
+    _currentUpdates = _futureUpdates;
+    _currentEmits = _futureEmits;
+    _futureUpdates = {};
+    _futureEmits = {};
 
-    // Merge orders:
     var k,
         i,
-        j,
         l,
-        l2,
-        arr,
-        arr2,
-        order,
+        arr;
 
-        updates = {},
-        emits = {};
-
-    while ((order = _stackCurrents.shift()))
-      switch (order.type) {
-        // Domino throws an error if the same property must be updated several
-        // times at the same time with different values.
-        case 'update':
-          if (updates[order.property]) {
-            if (updates[order.property].value !== order.value)
-              _self.die(
-                'You are trying to update the property "' + order.property +
-                '" with the values', updates[order.property].value, 'and',
-                order.value, 'at the same time.'
-              );
-          } else
-            updates[order.property] = order;
-          break;
-
-        // If an event is emited several times with no data and at the same
-        // time, then it will be emited ony once instead.
-        case 'emit':
-          arr = Array.isArray(order.events) ?
-            order.events :
-            [order.events];
-          for (i = 0, l = arr.length; i < l; i++) {
-            if (emits[arr[i]]) {
-              if (!('data' in order)) {
-                arr2 = emits[arr[i]];
-                for (j = 0, l2 = arr2.length; j < l2; j++)
-                  if (!('data' in arr2[j]))
-                    break;
-                arr2.push(order);
-              } else
-                emits[arr[i]].push(order);
-            } else
-              emits[arr[i]] = [order];
-          }
-          break;
-
-        default:
-          _self.die('Unknown order type "' + order.type + '"');
-      }
-
-    // Unstack orders:
-    for (k in updates)
-      _updateProperty(k, updates[k].value);
-    for (k in emits) {
-      arr = emits[k];
+    // Execute orders:
+    for (k in _currentUpdates)
+      _updateProperty(k, _currentUpdates[k].value);
+    for (k in _currentEmits) {
+      arr = _currentEmits[k];
       l = arr.length;
       for (i = 0; i < l; i++)
         _emitter.emit(k, arr[i].data);
@@ -308,7 +265,7 @@ var domino = function(options) {
     // Update lock flag:
     _executionLock = false;
 
-    if (_stackFuture.length)
+    if (_hasFutureOrders)
       _timeout = setTimeout(_execute, 0);
   }
 
@@ -329,8 +286,54 @@ var domino = function(options) {
     if (!types.check(order, 'domino.order'))
       _self.die('Wrong type for order', order);
 
-    _stackFuture.push(order);
+    var i,
+        j,
+        l,
+        l2,
+        arr,
+        arr2;
 
+    switch (order.type) {
+      // Domino throws an error if the same property must be updated several
+      // times at the same time with different values.
+      case 'update':
+        if (_futureUpdates[order.property]) {
+          if (_futureUpdates[order.property].value !== order.value)
+            _self.die(
+              'You are trying to update the property "' + order.property +
+              '" with the values', _futureUpdates[order.property].value, 'and',
+              order.value, 'at the same time.'
+            );
+        } else
+          _futureUpdates[order.property] = order;
+        break;
+
+      // If an event is emited several times with no data and at the same
+      // time, then it will be emited ony once instead.
+      case 'emit':
+        arr = Array.isArray(order.events) ?
+          order.events :
+          [order.events];
+        for (i = 0, l = arr.length; i < l; i++) {
+          if (_futureEmits[arr[i]]) {
+            if (!('data' in order)) {
+              arr2 = _futureEmits[arr[i]];
+              for (j = 0, l2 = arr2.length; j < l2; j++)
+                if (!('data' in arr2[j]))
+                  break;
+              arr2.push(order);
+            } else
+              _futureEmits[arr[i]].push(order);
+          } else
+            _futureEmits[arr[i]] = [order];
+        }
+        break;
+
+      default:
+        _self.die('Unknown order type "' + order.type + '"');
+    }
+
+    _hasFutureOrders = true;
     if (!_timeout && !_executionLock) {
       if (now)
         _execute();
@@ -1182,8 +1185,10 @@ var domino = function(options) {
 
     // Clear various variables and references:
     _self = null;
-    _stackFuture = null;
-    _stackCurrents = null;
+    _currentUpdates = null;
+    _futureUpdates = null;
+    _currentEmits = null;
+    _futureEmits = null;
     _timeout = null;
     _executionLock = null;
     _facets = null;
