@@ -291,7 +291,8 @@ var domino = function(options) {
         l,
         l2,
         arr,
-        arr2;
+        arr2,
+        dedupl;
 
     switch (order.type) {
       // Domino throws an error if the same property must be updated several
@@ -309,19 +310,21 @@ var domino = function(options) {
         break;
 
       // If an event is emited several times with no data and at the same
-      // time, then it will be emited ony once instead.
+      // time, then it will be emitted only once instead.
       case 'emit':
         arr = Array.isArray(order.events) ?
           order.events :
           [order.events];
         for (i = 0, l = arr.length; i < l; i++) {
           if (_futureEmits[arr[i]]) {
-            if (!('data' in order)) {
+            if (order.data === undefined) {
               arr2 = _futureEmits[arr[i]];
+              dedupl = false;
               for (j = 0, l2 = arr2.length; j < l2; j++)
-                if (!('data' in arr2[j]))
-                  break;
-              arr2.push(order);
+                if (arr2[j].data === undefined)
+                  dedupl = true;
+              if (!dedupl)
+                arr2.push(order);
             } else
               _futureEmits[arr[i]].push(order);
           } else

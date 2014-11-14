@@ -72,4 +72,42 @@ describe('Orders management', function() {
       c.update('myProp', 'def')
     });
   });
+
+  it('should deduplicate an event without data sent several time in the same frame', function(done) {
+    var i = 0,
+        c = new domino({
+          bindings: {
+            myEvent: function(e) {
+              i++;
+            }
+          }
+        });
+
+    c.emit('myEvent');
+    c.emit('myEvent');
+
+    setTimeout(function() {
+      assert.deepEqual(i, 1);
+      done();
+    }, 0);
+  });
+
+  it('should not deduplicate an event sent several time in the same frame with different data', function(done) {
+    var i = 0,
+        c = new domino({
+          bindings: {
+            myEvent: function(e) {
+              i += e.data;
+            }
+          }
+        });
+
+    c.emit('myEvent', 1);
+    c.emit('myEvent', 2);
+
+    setTimeout(function() {
+      assert.deepEqual(i, 3);
+      done();
+    }, 0);
+  });
 });
