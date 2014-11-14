@@ -232,6 +232,9 @@ var domino = function(options) {
     if (_executionLock)
       _self.die('The execution is not unlocked yet');
 
+    // Emit a specific event to tell that the execution process starts:
+    _emitter.emit('domino:execute');
+
     // Set state:
     _timeout = null;
     _executionLock = true;
@@ -1144,18 +1147,30 @@ var domino = function(options) {
 
   // Logging methods:
   this.debug = function() {
+    _emitter.emit('domino:debug', {
+      message: Array.prototype.slice.call(arguments, 0)
+    });
     if (_self.settings('verbose'))
       logger.debug.apply(logger, arguments);
   };
   this.info = function() {
+    _emitter.emit('domino:info', {
+      message: Array.prototype.slice.call(arguments, 0)
+    });
     if (_self.settings('verbose'))
       logger.info.apply(logger, arguments);
   };
   this.warn = function() {
+    _emitter.emit('domino:warn', {
+      message: Array.prototype.slice.call(arguments, 0)
+    });
     if (_self.settings('verbose'))
       logger.warn.apply(logger, arguments);
   };
   this.die = function() {
+    _emitter.emit('domino:die', {
+      message: Array.prototype.slice.call(arguments, 0)
+    });
     if (_self.settings('verbose'))
       logger.die.apply(logger, arguments);
     throw new Error(_self.settings('errorMessage') || '');
