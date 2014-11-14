@@ -21,9 +21,7 @@ var indexFile = './src/domino.core.js',
 gulp.task('lint', function() {
   // Linting configurations
   var jshintConfig = {
-        '-W055': true,
         '-W040': true,
-        '-W064': true,
         node: true,
         browser: true
       },
