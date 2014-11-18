@@ -266,7 +266,7 @@ var domino = function(options) {
     _executionLock = false;
 
     if (_hasFutureOrders)
-      _timeout = setTimeout(_execute, 0);
+      _execute();
   }
 
 

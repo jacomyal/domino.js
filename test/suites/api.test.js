@@ -95,12 +95,8 @@ describe('API', function() {
 
       controller.emit('myEvent1');
       setTimeout(function() {
-        assert(count1 === 1);
-
-        setTimeout(function() {
-          assert(count1 === 2);
-          done();
-        }, 0);
+        assert(count1 === 2);
+        done();
       }, 0);
     });
   });
