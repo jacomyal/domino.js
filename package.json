@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "djax": "^1.0.0",
-    "emmett": "^1.0.0",
+    "emmett": "^2.0.0",
     "typology": "^0.1.0"
   }
 }
