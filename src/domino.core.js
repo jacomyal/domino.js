@@ -134,52 +134,15 @@ var domino = function(options) {
    * INSTANCE HELPERS:
    * *****************
    */
-  var _boundCache = {},
-      _cacheKey = 'cache_' + this.expando;
-
-  function _bindOneAndCache(item) {
-    if (types.check(item, 'function')) {
-      if (item[_cacheKey])
-        return _boundCache[item[_cacheKey]];
-      else {
-        item[_cacheKey] = 'function_' + ('' + Math.random()).replace(/\D/g, '');
-        _boundCache[item[_cacheKey]] = item.bind(_self);
-        return _boundCache[item[_cacheKey]];
-      }
-    } else
-      return item;
-  }
-
-  function _bindOneAndUncache(item) {
-    if (types.check(item, 'function')) {
-      if (item[_cacheKey]) {
-        var fn = _boundCache[item[_cacheKey]];
-        _boundCache[item[_cacheKey]] = null;
-        item[_cacheKey] = null;
-        return fn;
-      } else
-        return item.bind(_self);
-    } else
-      return item;
-  }
-
   function _bindOne(item) {
-    if (types.check(item, 'function')) {
-      if (item[_cacheKey]) {
-        return _boundCache[item[_cacheKey]];
-      } else
-        return item.bind(_self);
-    } else
+    if (typeof item === 'function')
+      return item.bind(_self);
+    else
       return item;
   }
 
   function _bind(object, cache) {
-    if (cache === true)
-      return helpers.browse(object, _bindOneAndCache);
-    else if (cache === false)
-      return helpers.browse(object, _bindOneAndUncache);
-    else
-      return helpers.browse(object, _bindOne);
+    return helpers.browse(object, _bindOne);
   }
 
 
@@ -429,7 +392,7 @@ var domino = function(options) {
     if (specs.services)
       _registerServices(specs.services);
     if (specs.bindings)
-      _emitter.on(_bind(specs.bindings, true));
+      _emitter.on(specs.bindings, { scope: _self });
 
     return this;
   }
@@ -1104,12 +1067,28 @@ var domino = function(options) {
   };
 
   // Adapt emitter's API:
-  this.on = function(o) {
-    _emitter.on.apply(_emitter, _bind(arguments, true));
+  // (syntax directly inspired from how the Emmett#once method is built)
+  this.on = function(a, b, c) {
+    if (typeof b === 'function') {
+      c = c || {};
+      c.scope = _self;
+      _emitter.on.call(_emitter, a, b, c);
+
+    } else if (
+      (a && typeof a === 'object' && !Array.isArray(a)) ||
+      (typeof a === 'function')
+    ) {
+      b = b || {};
+      b.scope = _self;
+      _emitter.on.call(_emitter, a, b);
+
+    } else
+      throw new Error('Wrong arguments.');
+
     return this;
   };
   this.off = function(o) {
-    _emitter.off.apply(_emitter, _bind(arguments, false));
+    _emitter.off.apply(_emitter, arguments);
     return this;
   };
   this.emit = function(events, data) {
