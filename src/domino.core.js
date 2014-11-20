@@ -109,8 +109,8 @@ var domino = function(options) {
       _hasFutureOrders = false,
       _currentUpdates = {},
       _futureUpdates = {},
-      _currentEmits = {},
-      _futureEmits = {},
+      _currentEmits = [],
+      _futureEmits = [],
 
       // Execution state:
       _timeout,
@@ -245,22 +245,19 @@ var domino = function(options) {
     _currentUpdates = _futureUpdates;
     _currentEmits = _futureEmits;
     _futureUpdates = {};
-    _futureEmits = {};
+    _futureEmits = [];
 
     var k,
         i,
-        l,
-        arr;
+        l;
 
     // Execute orders:
     for (k in _currentUpdates)
       _updateProperty(k, _currentUpdates[k].value);
-    for (k in _currentEmits) {
-      arr = _currentEmits[k];
-      l = arr.length;
-      for (i = 0; i < l; i++)
-        _emitter.emit(k, arr[i].data);
-    }
+
+    l = _currentEmits.length;
+    for (i = 0; i < l; i++)
+      _emitter.emit(_currentEmits[i].events, _currentEmits[i].data);
 
     // Update lock flag:
     _executionLock = false;
@@ -309,27 +306,9 @@ var domino = function(options) {
           _futureUpdates[order.property] = order;
         break;
 
-      // If an event is emited several times with no data and at the same
-      // time, then it will be emitted only once instead.
+      // Nothing special done on events, just add the order to the queue.
       case 'emit':
-        arr = Array.isArray(order.events) ?
-          order.events :
-          [order.events];
-        for (i = 0, l = arr.length; i < l; i++) {
-          if (_futureEmits[arr[i]]) {
-            if (order.data === undefined) {
-              arr2 = _futureEmits[arr[i]];
-              dedupl = false;
-              for (j = 0, l2 = arr2.length; j < l2; j++)
-                if (arr2[j].data === undefined)
-                  dedupl = true;
-              if (!dedupl)
-                arr2.push(order);
-            } else
-              _futureEmits[arr[i]].push(order);
-          } else
-            _futureEmits[arr[i]] = [order];
-        }
+        _futureEmits.push(order);
         break;
 
       default:

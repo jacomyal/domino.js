@@ -73,7 +73,7 @@ describe('Orders management', function() {
     });
   });
 
-  it('should deduplicate an event without data sent several time in the same frame', function(done) {
+  it('should not deduplicate an event without data sent several time in the same frame', function(done) {
     var i = 0,
         c = new domino({
           bindings: {
@@ -87,7 +87,7 @@ describe('Orders management', function() {
     c.emit('myEvent');
 
     setTimeout(function() {
-      assert.deepEqual(i, 1);
+      assert.deepEqual(i, 2);
       done();
     }, 0);
   });
