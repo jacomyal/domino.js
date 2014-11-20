@@ -272,5 +272,30 @@ describe('API', function() {
 
       controller.emit('myEvent');
     });
+
+    it('should execute the handler only once when using #once', function(done) {
+      var controller = new domino({
+        properties: {
+          myProp: {
+            type: 'number',
+            value: 0
+          }
+        }
+      });
+
+      controller.once('myEvent', function() {
+        this.update('myProp', this.get('myProp') + 1);
+      });
+
+      setTimeout(function() {
+        assert.equal(controller.get('myProp'), 1);
+        done();
+      }, 0);
+
+      controller.emit('myEvent');
+      controller.emit('myEvent');
+      controller.go();
+
+    });
   });
 });

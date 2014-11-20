@@ -1083,7 +1083,26 @@ var domino = function(options) {
       _emitter.on.call(_emitter, a, b);
 
     } else
-      throw new Error('Wrong arguments.');
+      _self.die('Wrong arguments.');
+
+    return this;
+  };
+  this.once = function(a, b, c) {
+    if (typeof b === 'function') {
+      c = c || {};
+      c.scope = _self;
+      _emitter.once.call(_emitter, a, b, c);
+
+    } else if (
+      (a && typeof a === 'object' && !Array.isArray(a)) ||
+      (typeof a === 'function')
+    ) {
+      b = b || {};
+      b.scope = _self;
+      _emitter.once.call(_emitter, a, b);
+
+    } else
+      _self.die('Wrong arguments.');
 
     return this;
   };
