@@ -32,7 +32,7 @@ describe('API', function() {
       assert(types.check(controller.registerProperties, 'function'));
       assert(types.check(controller.update, 'function'));
       assert(types.check(controller.get, 'function'));
-      assert(types.check(controller.binder, 'function'));
+      assert(types.check(controller.child, 'function'));
       assert(types.check(controller.on, 'function'));
       assert(types.check(controller.off, 'function'));
       assert(types.check(controller.emit, 'function'));

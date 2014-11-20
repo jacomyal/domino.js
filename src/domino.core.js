@@ -1086,9 +1086,9 @@ var domino = function(options) {
   this.get = _getValue;
   this.mixin = _mixin;
 
-  // Open binders to public:
-  this.binder = function() {
-    return _emitter.binder.apply(_emitter, arguments);
+  // Open children creation to public:
+  this.child = function() {
+    return _emitter.child.apply(_emitter, arguments);
   };
 
   // Adapt emitter's API:
