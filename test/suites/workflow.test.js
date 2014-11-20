@@ -40,6 +40,36 @@ describe('Frames injection', function() {
       done();
     }, 0);
   });
+
+  it('should skip frame injection when calling #go', function(done) {
+    var i = 0,
+        c = new domino({
+          properties: {
+            myProp: '?string'
+          },
+          bindings: {
+            myEvent: function() {
+              i++;
+            }
+          }
+        });
+
+    assert.deepEqual(i, 0);
+    assert.deepEqual(c.get('myProp'), undefined);
+
+    c.emit('myEvent')
+     .update('myProp', 'abc')
+     .go();
+
+    assert.deepEqual(i, 1);
+    assert.deepEqual(c.get('myProp'), 'abc');
+
+    setTimeout(function() {
+      assert.deepEqual(i, 1);
+      assert.deepEqual(c.get('myProp'), 'abc');
+      done();
+    }, 0);
+  });
 });
 
 describe('Orders management', function() {

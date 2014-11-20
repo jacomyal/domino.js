@@ -269,17 +269,15 @@ var domino = function(options) {
 
   /**
    * This function properly adds an order to the stack. If the stack was empty
-   * before, then the _execute function will be planed for next frame if the
-   * "now" flag is true, in which case the _execute function will be executed
-   * right now (ie synchronously).
+   * before, then the _execute function will be planed for next frame.
    *
-   * @param  {domino.order}  order The order to add.
-   * @param  {boolean}       now   A boolean specifying wether the loop has to
-   *                               start synchronously or not if the stack was
-   *                               empty before. The default value is "false".
-   * @return {*}                   Returns this.
+   * The _go function has been added if you want to avoid having a rendering
+   * frame added.
+   *
+   * @param  {domino.order} order The order to add.
+   * @return {*}                  Returns this.
    */
-  function _addOrder(order, now) {
+  function _addOrder(order) {
     if (!types.check(order, 'domino.order'))
       _self.die('Wrong type for order', order);
 
@@ -316,11 +314,24 @@ var domino = function(options) {
     }
 
     _hasFutureOrders = true;
-    if (!_timeout && !_executionLock) {
-      if (now)
-        _execute();
-      else
-        _timeout = setTimeout(_execute, 0);
+    if (!_timeout && !_executionLock)
+      _timeout = setTimeout(_execute, 0);
+
+    return this;
+  }
+
+
+  /**
+   * This function will start the execution loop and skip an eventual setTimeout
+   * and so make the whole loop become synchronous.
+   * @return {*} Returns this.
+   */
+  function _go() {
+    if (!_executionLock) {
+      if (_timeout)
+        clearTimeout(_timeout);
+
+      _execute();
     }
 
     return this;
@@ -1083,6 +1094,7 @@ var domino = function(options) {
   this.registerProperties = _registerProperties;
   this.update = _orderUpdateProperty;
   this.request = _requestService;
+  this.go = _go;
   this.get = _getValue;
   this.mixin = _mixin;
 
