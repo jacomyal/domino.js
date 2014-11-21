@@ -1,7 +1,7 @@
 var assert = require('assert'),
     domino = require('../../src/domino.core.js');
 
-describe('Frames injection', function() {
+describe('Frames injection ("breadthFirstSearch" set to true)', function() {
   it('should inject a frame before updating a property', function(done) {
     var c = new domino({
       properties: {
@@ -60,6 +60,90 @@ describe('Frames injection', function() {
     c.emit('myEvent')
      .update('myProp', 'abc')
      .go();
+
+    assert.deepEqual(i, 1);
+    assert.deepEqual(c.get('myProp'), 'abc');
+
+    setTimeout(function() {
+      assert.deepEqual(i, 1);
+      assert.deepEqual(c.get('myProp'), 'abc');
+      done();
+    }, 0);
+  });
+});
+
+describe('Synchronous workflow ("breadthFirstSearch" set to false)', function() {
+  it('should not inject any frame before updating a property', function(done) {
+    var c = new domino({
+      properties: {
+        myProp: '?string'
+      },
+      settings: {
+        breadthFirstSearch: false
+      }
+    });
+
+    assert.deepEqual(c.get('myProp'), undefined);
+
+    c.update('myProp', 'abc');
+    assert.deepEqual(c.get('myProp'), 'abc');
+
+    setTimeout(function() {
+      assert.deepEqual(c.get('myProp'), 'abc');
+      done();
+    }, 0);
+  });
+
+  it('should inject a frame before emitting an event', function(done) {
+    var i = 0,
+        c = new domino({
+          bindings: {
+            myEvent: function() {
+              i++;
+            }
+          },
+          settings: {
+            breadthFirstSearch: false
+          }
+        });
+
+    assert.deepEqual(i, 0);
+
+    c.emit('myEvent');
+    assert.deepEqual(i, 1);
+
+    setTimeout(function() {
+      assert.deepEqual(i, 1);
+      done();
+    }, 0);
+  });
+
+  it('should also work when calling #go', function(done) {
+    var i = 0,
+        c = new domino({
+          properties: {
+            myProp: '?string'
+          },
+          bindings: {
+            myEvent: function() {
+              i++;
+            }
+          },
+          settings: {
+            breadthFirstSearch: false
+          }
+        });
+
+    assert.deepEqual(i, 0);
+    assert.deepEqual(c.get('myProp'), undefined);
+
+    c.emit('myEvent')
+     .update('myProp', 'abc');
+
+    assert.deepEqual(i, 1);
+    assert.deepEqual(c.get('myProp'), 'abc');
+
+    c.go();
 
     assert.deepEqual(i, 1);
     assert.deepEqual(c.get('myProp'), 'abc');

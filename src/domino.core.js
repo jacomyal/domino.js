@@ -71,6 +71,7 @@ types.add('domino.order', function(obj) {
  */
 var defaultSettings = {
   solveFromSpecs: true,
+  breadthFirstSearch: true,
   paramSolver: /:([^\/]*)/g,
   mixinControllerName: 'control',
   errorMessage: 'error from domino',
@@ -287,7 +288,7 @@ var domino = function(options) {
    * @return {*} Returns this.
    */
   function _go() {
-    if (!_executionLock) {
+    if (!_executionLock && _self.settings('breadthFirstSearch')) {
       if (_timeout)
         clearTimeout(_timeout);
 
@@ -1073,7 +1074,6 @@ var domino = function(options) {
   this.registerServices = _registerServices;
   this.registerProperty = _registerProperty;
   this.registerProperties = _registerProperties;
-  this.update = _orderUpdateProperty;
   this.request = _requestService;
   this.go = _go;
   this.get = _getValue;
@@ -1128,12 +1128,26 @@ var domino = function(options) {
     _emitter.off.apply(_emitter, arguments);
     return this;
   };
+
+  // Orders related methods:
   this.emit = function(events, data) {
-    _addOrder({
-      type: 'emit',
-      events: events,
-      data: data
-    });
+    if (_self.settings('breadthFirstSearch'))
+      _addOrder({
+        type: 'emit',
+        events: events,
+        data: data
+      });
+    else
+      _emitter.emit.apply(_emitter, arguments);
+
+    return this;
+  };
+  this.update = function() {
+    if (_self.settings('breadthFirstSearch'))
+      _orderUpdateProperty.apply(this, arguments);
+    else
+      _updateProperty.apply(this, arguments);
+
     return this;
   };
 
