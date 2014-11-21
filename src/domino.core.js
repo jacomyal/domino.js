@@ -1168,7 +1168,11 @@ var domino = function(options) {
     });
     if (_self.settings('verbose'))
       logger.die.apply(logger, arguments);
-    throw new Error(_self.settings('errorMessage') || '');
+    throw new Error(
+      Array.prototype.join.call(arguments, ' ') ||
+      _self.settings('errorMessage') ||
+      ''
+    );
   };
 
   // Kill method:
