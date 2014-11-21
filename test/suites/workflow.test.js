@@ -70,6 +70,39 @@ describe('Frames injection ("breadthFirstSearch" set to true)', function() {
       done();
     }, 0);
   });
+
+  it('should run the orders tree breadth-first', function() {
+    var s = '',
+        c = new domino({
+          bindings: {
+            A: function() {
+              s += 'A';
+              this.emit('B').emit('C');
+            },
+            B: function() {
+              s += 'B';
+              this.emit('D').emit('E');
+            },
+            C: function() {
+              s += 'C';
+              this.emit('F');
+            },
+            D: function() {
+              s += 'D';
+            },
+            E: function() {
+              s += 'E';
+            },
+            F: function() {
+              s += 'F';
+            }
+          }
+        });
+
+
+    c.emit('A').go();
+    assert.deepEqual(s, 'ABCDEF');
+  });
 });
 
 describe('Synchronous workflow ("breadthFirstSearch" set to false)', function() {
@@ -153,6 +186,42 @@ describe('Synchronous workflow ("breadthFirstSearch" set to false)', function() 
       assert.deepEqual(c.get('myProp'), 'abc');
       done();
     }, 0);
+  });
+
+  it('should run the orders tree depth-first', function() {
+    var s = '',
+        c = new domino({
+          bindings: {
+            A: function() {
+              s += 'A';
+              this.emit('B').emit('C');
+            },
+            B: function() {
+              s += 'B';
+              this.emit('D').emit('E');
+            },
+            C: function() {
+              s += 'C';
+              this.emit('F');
+            },
+            D: function() {
+              s += 'D';
+            },
+            E: function() {
+              s += 'E';
+            },
+            F: function() {
+              s += 'F';
+            }
+          },
+          settings: {
+            breadthFirstSearch: false
+          }
+        });
+
+
+    c.emit('A');
+    assert.deepEqual(s, 'ABDECF');
   });
 });
 
