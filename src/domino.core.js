@@ -124,9 +124,6 @@ var domino = function(options) {
       _emitter = new emitter(),
       _mixin = mixinForge(this);
 
-  // Store a unique ID for the instance (inspired by jQuery):
-  this.expando = 'domino_' + ('' + Math.random()).replace(/\D/g, '');
-
 
 
 
