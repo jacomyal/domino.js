@@ -330,7 +330,7 @@ var domino = function(options) {
 
       var k;
       for (k in propName)
-        _self.update(k, propName[k]);
+        _orderUpdateProperty(k, propName[k]);
 
     } else if (arguments.length === 2) {
       if (!types.check(propName, 'domino.name'))
