@@ -767,35 +767,56 @@ var domino = function(options) {
    * value does not match the property's type (according to typology), an error
    * will be thrown.
    *
-   * Example:
-   * ********
+   * Variant 1:
+   * **********
    * > _updateProperty('myProp', myValue);
    *
    * @param  {string} propName The property name.
    * @param  {*}      value    The value.
    * @return {*}               Returns this.
+   *
+   * Variant 2:
+   * **********
+   * > _updateProperty({
+   * >   myProp1: myValue1,
+   * >   myProp2: myValue2
+   * > });
+   *
+   * @param  {object} updates The property name.
+   * @return {*}              Returns this.
    */
   function _updateProperty(propName, value) {
-    if (!types.check(propName, 'domino.name'))
-      _self.die('Invalid property name.');
+    // Variant 2:
+    if (
+      arguments.length === 1 &&
+      types.check(propName, 'object')
+    )
+      for (var k in propName)
+        _updateProperty(k, propName[k]);
 
-    var property = _properties[propName];
+    // Variant 2:
+    else {
+      if (!types.check(propName, 'domino.name'))
+        _self.die('Invalid property name.');
 
-    if (!property)
-      _self.die('The property "' + propName + '" does not exist.');
+      var property = _properties[propName];
 
-    if (property.type && !types.check(value, property.type))
-      _self.die('Wrong type for "' + propName + '".');
+      if (!property)
+        _self.die('The property "' + propName + '" does not exist.');
 
-    // Update the property's value:
-    property.value = value;
+      if (property.type && !types.check(value, property.type))
+        _self.die('Wrong type for "' + propName + '".');
 
-    // Dispatch related events:
-    if (property.emit)
-      _addOrder({
-        type: 'emit',
-        events: property.emit
-      });
+      // Update the property's value:
+      property.value = value;
+
+      // Dispatch related events:
+      if (property.emit)
+        _addOrder({
+          type: 'emit',
+          events: property.emit
+        });
+    }
 
     return this;
   }
