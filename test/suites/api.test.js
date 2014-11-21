@@ -8,6 +8,13 @@ describe('API', function() {
       var controller = new domino();
     });
 
+    it('should throw a relevant error when "options" argument is not valid', function() {
+      assert.throws(
+        function() { new domino({ properties: { myProp: 123 } }); },
+        /Wrong type/
+      );
+    });
+
     it('should register an instance under its given name', function() {
       var controller = new domino({ name: 'API.constructor.test1' });
       assert(controller === domino.instances('API.constructor.test1'));
@@ -295,7 +302,6 @@ describe('API', function() {
       controller.emit('myEvent');
       controller.emit('myEvent');
       controller.go();
-
     });
   });
 });

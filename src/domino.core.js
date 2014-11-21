@@ -169,9 +169,6 @@ var domino = function(options) {
       );
     else
       _instances[this.name] = this;
-
-    // Register initial options:
-    _register(options);
   }
 
 
@@ -1203,6 +1200,10 @@ var domino = function(options) {
     // Delete instance reference:
     _instances[this.name] = null;
   };
+
+  // Register initial options:
+  if (options)
+    _register(options);
 };
 
 
