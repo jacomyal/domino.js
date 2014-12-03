@@ -99,6 +99,8 @@ app.select
 ## React mixin
 
 Same as current as top-level baobab one.
+Stateful event mixin?
+Refer the controller to `this.control` through the controller mixin.
 
 ## Steps
 
