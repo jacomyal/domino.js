@@ -9,6 +9,32 @@
   </head>
   <body>
     <div id="mocha"></div>
+    <script type="text/javascript">
+      /* https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Objets_globaux/Function/bind */
+      if (!Function.prototype.bind) {
+        Function.prototype.bind = function (oThis) {
+          if (typeof this !== "function") {
+            // au plus proche de la fonction ECMAScript 5 IsCallable
+            throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
+          }
+
+          var aArgs = Array.prototype.slice.call(arguments, 1),
+              fToBind = this,
+              fNOP = function () {},
+              fBound = function () {
+                return fToBind.apply(this instanceof fNOP && oThis
+                       ? this
+                       : oThis,
+                       aArgs.concat(Array.prototype.slice.call(arguments)));
+              };
+
+          fNOP.prototype = this.prototype;
+          fBound.prototype = new fNOP();
+
+          return fBound;
+        };
+      }
+    </script>
     <script src="mocha.js"></script>
     <script>mocha.setup('bdd')</script>
     <script src="../../build/tests.js"></script>
