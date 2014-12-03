@@ -1,5 +1,6 @@
 var assert = require('assert'),
     domino = require('../../src/domino.core.js'),
+    Typology = require('typology'),
     types = domino.types;
 
 describe('API', function() {
@@ -105,6 +106,20 @@ describe('API', function() {
         assert(count1 === 2);
         done();
       }, 0);
+    });
+
+    it('should be possible to declare custom types at instantiation.', function() {
+      var controller = new domino({
+        types: {
+          weird: function(v) {
+            return v === 'weird';
+          }
+        }
+      });
+
+      assert(controller.types instanceof Typology);
+      assert(controller.types.isValid('weird'));
+      assert(controller.types.check('weird', 'weird'));
     });
   });
 
