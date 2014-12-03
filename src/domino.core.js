@@ -1,69 +1,11 @@
 'use strict';
 
 var ajax = require('djax'),
-    types = require('typology'),
     emitter = require('emmett'),
+    types = require('./domino.typology.js'),
     logger = require('./domino.logger.js'),
     helpers = require('./domino.helpers.js'),
     mixinForge = require('./domino.react.js');
-
-/**
- * Custom types related to domino:
- */
-types.add('domino.events', function(val) {
-  return typeof val === 'string' || types.check(val, ['string']);
-});
-types.add('domino.name', function(val) {
-  return typeof val === 'string' && !!val.match(/^[a-zA-Z_$-][a-zA-Z_$0-9-]*$/);
-});
-
-types.add('domino.property', function(obj) {
-  return types.check(obj, {
-    id: 'domino.name',
-    type: '?type',
-    description: '?string',
-    namespace: '?domino.name',
-    emit: '?domino.events',
-    value: '?*'
-  }) && (!obj.type || types.check(obj.value, obj.type));
-});
-types.add('domino.facet', {
-  id: 'domino.name',
-  description: '?string',
-  namespace: '?domino.name',
-  get: 'function'
-});
-types.add('domino.service', function(obj) {
-  return (
-    types.check(obj, 'object') &&
-    types.check(obj.id, 'domino.name') &&
-    types.check(obj.url, 'string')
-  );
-});
-
-// Orders
-var orderTypes = {
-  update: {
-    type: 'string',
-    property: 'string',
-    value: '*'
-  },
-  emit: {
-    type: 'string',
-    events: 'string|array',
-    data: '?*'
-  }
-};
-
-types.add('domino.order', function(obj) {
-  return (
-    types.check(obj, 'object') &&
-    types.check(obj.type, 'string') &&
-    types.check(obj, orderTypes[obj.type])
-  );
-});
-
-
 
 
 /**
