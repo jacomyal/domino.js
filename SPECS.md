@@ -102,8 +102,9 @@ Same as current as top-level baobab one.
 
 ## Steps
 
-* Update typology and resolve under instance (on [reboot-proposal])
 * Add baobab
-* Drop properties
+* Drop properties-related items
+* Integrate baobab
 * Service integration
 * Bindings
+* Ensure kill is correctly done
