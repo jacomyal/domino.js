@@ -2,6 +2,7 @@
 
 var ajax = require('djax'),
     emitter = require('emmett'),
+    Typology = require('typology'),
     types = require('./domino.typology.js'),
     logger = require('./domino.logger.js'),
     helpers = require('./domino.helpers.js'),
@@ -64,7 +65,8 @@ var domino = function(options) {
       _services = {},
       _properties = {},
       _emitter = new emitter(),
-      _mixin = mixinForge(this);
+      _mixin = mixinForge(this),
+      _types = new Typology();
 
 
 
@@ -320,6 +322,8 @@ var domino = function(options) {
     if (!types.check(specs, 'object'))
       _self.die('Wrong type.');
 
+    var k;
+
     if (specs.settings)
       _self.settings(specs.settings);
     if (specs.facets)
@@ -330,6 +334,9 @@ var domino = function(options) {
       _registerServices(specs.services);
     if (specs.bindings)
       _emitter.on(specs.bindings, { scope: _self });
+    if (specs.types)
+      for (k in specs.types)
+        _types.add(k, specs.types[k]);
 
     return this;
   }
@@ -1017,6 +1024,7 @@ var domino = function(options) {
   this.go = _go;
   this.get = _getValue;
   this.mixin = _mixin;
+  this.types = _types;
 
   // Open children creation to public:
   this.child = function() {
