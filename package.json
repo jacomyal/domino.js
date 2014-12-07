@@ -27,7 +27,7 @@
     "run-sequence": "^1.0.1"
   },
   "dependencies": {
-    "baobab": "0.0.1",
+    "baobab": "git+https://github.com/Yomguithereal/baobab.git",
     "djax": "^1.0.0",
     "emmett": "^2.1.1",
     "typology": "^0.2.1"
