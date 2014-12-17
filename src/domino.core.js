@@ -15,7 +15,7 @@ var ajax = require('djax'),
 var defaultSettings = {
   solveFromSpecs: true,
   breadthFirstSearch: true,
-  paramSolver: /:([^\/]*)/g,
+  paramSolver: /:([^\/:]*)/g,
   mixinControllerName: 'control',
   errorMessage: 'error from domino',
   verbose: true
@@ -926,24 +926,30 @@ var domino = function(options) {
     ajaxSpecs.error = helpers.concat(_services[id].error, specs.error);
 
     // Resolve URL and data:
-    var execRes,
+    var value,
+        execRes,
         solveFromSpecs = _self.settings('solveFromSpecs'),
         solver = _self.settings('paramSolver');
 
     if (solver) {
       // Resolve URL:
       solver.lastIndex = 0;
-      while ((execRes = solver.exec(ajaxSpecs.url)))
+      while ((execRes = solver.exec(ajaxSpecs.url))) {
+        value = null;
+
         if (_properties[execRes[1]] || _facets[execRes[1]])
-          ajaxSpecs.url = ajaxSpecs.url.replace(
-            execRes[0],
-            _getValue(execRes[1]).toString()
-          );
+          value = _getValue(execRes[1]).toString();
         else if (solveFromSpecs && ajaxSpecs[execRes[1]])
+          value = ajaxSpecs[execRes[1]];
+
+        if (value) {
           ajaxSpecs.url = ajaxSpecs.url.replace(
             execRes[0],
-            ajaxSpecs[execRes[1]]
+            value
           );
+          solver.lastIndex += value.length - execRes[0].length;
+        }
+      }
 
       // Resolve data:
       ajaxSpecs.data = helpers.browse(

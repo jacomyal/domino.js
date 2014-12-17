@@ -200,4 +200,38 @@ describe('Services', function() {
       });
     });
   });
+
+  describe('Solving', function() {
+    var controller = new domino({
+      services: {
+        route1: {
+          url: '/api/:str1:str2'
+        }
+      }
+    });
+
+    // Regression test 1 for issue #70:
+    it('should solve consecutive strings', function(done) {
+      controller.request('route1', {
+        str1: 'abc',
+        str2: 'def',
+        success: function(data) {
+          assert.equal(data.url, '/api/abcdef');
+          done();
+        }
+      });
+    });
+
+    // Regression test 2 for issue #70:
+    it('should solve consecutive strings with result longer than matched string', function(done) {
+      controller.request('route1', {
+        str1: 'abcdef',
+        str2: 'ghi',
+        success: function(data) {
+          assert.equal(data.url, '/api/abcdefghi');
+          done();
+        }
+      });
+    });
+  });
 });
