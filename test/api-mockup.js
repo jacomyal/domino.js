@@ -177,8 +177,13 @@ app.post('/data/:id', controller.postRow);
 app.put('/data/', controller.putRow);
 app.delete('/data/:id', controller.deleteRow);
 
-app.get('/ping/:data', function(req, res) {
-  res.send({ ok: 1, data: req.param('data') });
+app.use('/api/*', function(req, res) {
+  res.send({
+    ok: 1,
+    data: req.body,
+    type: req.method,
+    url: req.originalUrl
+  });
 });
 
 app.get('/*', express.static(__dirname));
