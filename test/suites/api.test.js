@@ -197,19 +197,19 @@ describe('API', function() {
 
         controller.register({
           services:  [
-            { id: 's1', url: '/ping/:data' },
-            { id: 's2', url: '/ping/:data' }
+            { id: 's1', url: '/api/:data' },
+            { id: 's2', url: '/api/:data' }
           ]
         });
 
         controller
           .request('s1', { data: 'test1' })
           .done(function(data) {
-            assert(data.data === 'test1');
+            assert.equal(data.url, '/api/test1?test1');
             this
               .request('s1', { data: 'test2' })
               .done(function(data) {
-                assert(data.data === 'test2');
+                assert.equal(data.url, '/api/test2?test2');
                 done();
               });
           });
@@ -222,19 +222,19 @@ describe('API', function() {
 
         controller.register({
           services: {
-            s1: { url: '/ping/:data' },
-            s2: { url: '/ping/:data' }
+            s1: { url: '/api/:data' },
+            s2: { url: '/api/:data' }
           }
         });
 
         controller
           .request('s1', { data: 'test1' })
           .done(function(data) {
-            assert(data.data === 'test1');
+            assert.equal(data.url, '/api/test1?test1');
             this
               .request('s1', { data: 'test2' })
               .done(function(data) {
-                assert(data.data === 'test2');
+                assert.equal(data.url, '/api/test2?test2');
                 done();
               });
           });
