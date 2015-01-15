@@ -17,7 +17,9 @@ function forge(scope) {
       // Checking validity of renderOn argument
       if (!types.check(this.renderOn, ['string']) &&
           !types.check(this.renderOn, 'string'))
-        throw new Error('MESSAGE_TO_BE_DECIDED');
+        throw new Error('domino.mixin: the renderOn property expected ' +
+                        'either a single event or an array of events but ' +
+                        'received ', this.renderOn);
 
       // Referencing the controller listener
       this.__eventListener = (function(e) {

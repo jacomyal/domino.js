@@ -17,19 +17,19 @@
     "gulp-browserify": "~0.5.0",
     "gulp-gjslint": "^0.1.4",
     "gulp-header": "^1.2.2",
-    "gulp-jshint": "~1.8.4",
-    "gulp-mocha": "~1.1.0",
+    "gulp-jshint": "^1.9.0",
+    "gulp-mocha": "^2.0.0",
     "gulp-mocha-phantomjs": "~0.5.0",
     "gulp-rename": "~1.2.0",
-    "gulp-uglify": "~0.3.1",
+    "gulp-uglify": "^1.0.2",
     "jshint-stylish": "^1.0.0",
-    "mocha": "~1.21.4",
+    "mocha": "^2.0.1",
     "run-sequence": "^1.0.1"
   },
   "dependencies": {
     "baobab": "git+https://github.com/Yomguithereal/baobab.git",
-    "djax": "^1.0.0",
+    "djax": "^1.0.1",
     "emmett": "^2.1.1",
-    "typology": "^0.2.1"
+    "typology": "^0.3.1"
   }
 }
