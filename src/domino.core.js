@@ -58,10 +58,23 @@ var domino = function(options) {
 
       // Execution state:
       _timeout,
-      _executionLock,
+      _executionLock;
 
-      // Instance related attributes:
-      _facets = {},
+  /* BEGIN TEMP BAOBAB BOOTSTRAP */
+  if (options && options.state) {
+    var Baobab = require('baobab'),
+        _state = new Baobab(options.state);
+
+    this.select = _state.select.bind(_state);
+    this.get = _state.get.bind(_state);
+    this.set = _state.set.bind(_state);
+    this.update = _state.update.bind(_state);
+    this.state = _state;
+  }
+  /* END TEMP BAOBAB BOOTSTRAP */
+
+  // Instance related attributes:
+  var _facets = {},
       _services = {},
       _properties = {},
       _emitter = new emitter(),
@@ -1192,20 +1205,6 @@ var domino = function(options) {
   // Register initial options:
   if (options)
     _register(options);
-
-  /* BEGIN TEMP BAOBAB BOOTSTRAP */
-  if (options && options.state) {
-    var Baobab = require('baobab'),
-        _state = new Baobab(options.state);
-
-    this.select = _state.select.bind(_state);
-    this.get = _state.get.bind(_state);
-    this.set = _state.set.bind(_state);
-    this.update = _state.update.bind(_state);
-    this.mixin = _state.mixin;
-    this.state = _state;
-  }
-  /* END TEMP BAOBAB BOOTSTRAP */
 };
 
 

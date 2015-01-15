@@ -5,6 +5,7 @@ var types = require('typology');
 // Main forge
 function forge(scope) {
   return {
+    mixins: scope.state ? [scope.state.mixin] : [],
     componentWillMount: function() {
       // Referencing the controller
       this[scope.settings('mixinControllerName')] = scope;
@@ -19,8 +20,8 @@ function forge(scope) {
         throw new Error('MESSAGE_TO_BE_DECIDED');
 
       // Referencing the controller listener
-      this.__listener = (function() {
-        this.forceUpdate();
+      this.__eventListener = (function(e) {
+        this.setState({event: e});
       }).bind(this);
     },
 
@@ -32,8 +33,8 @@ function forge(scope) {
       // Binding event listeners
       (typeof this.renderOn === 'string' ?
         [this.renderOn] :
-        this.renderOn).forEach(function(event) {
-          scope.on(event, this.__listener);
+        this.renderOn).forEach(function(eventName) {
+          scope.on(eventName, this.__eventListener);
         }, this);
     },
 
@@ -45,8 +46,8 @@ function forge(scope) {
       // Unbinding event listeners
       (typeof this.renderOn === 'string' ?
         [this.renderOn] :
-        this.renderOn).forEach(function(event) {
-          scope.off(event, this.__listener);
+        this.renderOn).forEach(function(eventName) {
+          scope.off(eventName, this.__eventListener);
         }, this);
     }
   };
