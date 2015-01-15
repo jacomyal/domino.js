@@ -58,27 +58,13 @@ var domino = function(options) {
 
       // Execution state:
       _timeout,
-      _executionLock;
+      _executionLock,
 
-  /* BEGIN TEMP BAOBAB BOOTSTRAP */
-  if (options && options.state) {
-    var Baobab = require('baobab'),
-        _state = new Baobab(options.state);
-
-    this.select = _state.select.bind(_state);
-    this.get = _state.get.bind(_state);
-    this.set = _state.set.bind(_state);
-    this.update = _state.update.bind(_state);
-    this.state = _state;
-  }
-  /* END TEMP BAOBAB BOOTSTRAP */
-
-  // Instance related attributes:
-  var _facets = {},
+      // Instance related attributes:
+      _facets = {},
       _services = {},
       _properties = {},
       _emitter = new emitter(),
-      _mixin = mixinForge(this),
       _types = new Typology();
 
 
@@ -1042,7 +1028,6 @@ var domino = function(options) {
   this.request = _requestService;
   this.go = _go;
   this.get = _getValue;
-  this.mixin = _mixin;
   this.types = _types;
 
   // Open children creation to public:
@@ -1205,6 +1190,22 @@ var domino = function(options) {
   // Register initial options:
   if (options)
     _register(options);
+
+  /* BEGIN TEMP BAOBAB BOOTSTRAP */
+  if (options && options.state) {
+    var Baobab = require('baobab'),
+        _state = new Baobab(options.state);
+
+    this.select = _state.select.bind(_state);
+    this.get = _state.get.bind(_state);
+    this.set = _state.set.bind(_state);
+    this.update = _state.update.bind(_state);
+    this.state = _state;
+  }
+  /* END TEMP BAOBAB BOOTSTRAP */
+
+  // NOTE: move this elsewhere when omino is ok.
+  this.mixin = mixinForge(this);
 };
 
 
