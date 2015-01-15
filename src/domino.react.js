@@ -6,6 +6,10 @@ var types = require('typology');
 function forge(scope) {
   return {
     mixins: scope.state ? [scope.state.mixin] : [],
+    getInitialState: function() {
+      // Initializing state for convenience
+      return {};
+    },
     componentWillMount: function() {
       // Referencing the controller
       this[scope.settings('mixinControllerName')] = scope;
